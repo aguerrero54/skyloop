@@ -270,18 +270,25 @@ export function InvoiceForm({
     );
   }
 
-  function applyObligation(key: string, obligationId: string) {
-    const obligation = obligations.find((row) => row.id === obligationId);
-    if (!obligation) {
-      updateItem(key, { obligationId: null });
-      return;
+  /** Elegir proveedor: si hay servicios pendientes y las filas están vacías, se agregan solos. */
+  function applyVendor(id: string) {
+    setVendorId(id);
+    const pending = pendingObligations(data.providerObligations, id || null);
+    const untouched = items.every(
+      (item) => !item.description.trim() && !item.obligationId && num(item.rate) === 0,
+    );
+    if (pending.length && untouched) {
+      setItems(
+        pending.map((obligation) => ({
+          key: newKey(),
+          description: obligation.description,
+          quantity: "1",
+          rate: String(obligationBalance(obligation)),
+          tax: "0",
+          obligationId: obligation.id,
+        })),
+      );
     }
-    updateItem(key, {
-      obligationId: obligation.id,
-      description: obligation.description,
-      quantity: "1",
-      rate: String(obligationBalance(obligation)),
-    });
   }
 
   async function submit(status: InvoiceStatus) {
@@ -394,7 +401,7 @@ export function InvoiceForm({
                 phone: provider.phone,
               }))}
               value={vendorId}
-              onChange={setVendorId}
+              onChange={applyVendor}
               placeholder={copy.entityPlaceholder}
               createLabel="+ Crear nuevo proveedor"
               onCreate={() => openForm("provider")}
@@ -495,7 +502,7 @@ export function InvoiceForm({
         {...(kind === "vendor"
           ? {
               subtitle:
-                "Selecciona los servicios pendientes del proveedor o escribe un concepto nuevo",
+                "Al elegir un proveedor, sus servicios pendientes se agregan automáticamente; también puedes escribir conceptos nuevos",
             }
           : {})}
         action={
@@ -524,33 +531,6 @@ export function InvoiceForm({
               {items.map((item) => (
                 <tr key={item.key} className="border-t border-border">
                   <td className="px-3 py-2">
-                    {kind === "vendor" && (
-                      <select
-                        value={item.obligationId ?? ""}
-                        onChange={(event) => applyObligation(item.key, event.target.value)}
-                        className={`${inputClass} mb-2`}
-                        aria-label="Servicio pendiente del proveedor"
-                      >
-                        <option value="">
-                          {vendorId
-                            ? "Seleccionar servicio pendiente…"
-                            : "Selecciona primero un proveedor"}
-                        </option>
-                        {obligations
-                          .filter(
-                            (obligation) =>
-                              obligation.id === item.obligationId ||
-                              !items.some((row) => row.obligationId === obligation.id),
-                          )
-                          .map((obligation) => (
-                            <option key={obligation.id} value={obligation.id}>
-                              {obligation.description} —{" "}
-                              {money(obligationBalance(obligation), obligation.currency)} —{" "}
-                              {obligation.status}
-                            </option>
-                          ))}
-                      </select>
-                    )}
                     <input
                       list="skyloop-services"
                       value={item.description}
