@@ -37,6 +37,7 @@ export function RecordModal() {
   const kind = formState.kind;
   const presetClient = formState.clientId ?? "";
   const editingAssignment = kind === "assignment" ? formState.assignment : undefined;
+  const editingService = kind === "service" ? formState.service : undefined;
 
   const clientOptions = data.clients.map((client) => ({ value: client.id, label: client.name }));
   const providerOptions = data.providers.map((provider) => ({
@@ -157,11 +158,39 @@ export function RecordModal() {
         ];
       case "service":
         return [
-          { name: "name", label: "Nombre", type: "text", required: true },
-          { name: "category", label: "Categoría", type: "text", required: true },
-          { name: "suggested_price", label: "Precio sugerido", type: "number" },
-          { name: "estimated_cost", label: "Costo estimado", type: "number" },
-          { name: "status", label: "Estado", type: "select", options: plain(["Activo", "Inactivo"]) },
+          {
+            name: "name",
+            label: "Nombre",
+            type: "text",
+            required: true,
+            defaultValue: editingService?.name,
+          },
+          {
+            name: "category",
+            label: "Categoría",
+            type: "text",
+            required: true,
+            defaultValue: editingService?.category ?? undefined,
+          },
+          {
+            name: "suggested_price",
+            label: "Precio sugerido",
+            type: "number",
+            defaultValue: editingService ? String(num(editingService.suggested_price)) : undefined,
+          },
+          {
+            name: "estimated_cost",
+            label: "Costo estimado",
+            type: "number",
+            defaultValue: editingService ? String(num(editingService.estimated_cost)) : undefined,
+          },
+          {
+            name: "status",
+            label: "Estado",
+            type: "select",
+            defaultValue: editingService?.status ?? undefined,
+            options: plain(["Activo", "Inactivo"]),
+          },
         ];
       case "assignment":
         return [
