@@ -153,6 +153,8 @@ export type DraftItem = {
   quantity: string;
   rate: string;
   tax: string;
+  /** Obligación del proveedor a la que corresponde la fila (solo documentos de proveedor). */
+  obligationId?: string | null;
 };
 
 export type TotalsInput = {
