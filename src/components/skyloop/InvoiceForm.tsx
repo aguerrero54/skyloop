@@ -531,33 +531,6 @@ export function InvoiceForm({
               {items.map((item) => (
                 <tr key={item.key} className="border-t border-border">
                   <td className="px-3 py-2">
-                    {kind === "vendor" && (
-                      <select
-                        value={item.obligationId ?? ""}
-                        onChange={(event) => applyObligation(item.key, event.target.value)}
-                        className={`${inputClass} mb-2`}
-                        aria-label="Servicio pendiente del proveedor"
-                      >
-                        <option value="">
-                          {vendorId
-                            ? "Seleccionar servicio pendiente…"
-                            : "Selecciona primero un proveedor"}
-                        </option>
-                        {obligations
-                          .filter(
-                            (obligation) =>
-                              obligation.id === item.obligationId ||
-                              !items.some((row) => row.obligationId === obligation.id),
-                          )
-                          .map((obligation) => (
-                            <option key={obligation.id} value={obligation.id}>
-                              {obligation.description} —{" "}
-                              {money(obligationBalance(obligation), obligation.currency)} —{" "}
-                              {obligation.status}
-                            </option>
-                          ))}
-                      </select>
-                    )}
                     <input
                       list="skyloop-services"
                       value={item.description}
