@@ -292,7 +292,7 @@ export function RecordModal() {
         }));
       } else if (kind === "obligation") {
         ({ error } = await supabase.from("provider_obligations").insert({
-          provider_id: orNull("provider_id"),
+          provider_id: get("provider_id"),
           service_id: orNull("service_id"),
           description: get("description"),
           amount: num(get("amount")),
