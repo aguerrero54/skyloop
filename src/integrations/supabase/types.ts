@@ -277,6 +277,7 @@ export type Database = {
           description: string
           id: string
           invoice_id: string
+          obligation_id: string | null
           position: number
           quantity: number
           rate: number
@@ -289,6 +290,7 @@ export type Database = {
           description: string
           id?: string
           invoice_id: string
+          obligation_id?: string | null
           position?: number
           quantity?: number
           rate?: number
@@ -301,6 +303,7 @@ export type Database = {
           description?: string
           id?: string
           invoice_id?: string
+          obligation_id?: string | null
           position?: number
           quantity?: number
           rate?: number
@@ -313,6 +316,13 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_obligation_id_fkey"
+            columns: ["obligation_id"]
+            isOneToOne: false
+            referencedRelation: "provider_obligations"
             referencedColumns: ["id"]
           },
           {
@@ -377,8 +387,10 @@ export type Database = {
           discount: number
           discount_type: string
           due_date: string | null
+          financial_type: string
           id: string
           invoice_number: string
+          invoice_type: string
           issue_date: string
           notes: string | null
           order_number: string | null
@@ -392,6 +404,7 @@ export type Database = {
           terms: string | null
           total: number
           updated_at: string
+          vendor_id: string | null
         }
         Insert: {
           adjustment?: number
@@ -404,8 +417,10 @@ export type Database = {
           discount?: number
           discount_type?: string
           due_date?: string | null
+          financial_type?: string
           id?: string
           invoice_number: string
+          invoice_type?: string
           issue_date?: string
           notes?: string | null
           order_number?: string | null
@@ -419,6 +434,7 @@ export type Database = {
           terms?: string | null
           total?: number
           updated_at?: string
+          vendor_id?: string | null
         }
         Update: {
           adjustment?: number
@@ -431,8 +447,10 @@ export type Database = {
           discount?: number
           discount_type?: string
           due_date?: string | null
+          financial_type?: string
           id?: string
           invoice_number?: string
+          invoice_type?: string
           issue_date?: string
           notes?: string | null
           order_number?: string | null
@@ -446,6 +464,7 @@ export type Database = {
           terms?: string | null
           total?: number
           updated_at?: string
+          vendor_id?: string | null
         }
         Relationships: [
           {
@@ -458,6 +477,13 @@ export type Database = {
           {
             foreignKeyName: "invoices_seller_id_fkey"
             columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_vendor_id_fkey"
+            columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "providers"
             referencedColumns: ["id"]
@@ -505,6 +531,66 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      provider_obligations: {
+        Row: {
+          amount: number
+          amount_paid: number
+          created_at: string
+          currency: string
+          description: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          provider_id: string
+          service_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          amount_paid?: number
+          created_at?: string
+          currency?: string
+          description: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          provider_id: string
+          service_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          amount_paid?: number
+          created_at?: string
+          currency?: string
+          description?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          provider_id?: string
+          service_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_obligations_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_obligations_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       providers: {
         Row: {

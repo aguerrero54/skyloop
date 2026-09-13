@@ -1,13 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { num, todayISO } from "@/lib/finance";
 import {
+  KIND_COPY,
   computeTotals,
+  invoiceKind,
   itemAmount,
   nextInvoiceNumber,
   round2,
   statusFromPayments,
   type DraftItem,
   type Invoice,
+  type InvoiceKind,
   type InvoiceStatus,
 } from "@/lib/invoices";
 
@@ -15,8 +18,10 @@ export type InvoiceAttachment = { path: string; name: string; size: number };
 
 export type InvoiceInput = {
   id?: string;
+  invoiceType: InvoiceKind;
   invoiceNumber: string;
   clientId: string | null;
+  vendorId: string | null;
   sellerId: string | null;
   orderNumber: string | null;
   issueDate: string;
@@ -39,13 +44,16 @@ function cleanItems(items: DraftItem[]) {
   return items.filter((item) => item.description.trim() || num(item.rate) > 0);
 }
 
-async function generateNumber(): Promise<string> {
+async function generateNumber(kind: InvoiceKind): Promise<string> {
   const { data } = await supabase
     .from("invoices")
     .select("invoice_number")
     .order("invoice_number", { ascending: false })
-    .limit(50);
-  return nextInvoiceNumber((data ?? []).map((row) => row.invoice_number));
+    .limit(200);
+  return nextInvoiceNumber(
+    (data ?? []).map((row) => row.invoice_number),
+    kind,
+  );
 }
 
 export async function saveInvoice(input: InvoiceInput): Promise<string> {
@@ -70,8 +78,12 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
     paid = round2((data ?? []).reduce((sum, row) => sum + num(row.amount), 0));
   }
 
+  const kind = input.invoiceType;
   const base = {
-    client_id: input.clientId,
+    invoice_type: kind,
+    financial_type: KIND_COPY[kind].financialType,
+    client_id: kind === "client" ? input.clientId : null,
+    vendor_id: kind === "vendor" ? input.vendorId : null,
     seller_id: input.sellerId,
     order_number: input.orderNumber,
     issue_date: input.issueDate,
@@ -114,7 +126,7 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
     if (deleteError) throw new Error(deleteError.message);
   } else {
     let attempt = 0;
-    let number = input.invoiceNumber || (await generateNumber());
+    let number = input.invoiceNumber || (await generateNumber(kind));
     for (;;) {
       const { data, error } = await supabase
         .from("invoices")
@@ -127,7 +139,7 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
       }
       if (error?.code === "23505" && attempt < 5) {
         attempt += 1;
-        number = await generateNumber();
+        number = await generateNumber(kind);
         continue;
       }
       throw new Error(error?.message ?? "No se pudo crear la factura");
@@ -144,6 +156,7 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
         tax: num(item.tax),
         amount: round2(itemAmount(item.quantity, item.rate)),
         position: index,
+        obligation_id: kind === "vendor" ? (item.obligationId ?? null) : null,
       })),
     );
     if (error) throw new Error(error.message);
@@ -199,8 +212,10 @@ export async function duplicateInvoice(
   items: { description: string; quantity: number; rate: number; tax: number }[],
 ): Promise<string> {
   return saveInvoice({
+    invoiceType: invoiceKind(invoice),
     invoiceNumber: "",
     clientId: invoice.client_id,
+    vendorId: invoice.vendor_id,
     sellerId: invoice.seller_id,
     orderNumber: invoice.order_number,
     issueDate: todayISO(),

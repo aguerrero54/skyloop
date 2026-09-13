@@ -6,11 +6,13 @@ import {
   computeTotals,
   effectiveStatus,
   formatLongDate,
+  invoiceKind,
   itemAmount,
+  KIND_COPY,
   type Invoice,
   type InvoiceItem,
 } from "@/lib/invoices";
-import type { Client } from "@/lib/finance";
+import type { Client, Provider } from "@/lib/finance";
 
 const PURPLE: [number, number, number] = [124, 92, 246];
 const DARK: [number, number, number] = [38, 38, 42];
@@ -37,9 +39,10 @@ export type InvoicePdfInput = {
   invoice: Invoice;
   items: InvoiceItem[];
   client: Client | null;
+  vendor?: Provider | null;
 };
 
-export function buildInvoicePdf({ invoice, items, client }: InvoicePdfInput): jsPDF {
+export function buildInvoicePdf({ invoice, items, client, vendor }: InvoicePdfInput): jsPDF {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const left = 56;
@@ -47,6 +50,20 @@ export function buildInvoicePdf({ invoice, items, client }: InvoicePdfInput): js
   const currency = invoice.currency || "DOP";
   const status = effectiveStatus(invoice);
   const balance = Math.max(num(invoice.total) - num(invoice.amount_paid), 0);
+  const kind = invoiceKind(invoice);
+  const copy = KIND_COPY[kind];
+  const entityName =
+    kind === "vendor" ? (vendor?.name ?? "Proveedor sin asignar") : (client?.name ?? "Cliente sin asignar");
+  const entityLines =
+    kind === "vendor"
+      ? [vendor?.specialty, vendor?.email, vendor?.phone]
+      : [
+          client?.company,
+          client?.address,
+          client?.email,
+          client?.phone,
+          client?.tax_id ? `RNC/ID: ${client.tax_id}` : null,
+        ];
 
   const totals = computeTotals({
     items,
@@ -77,14 +94,14 @@ export function buildInvoicePdf({ invoice, items, client }: InvoicePdfInput): js
   doc.setTextColor(...DARK);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(30);
-  doc.text("FACTURA", right, 96, { align: "right" });
+  doc.text(copy.pdfTitle, right, 96, { align: "right" });
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.text(`# ${invoice.invoice_number}`, right, 118, { align: "right" });
 
   doc.setFontSize(8.5);
   doc.setTextColor(...GREY);
-  doc.text("Saldo adeudado", right, 148, { align: "right" });
+  doc.text(copy.balanceLabel, right, 148, { align: "right" });
   doc.setFontSize(15);
   doc.setTextColor(...DARK);
   doc.text(amount(balance, currency), right, 168, { align: "right" });
@@ -132,16 +149,16 @@ export function buildInvoicePdf({ invoice, items, client }: InvoicePdfInput): js
   // Facturar a
   doc.setFontSize(9);
   doc.setTextColor(...GREY);
-  doc.text("Facturar a", left, 262);
+  doc.text(copy.pdfEntity, left, 262);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(...PURPLE);
-  doc.text(client?.name ?? "Cliente sin asignar", left, 280);
+  doc.text(entityName, left, 280);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...GREY);
   let billY = 296;
-  [client?.company, client?.address, client?.email, client?.phone, client?.tax_id ? `RNC/ID: ${client.tax_id}` : null]
+  entityLines
     .filter((line): line is string => Boolean(line))
     .forEach((line) => {
       doc.text(line, left, billY);
@@ -221,7 +238,7 @@ export function buildInvoicePdf({ invoice, items, client }: InvoicePdfInput): js
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10.5);
   doc.setTextColor(...DARK);
-  doc.text("Saldo adeudado", labelX, y + 16, { align: "right" });
+  doc.text(copy.balanceLabel, labelX, y + 16, { align: "right" });
   doc.text(amount(balance, currency), cols.amount, y + 16, { align: "right" });
   y += 56;
 

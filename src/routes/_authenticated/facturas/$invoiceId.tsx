@@ -6,7 +6,13 @@ import { money, num } from "@/lib/finance";
 import { supabase } from "@/integrations/supabase/client";
 import { deletePayment, duplicateInvoice, issueInvoice, setInvoiceStatus } from "@/lib/invoice-actions";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf";
-import { effectiveStatus, formatLongDate, itemAmount } from "@/lib/invoices";
+import {
+  effectiveStatus,
+  formatLongDate,
+  invoiceKind,
+  itemAmount,
+  KIND_COPY,
+} from "@/lib/invoices";
 import type { InvoiceAttachment } from "@/lib/invoice-actions";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { EmptyRow, Panel, TableShell } from "@/components/skyloop/ui";
@@ -61,7 +67,12 @@ function InvoiceDetailPage() {
   const payments = data.invoicePayments
     .filter((payment) => payment.invoice_id === invoice.id)
     .sort((a, b) => a.payment_date.localeCompare(b.payment_date));
+  const kind = invoiceKind(invoice);
+  const copy = KIND_COPY[kind];
   const client = data.clients.find((row) => row.id === invoice.client_id) ?? null;
+  const vendor = data.providers.find((row) => row.id === invoice.vendor_id) ?? null;
+  const entityLabel =
+    kind === "vendor" ? providerName(invoice.vendor_id) : clientName(invoice.client_id);
   const status = effectiveStatus(invoice);
   const balance = Math.max(num(invoice.total) - num(invoice.amount_paid), 0);
   const attachments = (invoice.attachments as InvoiceAttachment[] | null) ?? [];
@@ -118,9 +129,18 @@ function InvoiceDetailPage() {
           <div className="mt-1 flex flex-wrap items-center gap-3">
             <h3 className="text-2xl font-extrabold text-foreground">{invoice.invoice_number}</h3>
             <InvoiceStatusBadge status={status} />
+            <span
+              className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                kind === "vendor"
+                  ? "bg-destructive/15 text-destructive"
+                  : "bg-success/15 text-success"
+              }`}
+            >
+              Tipo: {copy.financial}
+            </span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {clientName(invoice.client_id)} · {formatLongDate(invoice.issue_date)}
+            {copy.docTitle} · {entityLabel} · {formatLongDate(invoice.issue_date)}
           </p>
         </div>
 
@@ -175,7 +195,13 @@ function InvoiceDetailPage() {
               disabled={busy}
               className="rounded-lg border border-destructive/40 px-3 py-2 text-sm font-bold text-destructive transition-colors hover:bg-destructive/10"
               onClick={() => {
-                if (!window.confirm("¿Anular esta factura? El saldo dejará de contar como cobrable."))
+                if (
+                  !window.confirm(
+                    kind === "vendor"
+                      ? "¿Anular este documento? El saldo dejará de contar como cuenta por pagar."
+                      : "¿Anular esta factura? El saldo dejará de contar como cobrable.",
+                  )
+                )
                   return;
                 void run("Factura cancelada", () => setInvoiceStatus(invoice, "Cancelada"));
               }}
@@ -189,7 +215,7 @@ function InvoiceDetailPage() {
               onClick={() => setPaying(true)}
               className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
             >
-              Registrar pago
+              {copy.paymentAction}
             </button>
           )}
         </div>
@@ -198,8 +224,8 @@ function InvoiceDetailPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel title="Resumen" className="lg:col-span-2">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Cliente" value={clientName(invoice.client_id)} />
-            <Field label="Vendedor" value={invoice.seller_id ? providerName(invoice.seller_id) : "—"} />
+            <Field label={kind === "vendor" ? "Proveedor" : "Cliente"} value={entityLabel} />
+            <Field label="Tipo de operación" value={`${copy.financial} · ${copy.ledger}`} />
             <Field label="Fecha de emisión" value={formatLongDate(invoice.issue_date)} />
             <Field label="Fecha de vencimiento" value={formatLongDate(invoice.due_date)} />
             <Field label="Términos" value={invoice.payment_terms} />
@@ -232,7 +258,7 @@ function InvoiceDetailPage() {
             </div>
             <Line label="Monto pagado" value={money(invoice.amount_paid, invoice.currency)} />
             <div className="flex justify-between rounded-lg bg-surface-raised px-3 py-2">
-              <strong className="text-foreground">Saldo pendiente</strong>
+              <strong className="text-foreground">{copy.balanceLabel}</strong>
               <strong className={balance > 0 ? "text-warning" : "text-success"}>
                 {money(balance, invoice.currency)}
               </strong>
@@ -323,7 +349,7 @@ function InvoiceDetailPage() {
       </Panel>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Panel title="Notas del cliente">
+        <Panel title={`Notas del ${copy.entity}`}>
           <p className="whitespace-pre-line text-sm text-muted-foreground">
             {invoice.notes ?? "Sin notas"}
           </p>

@@ -2,7 +2,13 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { money, num } from "@/lib/finance";
-import { effectiveStatus, formatLongDate, INVOICE_STATUSES } from "@/lib/invoices";
+import {
+  effectiveStatus,
+  formatLongDate,
+  invoiceKind,
+  INVOICE_STATUSES,
+  KIND_COPY,
+} from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { KpiCard, EmptyRow, Panel, TableShell } from "@/components/skyloop/ui";
 import { InvoiceStatusBadge } from "@/components/skyloop/InvoiceStatusBadge";
@@ -32,9 +38,10 @@ const inputClass =
   "rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary";
 
 function InvoicesPage() {
-  const { data, clientName, usdRate } = useSkyloop();
+  const { data, clientName, providerName, usdRate } = useSkyloop();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("todas");
+  const [kindFilter, setKindFilter] = useState<"todas" | "client" | "vendor">("todas");
   const [client, setClient] = useState("todos");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -42,12 +49,18 @@ function InvoicesPage() {
 
   const rows = useMemo(() => {
     return data.invoices
-      .map((invoice) => ({
-        invoice,
-        status: effectiveStatus(invoice),
-        client: clientName(invoice.client_id),
-      }))
+      .map((invoice) => {
+        const kind = invoiceKind(invoice);
+        return {
+          invoice,
+          kind,
+          status: effectiveStatus(invoice),
+          client:
+            kind === "vendor" ? providerName(invoice.vendor_id) : clientName(invoice.client_id),
+        };
+      })
       .filter((row) => {
+        if (kindFilter !== "todas" && row.kind !== kindFilter) return false;
         if (status !== "todas" && row.status !== status) return false;
         if (client !== "todos" && row.invoice.client_id !== client) return false;
         if (from && row.invoice.issue_date < from) return false;
@@ -65,7 +78,18 @@ function InvoicesPage() {
           .toLowerCase()
           .includes(query);
       });
-  }, [data.invoices, clientName, status, client, from, to, dueBefore, search]);
+  }, [
+    data.invoices,
+    clientName,
+    providerName,
+    kindFilter,
+    status,
+    client,
+    from,
+    to,
+    dueBefore,
+    search,
+  ]);
 
   const totals = useMemo(() => {
     const dop = (invoice: (typeof data.invoices)[number], value: unknown) =>
@@ -73,21 +97,23 @@ function InvoicesPage() {
     const active = data.invoices.filter(
       (invoice) => invoice.status !== "Borrador" && invoice.status !== "Cancelada",
     );
-    const billed = active.reduce((sum, invoice) => sum + dop(invoice, invoice.total), 0);
-    const paid = active.reduce((sum, invoice) => sum + dop(invoice, invoice.amount_paid), 0);
-    const overdueInvoices = active.filter((invoice) => effectiveStatus(invoice) === "Vencida");
-    const overdue = overdueInvoices.reduce(
-      (sum, invoice) => sum + dop(invoice, num(invoice.total) - num(invoice.amount_paid)),
-      0,
-    );
+    const income = active.filter((invoice) => invoiceKind(invoice) === "client");
+    const expense = active.filter((invoice) => invoiceKind(invoice) === "vendor");
+    const sum = (rows: typeof active, field: "total" | "amount_paid") =>
+      rows.reduce((total, invoice) => total + dop(invoice, invoice[field]), 0);
+    const billedIncome = sum(income, "total");
+    const paidIncome = sum(income, "amount_paid");
+    const billedExpense = sum(expense, "total");
+    const paidExpense = sum(expense, "amount_paid");
     return {
-      billed,
-      paid,
-      pending: Math.max(billed - paid, 0),
-      overdue,
-      count: active.length,
-      overdueCount: overdueInvoices.length,
-      paidCount: active.filter((invoice) => effectiveStatus(invoice) === "Pagada").length,
+      billedIncome,
+      paidIncome,
+      receivable: Math.max(billedIncome - paidIncome, 0),
+      billedExpense,
+      paidExpense,
+      payable: Math.max(billedExpense - paidExpense, 0),
+      incomeCount: income.length,
+      expenseCount: expense.length,
     };
   }, [data.invoices, usdRate]);
 
@@ -110,27 +136,27 @@ function InvoicesPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          label="Total facturado"
-          value={money(totals.billed)}
-          footnote={`${totals.count} facturas emitidas`}
+          label="Ingresos facturados"
+          value={money(totals.billedIncome)}
+          footnote={`${totals.incomeCount} facturas de clientes`}
           icon="◫"
         />
         <KpiCard
-          label="Pendiente de cobro"
-          value={money(totals.pending)}
-          footnote="Saldo por cobrar"
+          label="Cuentas por cobrar"
+          value={money(totals.receivable)}
+          footnote={`Cobrado ${money(totals.paidIncome)}`}
           icon="◷"
         />
         <KpiCard
-          label="Pagado"
-          value={money(totals.paid)}
-          footnote={`${totals.paidCount} facturas pagadas`}
-          icon="✓"
+          label="Gastos facturados"
+          value={money(totals.billedExpense)}
+          footnote={`${totals.expenseCount} documentos de proveedores`}
+          icon="◨"
         />
         <KpiCard
-          label="Facturas vencidas"
-          value={money(totals.overdue)}
-          footnote={`${totals.overdueCount} vencidas`}
+          label="Cuentas por pagar"
+          value={money(totals.payable)}
+          footnote={`Pagado ${money(totals.paidExpense)}`}
           icon="!"
         />
       </div>
@@ -180,6 +206,26 @@ function InvoicesPage() {
             className={inputClass}
             aria-label="Vence antes de"
           />
+          <div className="flex flex-wrap gap-2 xl:col-span-6">
+            {[
+              { label: "Todas", value: "todas" as const },
+              { label: "Ingresos (clientes)", value: "client" as const },
+              { label: "Gastos (proveedores)", value: "vendor" as const },
+            ].map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                onClick={() => setKindFilter(chip.value)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+                  kindFilter === chip.value
+                    ? "border-primary bg-primary/15 text-primary-soft"
+                    : "border-border text-muted-foreground hover:bg-secondary"
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
           <div className="flex flex-wrap gap-2 xl:col-span-5">
             {[
               { label: "Pagadas", value: "Pagada" },
@@ -209,7 +255,8 @@ function InvoicesPage() {
         head={
           <tr>
             <th className="px-4 py-3 font-semibold">Número</th>
-            <th className="px-4 py-3 font-semibold">Cliente</th>
+            <th className="px-4 py-3 font-semibold">Tipo</th>
+            <th className="px-4 py-3 font-semibold">Cliente / Proveedor</th>
             <th className="px-4 py-3 font-semibold">Fecha</th>
             <th className="px-4 py-3 font-semibold">Vencimiento</th>
             <th className="px-4 py-3 font-semibold">Concepto</th>
@@ -222,14 +269,25 @@ function InvoicesPage() {
         }
       >
         {rows.length === 0 ? (
-          <EmptyRow colSpan={10} label="No hay facturas con estos filtros" />
+          <EmptyRow colSpan={11} label="No hay facturas con estos filtros" />
         ) : (
-          rows.map(({ invoice, status: rowStatus, client: rowClient }) => (
+          rows.map(({ invoice, kind, status: rowStatus, client: rowClient }) => (
             <tr key={invoice.id} className="border-t border-border transition-colors hover:bg-secondary/40">
               <td className="px-4 py-3 font-bold text-foreground">
                 <Link to="/facturas/$invoiceId" params={{ invoiceId: invoice.id }}>
                   {invoice.invoice_number}
                 </Link>
+              </td>
+              <td className="px-4 py-3">
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                    kind === "vendor"
+                      ? "bg-destructive/15 text-destructive"
+                      : "bg-success/15 text-success"
+                  }`}
+                >
+                  {KIND_COPY[kind].financial.toUpperCase()}
+                </span>
               </td>
               <td className="px-4 py-3 text-muted-foreground">{rowClient}</td>
               <td className="px-4 py-3 text-muted-foreground">{formatLongDate(invoice.issue_date)}</td>

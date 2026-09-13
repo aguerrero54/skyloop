@@ -4,6 +4,90 @@ import { num, todayISO } from "@/lib/finance";
 export type Invoice = Tables<"invoices">;
 export type InvoiceItem = Tables<"invoice_items">;
 export type InvoicePayment = Tables<"invoice_payments">;
+export type ProviderObligation = Tables<"provider_obligations">;
+
+/** "client" = factura emitida a un cliente (ingreso). "vendor" = documento recibido de un proveedor (gasto). */
+export type InvoiceKind = "client" | "vendor";
+
+export function invoiceKind(invoice: Pick<Invoice, "invoice_type">): InvoiceKind {
+  return invoice.invoice_type === "vendor" ? "vendor" : "client";
+}
+
+export const KIND_COPY: Record<
+  InvoiceKind,
+  {
+    entity: string;
+    entityPanel: string;
+    entityLabel: string;
+    entityPlaceholder: string;
+    docTitle: string;
+    docTitleShort: string;
+    financial: string;
+    financialType: "income" | "expense";
+    ledger: string;
+    balanceLabel: string;
+    paymentLabel: string;
+    paymentAction: string;
+    numberPrefix: string;
+    pdfTitle: string;
+    pdfEntity: string;
+  }
+> = {
+  client: {
+    entity: "cliente",
+    entityPanel: "Información del cliente",
+    entityLabel: "Nombre del cliente",
+    entityPlaceholder: "Seleccionar o buscar un cliente",
+    docTitle: "Factura de cliente",
+    docTitleShort: "Factura",
+    financial: "Ingreso",
+    financialType: "income",
+    ledger: "Cuenta por cobrar",
+    balanceLabel: "Saldo por cobrar",
+    paymentLabel: "Pago recibido",
+    paymentAction: "Registrar cobro",
+    numberPrefix: "INV-",
+    pdfTitle: "FACTURA",
+    pdfEntity: "Facturar a",
+  },
+  vendor: {
+    entity: "proveedor",
+    entityPanel: "Información del proveedor",
+    entityLabel: "Nombre del proveedor",
+    entityPlaceholder: "Seleccionar o buscar un proveedor",
+    docTitle: "Factura de proveedor",
+    docTitleShort: "Gasto",
+    financial: "Gasto",
+    financialType: "expense",
+    ledger: "Cuenta por pagar",
+    balanceLabel: "Saldo por pagar",
+    paymentLabel: "Pago realizado",
+    paymentAction: "Registrar pago",
+    numberPrefix: "INV-P-",
+    pdfTitle: "FACTURA DE PROVEEDOR",
+    pdfEntity: "Proveedor",
+  },
+};
+
+export function obligationBalance(
+  obligation: Pick<ProviderObligation, "amount" | "amount_paid">,
+): number {
+  return round2(Math.max(num(obligation.amount) - num(obligation.amount_paid), 0));
+}
+
+/** Obligaciones aún no pagadas por completo; las pagadas dejan de estar disponibles. */
+export function pendingObligations(
+  obligations: ProviderObligation[],
+  providerId: string | null,
+): ProviderObligation[] {
+  if (!providerId) return [];
+  return obligations.filter(
+    (row) =>
+      row.provider_id === providerId &&
+      row.status !== "Pagado" &&
+      obligationBalance(row) > 0,
+  );
+}
 
 export type InvoiceStatus =
   | "Borrador"
@@ -69,6 +153,8 @@ export type DraftItem = {
   quantity: string;
   rate: string;
   tax: string;
+  /** Obligación del proveedor a la que corresponde la fila (solo documentos de proveedor). */
+  obligationId?: string | null;
 };
 
 export type TotalsInput = {
@@ -160,13 +246,19 @@ export const invoiceStatusTone: Record<
   Cancelada: "muted",
 };
 
-export function nextInvoiceNumber(existing: string[]): string {
-  const highest = existing.reduce((max, value) => {
+export function nextInvoiceNumber(existing: string[], kind: InvoiceKind = "client"): string {
+  const prefix = KIND_COPY[kind].numberPrefix;
+  const scoped = existing.filter((value) =>
+    kind === "vendor"
+      ? (value ?? "").startsWith(prefix)
+      : !(value ?? "").startsWith(KIND_COPY.vendor.numberPrefix),
+  );
+  const highest = scoped.reduce((max, value) => {
     const digits = /(\d+)\s*$/.exec(value ?? "");
     const parsed = digits ? Number(digits[1]) : 0;
     return Number.isFinite(parsed) && parsed > max ? parsed : max;
   }, 0);
-  return `INV-${String(highest + 1).padStart(6, "0")}`;
+  return `${prefix}${String(highest + 1).padStart(6, "0")}`;
 }
 
 export function formatLongDate(date: string | null): string {
@@ -175,4 +267,56 @@ export function formatLongDate(date: string | null): string {
   return parsed
     .toLocaleDateString("es-DO", { day: "2-digit", month: "short", year: "numeric" })
     .replace(".", "");
+}
+
+export type InvoiceLedger = {
+  incomeBilled: number;
+  incomePaid: number;
+  receivable: number;
+  expenseBilled: number;
+  expensePaid: number;
+  payable: number;
+  netFlow: number;
+  incomeOpen: Invoice[];
+  expenseOpen: Invoice[];
+};
+
+export function invoiceBalance(invoice: Invoice): number {
+  return Math.max(num(invoice.total) - num(invoice.amount_paid), 0);
+}
+
+/** Consolida las facturas activas separando ingresos (clientes) de gastos (proveedores). */
+export function invoiceLedger(invoices: Invoice[], usdRate: number): InvoiceLedger {
+  const dop = (invoice: Invoice, value: number) =>
+    invoice.currency === "USD" ? value * usdRate : value;
+  const active = invoices.filter(
+    (invoice) => invoice.status !== "Borrador" && invoice.status !== "Cancelada",
+  );
+  const income = active.filter((invoice) => invoiceKind(invoice) === "client");
+  const expense = active.filter((invoice) => invoiceKind(invoice) === "vendor");
+  const total = (rows: Invoice[]) =>
+    rows.reduce((sum, invoice) => sum + dop(invoice, num(invoice.total)), 0);
+  const paidSum = (rows: Invoice[]) =>
+    rows.reduce((sum, invoice) => sum + dop(invoice, num(invoice.amount_paid)), 0);
+  const open = (rows: Invoice[]) =>
+    rows
+      .filter((invoice) => invoiceBalance(invoice) > 0)
+      .sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""));
+
+  const incomeBilled = total(income);
+  const incomePaid = paidSum(income);
+  const expenseBilled = total(expense);
+  const expensePaid = paidSum(expense);
+
+  return {
+    incomeBilled,
+    incomePaid,
+    receivable: Math.max(incomeBilled - incomePaid, 0),
+    expenseBilled,
+    expensePaid,
+    payable: Math.max(expenseBilled - expensePaid, 0),
+    netFlow: incomePaid - expensePaid,
+    incomeOpen: open(income),
+    expenseOpen: open(expense),
+  };
 }

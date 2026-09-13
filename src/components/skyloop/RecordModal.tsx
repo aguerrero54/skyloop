@@ -24,6 +24,7 @@ const titles: Record<FormKind, string> = {
   provider: "Nuevo proveedor",
   service: "Nuevo servicio",
   assignment: "Asignar servicio / proveedor",
+  obligation: "Nuevo servicio pendiente de proveedor",
 };
 
 const plain = (values: string[]): Option[] => values.map((value) => ({ value, label: value }));
@@ -200,6 +201,27 @@ export function RecordModal() {
             defaultValue: editingAssignment ? String(num(editingAssignment.cost)) : undefined,
           },
         ];
+      case "obligation":
+        return [
+          {
+            name: "provider_id",
+            label: "Proveedor",
+            type: "select",
+            required: true,
+            options: [{ value: "", label: "Seleccionar…" }, ...providerOptions],
+          },
+          { name: "description", label: "Servicio u obligación", type: "text", required: true },
+          { name: "amount", label: "Monto acordado", type: "number", required: true },
+          { name: "currency", label: "Moneda", type: "select", options: plain(["DOP", "USD"]) },
+          {
+            name: "service_id",
+            label: "Servicio del catálogo",
+            type: "select",
+            options: [{ value: "", label: "Sin servicio del catálogo" }, ...serviceOptions],
+          },
+          { name: "due_date", label: "Vencimiento", type: "date" },
+          { name: "notes", label: "Notas", type: "textarea", full: true },
+        ];
     }
   })();
 
@@ -267,6 +289,16 @@ export function RecordModal() {
           suggested_price: num(get("suggested_price")),
           estimated_cost: num(get("estimated_cost")),
           status: get("status"),
+        }));
+      } else if (kind === "obligation") {
+        ({ error } = await supabase.from("provider_obligations").insert({
+          provider_id: get("provider_id"),
+          service_id: orNull("service_id"),
+          description: get("description"),
+          amount: num(get("amount")),
+          currency: get("currency"),
+          due_date: orNull("due_date"),
+          notes: orNull("notes"),
         }));
       } else if (editingAssignment) {
         ({ error } = await supabase

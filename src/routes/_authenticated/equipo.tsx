@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { money, sumDop } from "@/lib/finance";
+import { money, num, sumDop } from "@/lib/finance";
+import { obligationBalance } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
-import { SectionTitle, StatusBadge } from "@/components/skyloop/ui";
+import { EmptyRow, Panel, SectionTitle, StatusBadge, TableShell } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/equipo")({
   head: () => ({
@@ -26,10 +27,13 @@ export const Route = createFileRoute("/_authenticated/equipo")({
 });
 
 function TeamPage() {
-  const { data, monthExpenses, usdRate, openForm } = useSkyloop();
+  const { data, monthExpenses, usdRate, openForm, providerName } = useSkyloop();
+  const obligations = [...data.providerObligations].sort((a, b) =>
+    a.status === b.status ? a.description.localeCompare(b.description) : a.status.localeCompare(b.status),
+  );
 
   return (
-    <div>
+    <div className="grid gap-6">
       <SectionTitle
         title="Directorio de proveedores"
         description="Consulta cuánto has generado y cuánto está pendiente con cada colaborador."
@@ -83,6 +87,58 @@ function TeamPage() {
           );
         })}
       </div>
+
+      <Panel
+        title="Servicios y obligaciones de proveedores"
+        subtitle="Los servicios pendientes aparecen al crear un documento de gasto de proveedor"
+        action={
+          <button
+            type="button"
+            onClick={() => openForm("obligation")}
+            className="rounded-lg border border-border px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-secondary"
+          >
+            + Servicio pendiente
+          </button>
+        }
+      >
+        <TableShell
+          head={
+            <tr>
+              <th className="px-4 py-3 font-semibold">Proveedor</th>
+              <th className="px-4 py-3 font-semibold">Servicio</th>
+              <th className="px-4 py-3 text-right font-semibold">Monto</th>
+              <th className="px-4 py-3 text-right font-semibold">Pagado</th>
+              <th className="px-4 py-3 text-right font-semibold">Pendiente</th>
+              <th className="px-4 py-3 font-semibold">Estado</th>
+            </tr>
+          }
+        >
+          {obligations.length === 0 ? (
+            <EmptyRow colSpan={6} label="Aún no hay servicios de proveedores registrados" />
+          ) : (
+            obligations.map((row) => (
+              <tr key={row.id} className="border-t border-border">
+                <td className="px-4 py-3 font-semibold text-foreground">
+                  {providerName(row.provider_id)}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">{row.description}</td>
+                <td className="px-4 py-3 text-right text-foreground">
+                  {money(row.amount, row.currency)}
+                </td>
+                <td className="px-4 py-3 text-right text-success">
+                  {money(num(row.amount_paid), row.currency)}
+                </td>
+                <td className="px-4 py-3 text-right font-bold text-warning">
+                  {money(obligationBalance(row), row.currency)}
+                </td>
+                <td className="px-4 py-3">
+                  <StatusBadge status={row.status} />
+                </td>
+              </tr>
+            ))
+          )}
+        </TableShell>
+      </Panel>
     </div>
   );
 }

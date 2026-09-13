@@ -2,20 +2,25 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
-import { money, num, todayISO, type Client } from "@/lib/finance";
+import { money, num, todayISO } from "@/lib/finance";
 import { supabase } from "@/integrations/supabase/client";
 import { saveInvoice, type InvoiceAttachment } from "@/lib/invoice-actions";
 import {
   DEFAULT_NOTES,
   DEFAULT_TERMS,
+  KIND_COPY,
   PAYMENT_TERMS,
   computeTotals,
   dueDateFor,
+  invoiceKind,
   itemAmount,
   nextInvoiceNumber,
+  obligationBalance,
+  pendingObligations,
   type DraftItem,
   type Invoice,
   type InvoiceItem,
+  type InvoiceKind,
   type InvoiceStatus,
 } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
@@ -35,21 +40,40 @@ function emptyItem(): DraftItem {
   return { key: newKey(), description: "", quantity: "1", rate: "0", tax: "0" };
 }
 
-function ClientPicker({
-  clients,
+type PickerOption = {
+  id: string;
+  name: string;
+  company?: string | null;
+  email?: string | null;
+  phone?: string | null;
+};
+
+/** Selector único que se alimenta de clientes o de proveedores según el tipo de documento. */
+function EntityPicker({
+  options,
   value,
   onChange,
+  placeholder,
+  createLabel,
+  onCreate,
 }: {
-  clients: Client[];
+  options: PickerOption[];
   value: string;
   onChange: (id: string) => void;
+  placeholder: string;
+  createLabel: string;
+  onCreate: () => void;
 }) {
-  const { openForm } = useSkyloop();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const selected = clients.find((client) => client.id === value);
-  const matches = clients.filter((client) =>
-    client.name.toLowerCase().includes(query.trim().toLowerCase()),
+  const selected = options.find((option) => option.id === value);
+  const needle = query.trim().toLowerCase();
+  const matches = options.filter((option) =>
+    [option.name, option.company, option.email, option.phone]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(needle),
   );
 
   return (
@@ -57,7 +81,7 @@ function ClientPicker({
       <input
         type="text"
         value={open ? query : (selected?.name ?? "")}
-        placeholder="Seleccionar o buscar un cliente"
+        placeholder={placeholder}
         onFocus={() => {
           setOpen(true);
           setQuery("");
@@ -68,19 +92,22 @@ function ClientPicker({
       />
       {open && (
         <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-panel">
-          {matches.map((client) => (
+          {matches.map((option) => (
             <button
-              key={client.id}
+              key={option.id}
               type="button"
               onMouseDown={() => {
-                onChange(client.id);
+                onChange(option.id);
                 setOpen(false);
               }}
               className="block w-full rounded-md px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-secondary"
             >
-              {client.name}
-              {client.company ? (
-                <span className="ml-2 text-xs text-muted-foreground">{client.company}</span>
+              {option.name}
+              {option.company ? (
+                <span className="ml-2 text-xs text-muted-foreground">{option.company}</span>
+              ) : null}
+              {option.email ? (
+                <span className="ml-2 text-xs text-muted-foreground">{option.email}</span>
               ) : null}
             </button>
           ))}
@@ -91,11 +118,11 @@ function ClientPicker({
             type="button"
             onMouseDown={() => {
               setOpen(false);
-              openForm("client");
+              onCreate();
             }}
             className="mt-1 block w-full rounded-md border-t border-border px-3 py-2 text-left text-sm font-bold text-primary-soft"
           >
-            + Crear nuevo cliente
+            {createLabel}
           </button>
         </div>
       )}
@@ -106,20 +133,34 @@ function ClientPicker({
 export function InvoiceForm({
   invoice,
   existingItems,
+  kind: initialKind = "client",
 }: {
   invoice?: Invoice;
   existingItems?: InvoiceItem[];
+  kind?: InvoiceKind;
 }) {
-  const { data, refresh } = useSkyloop();
+  const { data, refresh, openForm } = useSkyloop();
   const navigate = useNavigate();
 
+  const [kind, setKind] = useState<InvoiceKind>(invoice ? invoiceKind(invoice) : initialKind);
+  const copy = KIND_COPY[kind];
+
   const suggestedNumber = useMemo(
-    () => invoice?.invoice_number ?? nextInvoiceNumber(data.invoices.map((row) => row.invoice_number)),
-    [invoice, data.invoices],
+    () =>
+      invoice?.invoice_number ??
+      nextInvoiceNumber(
+        data.invoices.map((row) => row.invoice_number),
+        kind,
+      ),
+    [invoice, data.invoices, kind],
   );
 
   const [invoiceNumber, setInvoiceNumber] = useState(suggestedNumber);
   const [clientId, setClientId] = useState(invoice?.client_id ?? "");
+  const [vendorId, setVendorId] = useState(invoice?.vendor_id ?? "");
+  const entityId = kind === "client" ? clientId : vendorId;
+  const obligations = pendingObligations(data.providerObligations, vendorId || null);
+  
   
   const [orderNumber, setOrderNumber] = useState(invoice?.order_number ?? "");
   const [issueDate, setIssueDate] = useState(invoice?.issue_date ?? todayISO());
@@ -145,6 +186,7 @@ export function InvoiceForm({
             quantity: String(Math.max(1, Math.round(num(item.quantity)))),
             rate: String(num(item.rate)),
             tax: String(num(item.tax)),
+            obligationId: item.obligation_id,
           }))
       : [emptyItem()],
   );
@@ -203,10 +245,62 @@ export function InvoiceForm({
     }
   }
 
-  async function submit(status: InvoiceStatus) {
-    if (!clientId) {
-      toast.error("Selecciona el cliente de la factura");
+  /** Cambiar el tipo reemplaza la entidad y los artículos, así que pide confirmación. */
+  function requestKindChange(next: InvoiceKind) {
+    if (next === kind) return;
+    const touched =
+      Boolean(clientId || vendorId) ||
+      items.some((item) => item.description.trim() || num(item.rate) > 0);
+    if (touched) {
+      const message =
+        next === "vendor"
+          ? "¿Cambiar el tipo de factura? La información del cliente será reemplazada por la selección de proveedores."
+          : "¿Cambiar el tipo de factura? La información del proveedor será reemplazada por la selección de clientes.";
+      if (!window.confirm(message)) return;
+    }
+    setKind(next);
+    setClientId("");
+    setVendorId("");
+    setItems([emptyItem()]);
+    setInvoiceNumber(
+      nextInvoiceNumber(
+        data.invoices.map((row) => row.invoice_number),
+        next,
+      ),
+    );
+  }
+
+  function applyObligation(key: string, obligationId: string) {
+    const obligation = obligations.find((row) => row.id === obligationId);
+    if (!obligation) {
+      updateItem(key, { obligationId: null });
       return;
+    }
+    updateItem(key, {
+      obligationId: obligation.id,
+      description: obligation.description,
+      quantity: "1",
+      rate: String(obligationBalance(obligation)),
+    });
+  }
+
+  async function submit(status: InvoiceStatus) {
+    if (!entityId) {
+      toast.error(
+        kind === "client"
+          ? "Selecciona el cliente de la factura"
+          : "Selecciona el proveedor del documento",
+      );
+      return;
+    }
+    if (kind === "vendor") {
+      const used = items
+        .map((item) => item.obligationId)
+        .filter((id): id is string => Boolean(id));
+      if (new Set(used).size !== used.length) {
+        toast.error("Un mismo servicio pendiente no puede repetirse en el documento");
+        return;
+      }
     }
     if (!items.some((item) => item.description.trim())) {
       toast.error("Agrega al menos un artículo o servicio");
@@ -220,8 +314,10 @@ export function InvoiceForm({
     try {
       const id = await saveInvoice({
         ...(invoice ? { id: invoice.id } : {}),
+        invoiceType: kind,
         invoiceNumber,
-        clientId,
+        clientId: clientId || null,
+        vendorId: vendorId || null,
         sellerId: null,
         orderNumber: orderNumber.trim() || null,
         issueDate,
@@ -253,12 +349,64 @@ export function InvoiceForm({
 
   return (
     <div className="grid gap-4">
-      <Panel title="Información del cliente">
+      <Panel
+        title={copy.entityPanel}
+        subtitle={`${copy.docTitle} · se registra como ${copy.financial.toLowerCase()} (${copy.ledger.toLowerCase()})`}
+        action={
+          <div className="flex gap-2">
+            {(["client", "vendor"] as InvoiceKind[]).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => requestKindChange(option)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+                  kind === option
+                    ? "border-primary bg-primary/15 text-primary-soft"
+                    : "border-border text-muted-foreground hover:bg-secondary"
+                }`}
+              >
+                {option === "client" ? "Cliente · Ingreso" : "Proveedor · Gasto"}
+              </button>
+            ))}
+          </div>
+        }
+      >
         <div className="max-w-md">
           <label className={labelClass}>
-            Nombre del cliente <span className="text-destructive">*</span>
+            {copy.entityLabel} <span className="text-destructive">*</span>
           </label>
-          <ClientPicker clients={data.clients} value={clientId} onChange={setClientId} />
+          {kind === "client" ? (
+            <EntityPicker
+              options={data.clients}
+              value={clientId}
+              onChange={setClientId}
+              placeholder={copy.entityPlaceholder}
+              createLabel="+ Crear nuevo cliente"
+              onCreate={() => openForm("client")}
+            />
+          ) : (
+            <EntityPicker
+              options={data.providers.map((provider) => ({
+                id: provider.id,
+                name: provider.name,
+                company: provider.specialty,
+                email: provider.email,
+                phone: provider.phone,
+              }))}
+              value={vendorId}
+              onChange={setVendorId}
+              placeholder={copy.entityPlaceholder}
+              createLabel="+ Crear nuevo proveedor"
+              onCreate={() => openForm("provider")}
+            />
+          )}
+          {kind === "vendor" && vendorId ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {obligations.length
+                ? `${obligations.length} servicio(s) pendiente(s) disponibles para este proveedor`
+                : "Este proveedor no tiene servicios pendientes registrados"}
+            </p>
+          ) : null}
         </div>
       </Panel>
 
@@ -344,6 +492,12 @@ export function InvoiceForm({
 
       <Panel
         title="Tabla de artículos"
+        {...(kind === "vendor"
+          ? {
+              subtitle:
+                "Selecciona los servicios pendientes del proveedor o escribe un concepto nuevo",
+            }
+          : {})}
         action={
           <button
             type="button"
@@ -370,6 +524,33 @@ export function InvoiceForm({
               {items.map((item) => (
                 <tr key={item.key} className="border-t border-border">
                   <td className="px-3 py-2">
+                    {kind === "vendor" && (
+                      <select
+                        value={item.obligationId ?? ""}
+                        onChange={(event) => applyObligation(item.key, event.target.value)}
+                        className={`${inputClass} mb-2`}
+                        aria-label="Servicio pendiente del proveedor"
+                      >
+                        <option value="">
+                          {vendorId
+                            ? "Seleccionar servicio pendiente…"
+                            : "Selecciona primero un proveedor"}
+                        </option>
+                        {obligations
+                          .filter(
+                            (obligation) =>
+                              obligation.id === item.obligationId ||
+                              !items.some((row) => row.obligationId === obligation.id),
+                          )
+                          .map((obligation) => (
+                            <option key={obligation.id} value={obligation.id}>
+                              {obligation.description} —{" "}
+                              {money(obligationBalance(obligation), obligation.currency)} —{" "}
+                              {obligation.status}
+                            </option>
+                          ))}
+                      </select>
+                    )}
                     <input
                       list="skyloop-services"
                       value={item.description}
@@ -450,7 +631,7 @@ export function InvoiceForm({
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           <div className="grid gap-4">
             <div>
-              <label className={labelClass}>Notas del cliente</label>
+              <label className={labelClass}>Notas del {copy.entity}</label>
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
@@ -596,7 +777,11 @@ export function InvoiceForm({
           onClick={() => void submit("Pendiente")}
           className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
         >
-          {saving === "Pendiente" ? "Guardando…" : "Guardar y emitir"}
+          {saving === "Pendiente"
+            ? "Guardando…"
+            : kind === "vendor"
+              ? "Guardar y registrar gasto"
+              : "Guardar y emitir"}
         </button>
       </div>
     </div>

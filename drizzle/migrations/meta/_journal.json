@@ -43,6 +43,13 @@
       "when": 1789325876977,
       "tag": "0005_enforce_integer_invoice_item_quantity",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789328607064,
+      "tag": "0006_invoice_types_and_provider_obligations",
+      "breakpoints": true
     }
   ]
 }

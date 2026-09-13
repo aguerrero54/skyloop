@@ -17,6 +17,7 @@ import {
   num,
   sumDop,
 } from "@/lib/finance";
+import { invoiceLedger } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { KpiCard, Panel, ProgressBar } from "@/components/skyloop/ui";
 import { ProfitTable } from "@/components/skyloop/ProfitTable";
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function DashboardPage() {
   const { data, month, monthIncomes, monthExpenses, usdRate } = useSkyloop();
   const metrics = monthMetrics(monthIncomes, monthExpenses, usdRate);
+  const ledger = invoiceLedger(data.invoices, usdRate);
 
   const chartRows = data.history.map((row) => {
     const isCurrent = row.month === month;
@@ -110,6 +112,44 @@ function DashboardPage() {
           icon="△"
         />
       </div>
+
+      <Panel
+        title="Facturación del módulo de Facturas"
+        subtitle="Ingresos de clientes y gastos de proveedores, sin mezclar lo facturado con lo cobrado o pagado"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <KpiCard
+            label="Ingresos facturados"
+            value={money(ledger.incomeBilled)}
+            footnote="Facturas de clientes"
+            icon="↗"
+          />
+          <KpiCard
+            label="Gastos facturados"
+            value={money(ledger.expenseBilled)}
+            footnote="Documentos de proveedores"
+            icon="↘"
+          />
+          <KpiCard
+            label="Cuentas por cobrar"
+            value={money(ledger.receivable)}
+            footnote={`Cobrado ${money(ledger.incomePaid)}`}
+            icon="◷"
+          />
+          <KpiCard
+            label="Cuentas por pagar"
+            value={money(ledger.payable)}
+            footnote={`Pagado ${money(ledger.expensePaid)}`}
+            icon="◴"
+          />
+          <KpiCard
+            label="Flujo neto"
+            value={money(ledger.netFlow)}
+            footnote="Cobros recibidos − pagos realizados"
+            icon="△"
+          />
+        </div>
+      </Panel>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Panel title="Ingresos vs. gastos" subtitle="Histórico del año con los registros del sistema">
