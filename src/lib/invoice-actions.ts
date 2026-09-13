@@ -212,8 +212,10 @@ export async function duplicateInvoice(
   items: { description: string; quantity: number; rate: number; tax: number }[],
 ): Promise<string> {
   return saveInvoice({
+    invoiceType: invoiceKind(invoice),
     invoiceNumber: "",
     clientId: invoice.client_id,
+    vendorId: invoice.vendor_id,
     sellerId: invoice.seller_id,
     orderNumber: invoice.order_number,
     issueDate: todayISO(),
