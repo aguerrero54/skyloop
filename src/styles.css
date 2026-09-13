@@ -166,6 +166,18 @@
 :root[data-mode="light"][data-theme="green"] { --accent: oklch(0.92 0.04 155); }
 :root[data-mode="light"][data-theme="rose"] { --accent: oklch(0.92 0.04 15); }
 
+:root[data-mode="light"][data-theme="slate"] { --secondary: oklch(0.92 0.012 255); --surface-raised: oklch(0.925 0.012 255); --sidebar-accent: oklch(0.88 0.018 255); --border: oklch(0.83 0.015 255); }
+:root[data-mode="light"][data-theme="blue"] { --secondary: oklch(0.93 0.022 250); --surface-raised: oklch(0.93 0.02 250); --sidebar-accent: oklch(0.89 0.035 250); --border: oklch(0.83 0.025 250); }
+:root[data-mode="light"][data-theme="purple"] { --secondary: oklch(0.93 0.022 300); --surface-raised: oklch(0.93 0.022 300); --sidebar-accent: oklch(0.89 0.035 300); --border: oklch(0.83 0.025 300); }
+:root[data-mode="light"][data-theme="green"] { --secondary: oklch(0.93 0.022 155); --surface-raised: oklch(0.93 0.02 155); --sidebar-accent: oklch(0.89 0.035 155); --border: oklch(0.83 0.025 155); }
+:root[data-mode="light"][data-theme="rose"] { --secondary: oklch(0.93 0.022 15); --surface-raised: oklch(0.93 0.02 15); --sidebar-accent: oklch(0.89 0.035 15); --border: oklch(0.83 0.025 15); }
+
+:root[data-mode="dark"][data-theme="slate"] { --secondary: oklch(0.235 0.018 255); --surface-raised: oklch(0.235 0.02 255); --sidebar-accent: oklch(0.25 0.025 255); --border: oklch(0.31 0.02 255); }
+:root[data-mode="dark"][data-theme="blue"] { --secondary: oklch(0.23 0.025 250); --surface-raised: oklch(0.235 0.03 250); --sidebar-accent: oklch(0.25 0.045 250); --border: oklch(0.31 0.035 250); }
+:root[data-mode="dark"][data-theme="purple"] { --secondary: oklch(0.23 0.025 300); --surface-raised: oklch(0.235 0.03 300); --sidebar-accent: oklch(0.25 0.045 300); --border: oklch(0.31 0.035 300); }
+:root[data-mode="dark"][data-theme="green"] { --secondary: oklch(0.23 0.025 155); --surface-raised: oklch(0.235 0.03 155); --sidebar-accent: oklch(0.25 0.045 155); --border: oklch(0.31 0.035 155); }
+:root[data-mode="dark"][data-theme="rose"] { --secondary: oklch(0.23 0.025 15); --surface-raised: oklch(0.235 0.03 15); --sidebar-accent: oklch(0.25 0.045 15); --border: oklch(0.31 0.035 15); }
+
 .theme-swatch-default { background: oklch(0.68 0.18 290); }
 .theme-swatch-slate { background: oklch(0.59 0.055 255); }
 .theme-swatch-blue { background: oklch(0.62 0.18 250); }
