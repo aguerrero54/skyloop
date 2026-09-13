@@ -27,7 +27,8 @@ export type FormKind =
   | "client"
   | "provider"
   | "service"
-  | "assignment";
+  | "assignment"
+  | "obligation";
 
 export type SkyloopData = {
   clients: Client[];
