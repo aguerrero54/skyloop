@@ -113,6 +113,24 @@ function ClientDetailPage() {
     await refresh();
   }
 
+  async function savePayment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setSavingPayment(true);
+    const { error } = await supabase
+      .from("clients")
+      .update({ monthly_payment: num(form.get("monthly_payment")) })
+      .eq("id", client.id);
+    setSavingPayment(false);
+    if (error) {
+      toast.error("No se pudo guardar", { description: error.message });
+      return;
+    }
+    toast.success("Pago mensual actualizado");
+    setEditingPayment(false);
+    await refresh();
+  }
+
   return (
     <div className="grid gap-4">
       <Link
