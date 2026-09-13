@@ -1,8 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { expenseToMovement, money, sumDop } from "@/lib/finance";
+import {
+  effectiveStatus,
+  formatLongDate,
+  invoiceBalance,
+  invoiceLedger,
+} from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
-import { KpiCard, MovementTable } from "@/components/skyloop/ui";
+import { InvoiceStatusBadge } from "@/components/skyloop/InvoiceStatusBadge";
+import { EmptyRow, KpiCard, MovementTable, Panel, TableShell } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/por-pagar")({
   head: () => ({
@@ -26,7 +33,8 @@ export const Route = createFileRoute("/_authenticated/por-pagar")({
 });
 
 function PayablesPage() {
-  const { data, usdRate, clientName } = useSkyloop();
+  const { data, usdRate, clientName, providerName } = useSkyloop();
+  const ledger = invoiceLedger(data.invoices, usdRate);
   const pending = data.expenses
     .filter((row) => row.status !== "Pagado")
     .sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""));
@@ -52,7 +60,13 @@ function PayablesPage() {
           footnote={`${pending.length} compromisos`}
           icon="◴"
         />
-        {byProvider.map((row) => (
+        <KpiCard
+          label="Facturas por pagar"
+          value={money(ledger.payable)}
+          footnote={`${ledger.expenseOpen.length} documentos de proveedores con saldo`}
+          icon="◨"
+        />
+        {byProvider.slice(0, 2).map((row) => (
           <KpiCard
             key={row.provider.id}
             label={row.provider.name}
@@ -63,6 +77,56 @@ function PayablesPage() {
         ))}
       </div>
       <MovementTable rows={pending.map(expenseToMovement)} clientName={clientName} />
+
+      <Panel
+        title="Documentos de proveedores pendientes de pago"
+        subtitle="Saldos por pagar generados por el módulo de Facturas"
+      >
+        <TableShell
+          head={
+            <tr>
+              <th className="px-4 py-3 font-semibold">Número</th>
+              <th className="px-4 py-3 font-semibold">Proveedor</th>
+              <th className="px-4 py-3 font-semibold">Vencimiento</th>
+              <th className="px-4 py-3 text-right font-semibold">Total</th>
+              <th className="px-4 py-3 text-right font-semibold">Pagado</th>
+              <th className="px-4 py-3 text-right font-semibold">Saldo</th>
+              <th className="px-4 py-3 font-semibold">Estado</th>
+            </tr>
+          }
+        >
+          {ledger.expenseOpen.length === 0 ? (
+            <EmptyRow colSpan={7} label="No hay documentos de proveedores con saldo pendiente" />
+          ) : (
+            ledger.expenseOpen.map((invoice) => (
+              <tr key={invoice.id} className="border-t border-border">
+                <td className="px-4 py-3 font-bold text-foreground">
+                  <Link to="/facturas/$invoiceId" params={{ invoiceId: invoice.id }}>
+                    {invoice.invoice_number}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">{providerName(invoice.vendor_id)}</td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {formatLongDate(invoice.due_date)}
+                </td>
+                <td className="px-4 py-3 text-right text-foreground">
+                  {money(invoice.total, invoice.currency)}
+                </td>
+                <td className="px-4 py-3 text-right text-success">
+                  {money(invoice.amount_paid, invoice.currency)}
+                </td>
+                <td className="px-4 py-3 text-right font-bold text-warning">
+                  {money(invoiceBalance(invoice), invoice.currency)}
+                </td>
+                <td className="px-4 py-3">
+                  <InvoiceStatusBadge status={effectiveStatus(invoice)} />
+                </td>
+              </tr>
+            ))
+          )}
+        </TableShell>
+      </Panel>
+
     </div>
   );
 }
