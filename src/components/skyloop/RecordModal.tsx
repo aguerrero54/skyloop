@@ -142,6 +142,7 @@ export function RecordModal() {
           { name: "tax_id", label: "RNC / Identificación fiscal", type: "text" },
           { name: "address", label: "Dirección", type: "text", full: true },
           { name: "currency", label: "Moneda", type: "select", options: plain(["DOP", "USD"]) },
+          { name: "monthly_payment", label: "Pago mensual", type: "number" },
           { name: "notes", label: "Notas internas", type: "textarea", full: true },
         ];
       case "provider":
@@ -331,6 +332,7 @@ export function RecordModal() {
           tax_id: orNull("tax_id"),
           address: orNull("address"),
           currency: get("currency"),
+          monthly_payment: num(get("monthly_payment")),
           notes: orNull("notes"),
           start_date: todayISO(),
         }));
