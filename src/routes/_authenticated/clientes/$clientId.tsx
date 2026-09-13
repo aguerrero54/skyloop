@@ -52,7 +52,7 @@ function ClientDetailPage() {
   } = useSkyloop();
 
   const [selectMode, setSelectMode] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
   const [editingPayment, setEditingPayment] = useState(false);
   const [savingPayment, setSavingPayment] = useState(false);
@@ -85,31 +85,42 @@ function ClientDetailPage() {
     ...monthExpenses.filter((row) => row.client_id === client.id).map(expenseToMovement),
   ].sort((a, b) => b.date.localeCompare(a.date));
 
-  const selectedAssignment = assignments.find((row) => row.id === selectedId) ?? null;
+  const selectedAssignment =
+    selectedIds.length === 1
+      ? assignments.find((row) => row.id === selectedIds[0]) ?? null
+      : null;
 
   function toggleSelectMode() {
     setSelectMode((prev) => !prev);
-    setSelectedId(null);
+    setSelectedIds([]);
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id],
+    );
   }
 
   async function deleteAssignment() {
-    if (!selectedAssignment) return;
+    if (selectedIds.length === 0) return;
     const confirmed = window.confirm(
-      `¿Eliminar la asignación de "${serviceName(selectedAssignment.service_id)}"? Esta acción no se puede deshacer.`,
+      selectedIds.length === 1
+        ? "¿Eliminar la asignación seleccionada? Esta acción no se puede deshacer."
+        : `¿Eliminar las ${selectedIds.length} asignaciones seleccionadas? Esta acción no se puede deshacer.`,
     );
     if (!confirmed) return;
     setDeleting(true);
     const { error } = await supabase
       .from("client_services")
       .delete()
-      .eq("id", selectedAssignment.id);
+      .in("id", selectedIds);
     setDeleting(false);
     if (error) {
       toast.error("No se pudo eliminar", { description: error.message });
       return;
     }
-    toast.success("Asignación eliminada");
-    setSelectedId(null);
+    toast.success(selectedIds.length === 1 ? "Asignación eliminada" : "Asignaciones eliminadas");
+    setSelectedIds([]);
     await refresh();
   }
 
@@ -206,16 +217,15 @@ function ClientDetailPage() {
         >
           {selectMode && (
             <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface-raised px-4 py-2.5 text-xs text-muted-foreground">
-              {selectedAssignment ? (
+              {selectedIds.length > 0 ? (
                 <>
-                  <span className="font-semibold text-foreground">
-                    {serviceName(selectedAssignment.service_id)}
-                  </span>
-                  <span>seleccionado</span>
+                  <span className="font-semibold text-foreground">{selectedIds.length}</span>
+                  <span>{selectedIds.length === 1 ? "seleccionado" : "seleccionados"}</span>
                   <button
                     type="button"
-                    onClick={() => openForm("assignment", client.id, selectedAssignment)}
-                    className="ml-auto rounded-lg bg-primary px-3 py-1.5 font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                    onClick={() => selectedAssignment && openForm("assignment", client.id, selectedAssignment)}
+                    disabled={!selectedAssignment}
+                    className="ml-auto rounded-lg bg-primary px-3 py-1.5 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Editar
                   </button>
@@ -225,17 +235,18 @@ function ClientDetailPage() {
                     disabled={deleting}
                     className="rounded-lg border border-destructive/40 px-3 py-1.5 font-bold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
                   >
-                    {deleting ? "Eliminando…" : "Eliminar"}
+                    {deleting ? "Eliminando…" : `Eliminar${selectedIds.length > 1 ? ` (${selectedIds.length})` : ""}`}
                   </button>
                 </>
               ) : (
-                <span>Toca un servicio de la tabla para editarlo o eliminarlo.</span>
+                <span>Marca uno para editarlo o varios para eliminarlos.</span>
               )}
             </div>
           )}
           <TableShell
             head={
               <tr>
+                {selectMode && <th className="w-12 px-4 py-3" aria-label="Selección" />}
                 <th className="px-4 py-3 font-semibold">Servicio</th>
                 <th className="px-4 py-3 text-right font-semibold">Cantidad / mes</th>
                 <th className="px-4 py-3 font-semibold">Proveedor</th>
@@ -244,24 +255,36 @@ function ClientDetailPage() {
             }
           >
             {assignments.length === 0 ? (
-              <EmptyRow colSpan={4} label="Sin asignaciones" />
+              <EmptyRow colSpan={selectMode ? 5 : 4} label="Sin asignaciones" />
             ) : (
               assignments.map((row) => (
                 <tr
                   key={row.id}
                   onClick={
                     selectMode
-                      ? () => setSelectedId((prev) => (prev === row.id ? null : row.id))
+                      ? () => toggleSelected(row.id)
                       : undefined
                   }
                   className={
                     selectMode
-                      ? row.id === selectedId
+                      ? selectedIds.includes(row.id)
                         ? "cursor-pointer border-t border-border bg-primary/10"
                         : "cursor-pointer border-t border-border transition-colors hover:bg-secondary"
                       : "border-t border-border"
                   }
                 >
+                  {selectMode && (
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(row.id)}
+                        onChange={() => toggleSelected(row.id)}
+                        onClick={(event) => event.stopPropagation()}
+                        aria-label={`Seleccionar ${serviceName(row.service_id)}`}
+                        className="size-5 cursor-pointer accent-primary"
+                      />
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-foreground">{serviceName(row.service_id)}</td>
                   <td className="px-4 py-3 text-right text-foreground">
                     {num(row.monthly_quantity) || "—"}
