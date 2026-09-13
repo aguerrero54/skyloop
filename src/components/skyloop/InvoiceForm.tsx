@@ -218,7 +218,7 @@ export function InvoiceForm({
         ...(invoice ? { id: invoice.id } : {}),
         invoiceNumber,
         clientId,
-        sellerId: sellerId || null,
+        sellerId: null,
         orderNumber: orderNumber.trim() || null,
         issueDate,
         dueDate: dueDate || null,
