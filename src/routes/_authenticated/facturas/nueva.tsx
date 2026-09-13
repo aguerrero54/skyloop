@@ -63,9 +63,6 @@ function NewInvoicePage() {
         <h3 className="text-lg font-bold text-foreground">
           ¿Qué tipo de factura deseas crear?
         </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Esta selección define si el monto se registra como ingreso o como gasto.
-        </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {OPTIONS.map((option) => (
