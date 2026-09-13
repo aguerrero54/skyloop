@@ -1,13 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { num, todayISO } from "@/lib/finance";
 import {
+  KIND_COPY,
   computeTotals,
+  invoiceKind,
   itemAmount,
   nextInvoiceNumber,
   round2,
   statusFromPayments,
   type DraftItem,
   type Invoice,
+  type InvoiceKind,
   type InvoiceStatus,
 } from "@/lib/invoices";
 
@@ -15,8 +18,10 @@ export type InvoiceAttachment = { path: string; name: string; size: number };
 
 export type InvoiceInput = {
   id?: string;
+  invoiceType: InvoiceKind;
   invoiceNumber: string;
   clientId: string | null;
+  vendorId: string | null;
   sellerId: string | null;
   orderNumber: string | null;
   issueDate: string;
