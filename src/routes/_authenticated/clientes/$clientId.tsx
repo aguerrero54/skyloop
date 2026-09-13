@@ -54,6 +54,8 @@ function ClientDetailPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(false);
+  const [savingPayment, setSavingPayment] = useState(false);
 
   const client = data.clients.find((row) => row.id === clientId);
 
@@ -72,6 +74,9 @@ function ClientDetailPage() {
   }
 
   const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
+  const est = estimatedMetrics(client, data.clientServices);
+  const committedPct =
+    est.payment > 0 ? Math.min(100, (est.serviceCost / est.payment) * 100) : 0;
   const assignments = data.clientServices.filter(
     (row) => row.client_id === client.id && row.active,
   );
