@@ -154,25 +154,6 @@ function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
             </option>
           ))}
         </select>
-        {pathname !== "/ingresos" && pathname !== "/gastos" && (
-          <>
-            <button
-              type="button"
-              onClick={() => openForm("expense")}
-              className="rounded-lg border border-border px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-secondary"
-            >
-              + Gasto
-            </button>
-            <button
-              type="button"
-              onClick={() => openForm("income")}
-              className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              + Ingreso
-            </button>
-          </>
-        )}
-
       </div>
     </header>
   );
