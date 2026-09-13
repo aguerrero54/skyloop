@@ -117,10 +117,12 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
 function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { month, months, setMonth } = useSkyloop();
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const active =
     navItems.find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`)) ??
     navItems[0];
+  const isDashboard = pathname === "/dashboard";
 
   return (
     <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/90 px-5 py-4 backdrop-blur-lg lg:px-8">
