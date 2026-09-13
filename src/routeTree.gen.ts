@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEquipoRouteImport } from './routes/_authenticated/equipo'
 import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated/gastos'
@@ -19,6 +20,7 @@ import { Route as AuthenticatedIngresosRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedPorCobrarRouteImport } from './routes/_authenticated/por-cobrar'
 import { Route as AuthenticatedPorPagarRouteImport } from './routes/_authenticated/por-pagar'
 import { Route as AuthenticatedRentabilidadRouteImport } from './routes/_authenticated/rentabilidad'
+import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
 import { Route as AuthenticatedServiciosRouteImport } from './routes/_authenticated/servicios'
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes/index'
 import { Route as AuthenticatedClientesClientIdRouteImport } from './routes/_authenticated/clientes/$clientId'
@@ -37,6 +39,12 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedConfiguracionRoute =
+  AuthenticatedConfiguracionRouteImport.update({
+    id: '/configuracion',
+    path: '/configuracion',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -73,6 +81,11 @@ const AuthenticatedRentabilidadRoute =
     path: '/rentabilidad',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedReportesRoute = AuthenticatedReportesRouteImport.update({
+  id: '/reportes',
+  path: '/reportes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedServiciosRoute = AuthenticatedServiciosRouteImport.update({
   id: '/servicios',
   path: '/servicios',
@@ -94,6 +107,7 @@ const AuthenticatedClientesClientIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/equipo': typeof AuthenticatedEquipoRoute
   '/gastos': typeof AuthenticatedGastosRoute
@@ -101,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/por-cobrar': typeof AuthenticatedPorCobrarRoute
   '/por-pagar': typeof AuthenticatedPorPagarRoute
   '/rentabilidad': typeof AuthenticatedRentabilidadRoute
+  '/reportes': typeof AuthenticatedReportesRoute
   '/servicios': typeof AuthenticatedServiciosRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
   '/clientes/': typeof AuthenticatedClientesIndexRoute
@@ -108,6 +123,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/equipo': typeof AuthenticatedEquipoRoute
   '/gastos': typeof AuthenticatedGastosRoute
@@ -115,6 +131,7 @@ export interface FileRoutesByTo {
   '/por-cobrar': typeof AuthenticatedPorCobrarRoute
   '/por-pagar': typeof AuthenticatedPorPagarRoute
   '/rentabilidad': typeof AuthenticatedRentabilidadRoute
+  '/reportes': typeof AuthenticatedReportesRoute
   '/servicios': typeof AuthenticatedServiciosRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
   '/clientes': typeof AuthenticatedClientesIndexRoute
@@ -124,6 +141,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/equipo': typeof AuthenticatedEquipoRoute
   '/_authenticated/gastos': typeof AuthenticatedGastosRoute
@@ -131,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/por-cobrar': typeof AuthenticatedPorCobrarRoute
   '/_authenticated/por-pagar': typeof AuthenticatedPorPagarRoute
   '/_authenticated/rentabilidad': typeof AuthenticatedRentabilidadRoute
+  '/_authenticated/reportes': typeof AuthenticatedReportesRoute
   '/_authenticated/servicios': typeof AuthenticatedServiciosRoute
   '/_authenticated/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
   '/_authenticated/clientes/': typeof AuthenticatedClientesIndexRoute
@@ -140,6 +159,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/configuracion'
     | '/dashboard'
     | '/equipo'
     | '/gastos'
@@ -147,6 +167,7 @@ export interface FileRouteTypes {
     | '/por-cobrar'
     | '/por-pagar'
     | '/rentabilidad'
+    | '/reportes'
     | '/servicios'
     | '/clientes/$clientId'
     | '/clientes/'
@@ -154,6 +175,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/configuracion'
     | '/dashboard'
     | '/equipo'
     | '/gastos'
@@ -161,6 +183,7 @@ export interface FileRouteTypes {
     | '/por-cobrar'
     | '/por-pagar'
     | '/rentabilidad'
+    | '/reportes'
     | '/servicios'
     | '/clientes/$clientId'
     | '/clientes'
@@ -169,6 +192,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/configuracion'
     | '/_authenticated/dashboard'
     | '/_authenticated/equipo'
     | '/_authenticated/gastos'
@@ -176,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/por-cobrar'
     | '/_authenticated/por-pagar'
     | '/_authenticated/rentabilidad'
+    | '/_authenticated/reportes'
     | '/_authenticated/servicios'
     | '/_authenticated/clientes/$clientId'
     | '/_authenticated/clientes/'
@@ -209,6 +234,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/configuracion': {
+      id: '/_authenticated/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof AuthenticatedConfiguracionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
@@ -259,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRentabilidadRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reportes': {
+      id: '/_authenticated/reportes'
+      path: '/reportes'
+      fullPath: '/reportes'
+      preLoaderRoute: typeof AuthenticatedReportesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/servicios': {
       id: '/_authenticated/servicios'
       path: '/servicios'
@@ -284,6 +323,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEquipoRoute: typeof AuthenticatedEquipoRoute
   AuthenticatedGastosRoute: typeof AuthenticatedGastosRoute
@@ -291,12 +331,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPorCobrarRoute: typeof AuthenticatedPorCobrarRoute
   AuthenticatedPorPagarRoute: typeof AuthenticatedPorPagarRoute
   AuthenticatedRentabilidadRoute: typeof AuthenticatedRentabilidadRoute
+  AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
   AuthenticatedServiciosRoute: typeof AuthenticatedServiciosRoute
   AuthenticatedClientesClientIdRoute: typeof AuthenticatedClientesClientIdRoute
   AuthenticatedClientesIndexRoute: typeof AuthenticatedClientesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEquipoRoute: AuthenticatedEquipoRoute,
   AuthenticatedGastosRoute: AuthenticatedGastosRoute,
@@ -304,6 +346,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPorCobrarRoute: AuthenticatedPorCobrarRoute,
   AuthenticatedPorPagarRoute: AuthenticatedPorPagarRoute,
   AuthenticatedRentabilidadRoute: AuthenticatedRentabilidadRoute,
+  AuthenticatedReportesRoute: AuthenticatedReportesRoute,
   AuthenticatedServiciosRoute: AuthenticatedServiciosRoute,
   AuthenticatedClientesClientIdRoute: AuthenticatedClientesClientIdRoute,
   AuthenticatedClientesIndexRoute: AuthenticatedClientesIndexRoute,
