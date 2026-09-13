@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 import { money, num, todayISO } from "@/lib/finance";
 import { registerPayment } from "@/lib/invoice-actions";
-import { PAYMENT_METHODS, type Invoice } from "@/lib/invoices";
+import { invoiceKind, KIND_COPY, PAYMENT_METHODS, type Invoice } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
 
 const inputClass =
@@ -17,6 +17,7 @@ export function InvoicePaymentModal({
   onClose: () => void;
 }) {
   const { refresh } = useSkyloop();
+  const copy = KIND_COPY[invoiceKind(invoice)];
   const balance = Math.max(num(invoice.total) - num(invoice.amount_paid), 0);
   const [amount, setAmount] = useState(String(balance || ""));
   const [saving, setSaving] = useState(false);
@@ -46,7 +47,7 @@ export function InvoicePaymentModal({
         notes: String(form.get("notes") ?? "").trim() || null,
       });
       await refresh();
-      toast.success("Pago registrado");
+      toast.success(`${copy.paymentLabel} registrado`);
       onClose();
     } catch (error) {
       toast.error("No se pudo registrar el pago", {
@@ -72,9 +73,9 @@ export function InvoicePaymentModal({
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
               {invoice.invoice_number}
             </p>
-            <h3 className="mt-1 text-lg font-bold text-foreground">Registrar pago</h3>
+            <h3 className="mt-1 text-lg font-bold text-foreground">{copy.paymentAction}</h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              Saldo pendiente: {money(balance, invoice.currency)}
+              {copy.balanceLabel}: {money(balance, invoice.currency)}
             </p>
           </div>
           <button
@@ -143,7 +144,7 @@ export function InvoicePaymentModal({
               disabled={saving}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
             >
-              {saving ? "Guardando…" : "Registrar pago"}
+              {saving ? "Guardando…" : copy.paymentAction}
             </button>
           </div>
         </form>
