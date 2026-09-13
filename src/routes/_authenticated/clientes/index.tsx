@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { clientMetrics, monthLabel, money } from "@/lib/finance";
+import { clientMetrics, estimatedMetrics, monthLabel, money } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { ProgressBar, SectionTitle, StatusBadge } from "@/components/skyloop/ui";
 
@@ -64,6 +64,7 @@ function ClientsPage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {clients.map((client) => {
             const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
+            const est = estimatedMetrics(client, data.clientServices);
             return (
               <Link
                 key={client.id}
@@ -97,6 +98,20 @@ function ClientsPage() {
                     </b>
                   </div>
                 </div>
+                {est.payment > 0 && (
+                  <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl border border-border bg-surface-raised p-3 text-xs">
+                    <div>
+                      <small className="block text-muted-foreground">Pago mensual</small>
+                      <b className="text-foreground">{money(est.payment, client.currency)}</b>
+                    </div>
+                    <div>
+                      <small className="block text-muted-foreground">Ganancia estimada</small>
+                      <b className={est.estimatedProfit >= 0 ? "text-success" : "text-destructive"}>
+                        {money(est.estimatedProfit, client.currency)}
+                      </b>
+                    </div>
+                  </div>
+                )}
                 <div className="mt-4">
                   <div className="mb-1.5 flex justify-between text-xs">
                     <span className="text-muted-foreground">Margen</span>

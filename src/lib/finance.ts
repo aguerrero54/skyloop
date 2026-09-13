@@ -141,6 +141,30 @@ export function marginTone(margin: number): "success" | "warning" | "danger" {
   return "danger";
 }
 
+export type EstimatedMetrics = {
+  payment: number;
+  serviceCost: number;
+  estimatedProfit: number;
+  estimatedMargin: number;
+};
+
+export function estimatedMetrics(
+  client: Client,
+  assignments: ClientService[],
+): EstimatedMetrics {
+  const payment = num(client.monthly_payment);
+  const serviceCost = assignments
+    .filter((row) => row.client_id === client.id && row.active)
+    .reduce((total, row) => total + num(row.cost), 0);
+  const estimatedProfit = payment - serviceCost;
+  return {
+    payment,
+    serviceCost,
+    estimatedProfit,
+    estimatedMargin: payment ? (estimatedProfit / payment) * 100 : 0,
+  };
+}
+
 export function incomeToMovement(row: Income): Movement {
   return {
     id: row.id,

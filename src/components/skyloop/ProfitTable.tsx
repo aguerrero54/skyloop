@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import { clientMetrics, marginTone, money } from "@/lib/finance";
+import { clientMetrics, estimatedMetrics, marginTone, money } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { EmptyRow, MarginBadge, TableShell } from "@/components/skyloop/ui";
 
@@ -11,9 +11,14 @@ export function ProfitTable({ limit }: { limit?: number }) {
     .map((client) => ({
       client,
       ...clientMetrics(client.id, monthIncomes, monthExpenses, usdRate),
+      estimated: estimatedMetrics(client, data.clientServices),
     }))
-    .filter((row) => row.revenue || row.costs)
-    .sort((a, b) => b.profit - a.profit);
+    .filter((row) => row.revenue || row.costs || row.estimated.payment)
+    .sort(
+      (a, b) =>
+        b.profit - a.profit ||
+        b.estimated.estimatedProfit - a.estimated.estimatedProfit,
+    );
 
   if (limit) rows = rows.slice(0, limit);
 
@@ -22,6 +27,9 @@ export function ProfitTable({ limit }: { limit?: number }) {
       head={
         <tr>
           <th className="px-4 py-3 font-semibold">Cliente</th>
+          <th className="px-4 py-3 text-right font-semibold">Pago mensual</th>
+          <th className="px-4 py-3 text-right font-semibold">Servicios</th>
+          <th className="px-4 py-3 text-right font-semibold">Ganancia est.</th>
           <th className="px-4 py-3 text-right font-semibold">Facturación</th>
           <th className="px-4 py-3 text-right font-semibold">Costos</th>
           <th className="px-4 py-3 text-right font-semibold">Ganancia</th>
@@ -30,7 +38,7 @@ export function ProfitTable({ limit }: { limit?: number }) {
       }
     >
       {rows.length === 0 ? (
-        <EmptyRow colSpan={5} label="Sin información en este mes" />
+        <EmptyRow colSpan={8} label="Sin información en este mes" />
       ) : (
         rows.map((row) => (
           <tr key={row.client.id} className="border-t border-border">
@@ -42,6 +50,23 @@ export function ProfitTable({ limit }: { limit?: number }) {
               >
                 {row.client.name}
               </Link>
+            </td>
+            <td className="px-4 py-3 text-right">
+              {row.estimated.payment
+                ? money(row.estimated.payment, row.client.currency)
+                : "—"}
+            </td>
+            <td className="px-4 py-3 text-right">
+              {row.estimated.payment
+                ? money(row.estimated.serviceCost, row.client.currency)
+                : "—"}
+            </td>
+            <td
+              className={`px-4 py-3 text-right font-bold ${row.estimated.estimatedProfit >= 0 ? "text-success" : "text-destructive"}`}
+            >
+              {row.estimated.payment
+                ? money(row.estimated.estimatedProfit, row.client.currency)
+                : "—"}
             </td>
             <td className="px-4 py-3 text-right">{money(row.revenue)}</td>
             <td className="px-4 py-3 text-right">{money(row.costs)}</td>

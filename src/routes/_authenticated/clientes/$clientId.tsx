@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
   clientMetrics,
+  estimatedMetrics,
   expenseToMovement,
   incomeToMovement,
   monthLabel,
@@ -12,7 +13,7 @@ import {
   num,
 } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
-import { EmptyRow, MovementTable, Panel, TableShell } from "@/components/skyloop/ui";
+import { EmptyRow, MovementTable, Panel, ProgressBar, TableShell } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/clientes/$clientId")({
   head: () => ({
@@ -53,6 +54,8 @@ function ClientDetailPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(false);
+  const [savingPayment, setSavingPayment] = useState(false);
 
   const client = data.clients.find((row) => row.id === clientId);
 
@@ -71,6 +74,9 @@ function ClientDetailPage() {
   }
 
   const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
+  const est = estimatedMetrics(client, data.clientServices);
+  const committedPct =
+    est.payment > 0 ? Math.min(100, (est.serviceCost / est.payment) * 100) : 0;
   const assignments = data.clientServices.filter(
     (row) => row.client_id === client.id && row.active,
   );
@@ -104,6 +110,24 @@ function ClientDetailPage() {
     }
     toast.success("Asignación eliminada");
     setSelectedId(null);
+    await refresh();
+  }
+
+  async function savePayment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setSavingPayment(true);
+    const { error } = await supabase
+      .from("clients")
+      .update({ monthly_payment: num(form.get("monthly_payment")) })
+      .eq("id", client!.id);
+    setSavingPayment(false);
+    if (error) {
+      toast.error("No se pudo guardar", { description: error.message });
+      return;
+    }
+    toast.success("Pago mensual actualizado");
+    setEditingPayment(false);
     await refresh();
   }
 
@@ -262,6 +286,87 @@ function ClientDetailPage() {
             Un gasto registrado con este cliente se descuenta automáticamente de su rentabilidad.
             No tienes que duplicarlo en otra tabla.
           </p>
+        </Panel>
+
+        <Panel
+          title="Presupuesto mensual"
+          subtitle="Pago cerrado con el cliente"
+          action={
+            <button
+              type="button"
+              onClick={() => setEditingPayment((prev) => !prev)}
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
+            >
+              {editingPayment ? "Cancelar" : "Editar"}
+            </button>
+          }
+        >
+          {editingPayment ? (
+            <form onSubmit={savePayment} className="flex flex-wrap items-center gap-2">
+              <input
+                type="number"
+                name="monthly_payment"
+                step="0.01"
+                min="0"
+                defaultValue={String(num(client!.monthly_payment))}
+                className="w-40 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={savingPayment}
+                className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+              >
+                {savingPayment ? "Guardando…" : "Guardar"}
+              </button>
+            </form>
+          ) : est.payment > 0 ? (
+            <>
+              <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
+                <div>
+                  <small className="text-[10px] tracking-wider text-muted-foreground">
+                    PAGO MENSUAL
+                  </small>
+                  <b className="block text-base text-foreground">
+                    {money(est.payment, client!.currency)}
+                  </b>
+                </div>
+                <div>
+                  <small className="text-[10px] tracking-wider text-muted-foreground">
+                    SERVICIOS OFRECIDOS
+                  </small>
+                  <b className="block text-base text-foreground">
+                    {money(est.serviceCost, client!.currency)}
+                  </b>
+                </div>
+                <div>
+                  <small className="text-[10px] tracking-wider text-muted-foreground">
+                    GANANCIA ESTIMADA
+                  </small>
+                  <b
+                    className={`block text-base ${est.estimatedProfit >= 0 ? "text-success" : "text-destructive"}`}
+                  >
+                    {money(est.estimatedProfit, client!.currency)}
+                  </b>
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="mb-1.5 flex justify-between text-xs">
+                  <span className="text-muted-foreground">Comprometido en servicios</span>
+                  <b className="text-foreground">{committedPct.toFixed(1)}%</b>
+                </div>
+                <ProgressBar percent={committedPct} />
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Ganancia estimada = pago mensual − costo de los servicios ofrecidos. Margen
+                estimado: {est.estimatedMargin.toFixed(1)}%.
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Este cliente no tiene pago mensual registrado. Pulsa "Editar" para agregarlo y ver
+              la ganancia estimada del trato.
+            </p>
+          )}
         </Panel>
       </div>
 
