@@ -29,6 +29,13 @@
       "when": 1789321923738,
       "tag": "0003_invoice_attachments_storage_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789325651260,
+      "tag": "0004_create_user_preferences",
+      "breakpoints": true
     }
   ]
 }

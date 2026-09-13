@@ -28,7 +28,7 @@ function BrandMark({ size = "small" }: { size?: "small" | "large" }) {
   return (
     <div
       className={cn(
-        "grid place-items-center bg-gradient-to-br from-primary to-primary/60 font-black text-primary-foreground shadow-brand",
+        "grid place-items-center bg-gradient-to-br from-brand to-brand/65 font-black text-brand-foreground shadow-brand",
         size === "large" ? "size-14 rounded-[18px] text-2xl" : "size-9 rounded-xl text-base",
       )}
     >
