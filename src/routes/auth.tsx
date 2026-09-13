@@ -33,6 +33,7 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -127,7 +128,7 @@ function AuthPage() {
               Contraseña
             </label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               minLength={6}
               value={password}
@@ -135,6 +136,15 @@ function AuthPage() {
               className={inputClass}
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
             />
+            <label className="mt-2 flex w-fit cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(event) => setShowPassword(event.target.checked)}
+                className="size-4 accent-primary"
+              />
+              Ver contraseña
+            </label>
           </div>
           <button
             type="submit"
@@ -152,7 +162,7 @@ function AuthPage() {
         <button
           type="button"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-4 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          className="mt-4 block w-full text-center text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           {mode === "signin"
             ? "¿Primera vez? Crear una cuenta"
