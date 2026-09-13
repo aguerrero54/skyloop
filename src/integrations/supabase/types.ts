@@ -569,6 +569,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          background_color: string | null
+          theme_color: string
+          theme_mode: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          background_color?: string | null
+          theme_color?: string
+          theme_mode?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          background_color?: string | null
+          theme_color?: string
+          theme_mode?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
