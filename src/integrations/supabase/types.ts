@@ -109,6 +109,7 @@ export type Database = {
           currency: string
           email: string | null
           id: string
+          monthly_payment: number
           name: string
           notes: string | null
           phone: string | null
@@ -125,6 +126,7 @@ export type Database = {
           currency?: string
           email?: string | null
           id?: string
+          monthly_payment?: number
           name: string
           notes?: string | null
           phone?: string | null
@@ -141,6 +143,7 @@ export type Database = {
           currency?: string
           email?: string | null
           id?: string
+          monthly_payment?: number
           name?: string
           notes?: string | null
           phone?: string | null

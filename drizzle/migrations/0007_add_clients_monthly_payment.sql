@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN monthly_payment numeric NOT NULL DEFAULT 0;
