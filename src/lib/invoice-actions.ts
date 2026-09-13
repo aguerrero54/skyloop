@@ -50,6 +50,9 @@ async function generateNumber(): Promise<string> {
 
 export async function saveInvoice(input: InvoiceInput): Promise<string> {
   const items = cleanItems(input.items);
+  if (items.some((item) => !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) {
+    throw new Error("La cantidad de cada artículo debe ser un número entero mayor que cero");
+  }
   const totals = computeTotals({
     items,
     discount: input.discount,
