@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import {
-  defaultThemePreferences,
   normalizeHex,
   useTheme,
   type ThemeColor,

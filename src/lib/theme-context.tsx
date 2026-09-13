@@ -111,13 +111,13 @@ function readableForeground(hex: string): { main: string; muted: string; mix: st
 function applyTheme(preferences: ThemePreferences) {
   const root = document.documentElement;
   const resolved = resolveMode(preferences.themeMode);
-  root.dataset.mode = resolved;
-  root.dataset.theme = preferences.themeColor;
+  root.dataset["mode"] = resolved;
+  root.dataset["theme"] = preferences.themeColor;
   root.classList.toggle("dark", resolved === "dark");
   root.style.colorScheme = resolved;
   if (preferences.backgroundColor) {
     const foreground = readableForeground(preferences.backgroundColor);
-    root.dataset.customBackground = "true";
+    root.dataset["customBackground"] = "true";
     root.style.setProperty("--background", preferences.backgroundColor);
     root.style.setProperty("--foreground", foreground.main);
     root.style.setProperty("--surface", `color-mix(in oklab, ${preferences.backgroundColor} 94%, ${foreground.mix})`);
@@ -140,7 +140,7 @@ function applyTheme(preferences: ThemePreferences) {
     root.style.setProperty("--sidebar-accent-foreground", foreground.main);
     root.style.setProperty("--sidebar-border", `color-mix(in oklab, ${preferences.backgroundColor} 70%, ${foreground.mix})`);
   } else {
-    delete root.dataset.customBackground;
+    delete root.dataset["customBackground"];
     customSurfaceVariables.forEach((variable) => root.style.removeProperty(variable));
   }
 }
