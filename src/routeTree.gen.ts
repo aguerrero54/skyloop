@@ -24,6 +24,10 @@ import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedServiciosRouteImport } from './routes/_authenticated/servicios'
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes/index'
 import { Route as AuthenticatedClientesClientIdRouteImport } from './routes/_authenticated/clientes/$clientId'
+import { Route as AuthenticatedFacturasIndexRouteImport } from './routes/_authenticated/facturas/index'
+import { Route as AuthenticatedFacturasInvoiceIdRouteImport } from './routes/_authenticated/facturas/$invoiceId'
+import { Route as AuthenticatedFacturasNuevaRouteImport } from './routes/_authenticated/facturas/nueva'
+import { Route as AuthenticatedFacturasEditarInvoiceIdRouteImport } from './routes/_authenticated/facturas/editar.$invoiceId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -103,6 +107,30 @@ const AuthenticatedClientesClientIdRoute =
     path: '/clientes/$clientId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFacturasIndexRoute =
+  AuthenticatedFacturasIndexRouteImport.update({
+    id: '/facturas/',
+    path: '/facturas/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFacturasInvoiceIdRoute =
+  AuthenticatedFacturasInvoiceIdRouteImport.update({
+    id: '/facturas/$invoiceId',
+    path: '/facturas/$invoiceId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFacturasNuevaRoute =
+  AuthenticatedFacturasNuevaRouteImport.update({
+    id: '/facturas/nueva',
+    path: '/facturas/nueva',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFacturasEditarInvoiceIdRoute =
+  AuthenticatedFacturasEditarInvoiceIdRouteImport.update({
+    id: '/facturas/editar/$invoiceId',
+    path: '/facturas/editar/$invoiceId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -118,7 +146,11 @@ export interface FileRoutesByFullPath {
   '/reportes': typeof AuthenticatedReportesRoute
   '/servicios': typeof AuthenticatedServiciosRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
+  '/facturas/$invoiceId': typeof AuthenticatedFacturasInvoiceIdRoute
+  '/facturas/nueva': typeof AuthenticatedFacturasNuevaRoute
   '/clientes/': typeof AuthenticatedClientesIndexRoute
+  '/facturas/': typeof AuthenticatedFacturasIndexRoute
+  '/facturas/editar/$invoiceId': typeof AuthenticatedFacturasEditarInvoiceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -134,7 +166,11 @@ export interface FileRoutesByTo {
   '/reportes': typeof AuthenticatedReportesRoute
   '/servicios': typeof AuthenticatedServiciosRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
+  '/facturas/$invoiceId': typeof AuthenticatedFacturasInvoiceIdRoute
+  '/facturas/nueva': typeof AuthenticatedFacturasNuevaRoute
   '/clientes': typeof AuthenticatedClientesIndexRoute
+  '/facturas': typeof AuthenticatedFacturasIndexRoute
+  '/facturas/editar/$invoiceId': typeof AuthenticatedFacturasEditarInvoiceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -152,7 +188,11 @@ export interface FileRoutesById {
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
   '/_authenticated/servicios': typeof AuthenticatedServiciosRoute
   '/_authenticated/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
+  '/_authenticated/facturas/$invoiceId': typeof AuthenticatedFacturasInvoiceIdRoute
+  '/_authenticated/facturas/nueva': typeof AuthenticatedFacturasNuevaRoute
   '/_authenticated/clientes/': typeof AuthenticatedClientesIndexRoute
+  '/_authenticated/facturas/': typeof AuthenticatedFacturasIndexRoute
+  '/_authenticated/facturas/editar/$invoiceId': typeof AuthenticatedFacturasEditarInvoiceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -170,7 +210,11 @@ export interface FileRouteTypes {
     | '/reportes'
     | '/servicios'
     | '/clientes/$clientId'
+    | '/facturas/$invoiceId'
+    | '/facturas/nueva'
     | '/clientes/'
+    | '/facturas/'
+    | '/facturas/editar/$invoiceId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -186,7 +230,11 @@ export interface FileRouteTypes {
     | '/reportes'
     | '/servicios'
     | '/clientes/$clientId'
+    | '/facturas/$invoiceId'
+    | '/facturas/nueva'
     | '/clientes'
+    | '/facturas'
+    | '/facturas/editar/$invoiceId'
   id:
     | '__root__'
     | '/'
@@ -203,7 +251,11 @@ export interface FileRouteTypes {
     | '/_authenticated/reportes'
     | '/_authenticated/servicios'
     | '/_authenticated/clientes/$clientId'
+    | '/_authenticated/facturas/$invoiceId'
+    | '/_authenticated/facturas/nueva'
     | '/_authenticated/clientes/'
+    | '/_authenticated/facturas/'
+    | '/_authenticated/facturas/editar/$invoiceId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -319,6 +371,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientesClientIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/facturas/': {
+      id: '/_authenticated/facturas/'
+      path: '/facturas'
+      fullPath: '/facturas/'
+      preLoaderRoute: typeof AuthenticatedFacturasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/facturas/$invoiceId': {
+      id: '/_authenticated/facturas/$invoiceId'
+      path: '/facturas/$invoiceId'
+      fullPath: '/facturas/$invoiceId'
+      preLoaderRoute: typeof AuthenticatedFacturasInvoiceIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/facturas/nueva': {
+      id: '/_authenticated/facturas/nueva'
+      path: '/facturas/nueva'
+      fullPath: '/facturas/nueva'
+      preLoaderRoute: typeof AuthenticatedFacturasNuevaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/facturas/editar/$invoiceId': {
+      id: '/_authenticated/facturas/editar/$invoiceId'
+      path: '/facturas/editar/$invoiceId'
+      fullPath: '/facturas/editar/$invoiceId'
+      preLoaderRoute: typeof AuthenticatedFacturasEditarInvoiceIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -334,7 +414,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
   AuthenticatedServiciosRoute: typeof AuthenticatedServiciosRoute
   AuthenticatedClientesClientIdRoute: typeof AuthenticatedClientesClientIdRoute
+  AuthenticatedFacturasInvoiceIdRoute: typeof AuthenticatedFacturasInvoiceIdRoute
+  AuthenticatedFacturasNuevaRoute: typeof AuthenticatedFacturasNuevaRoute
   AuthenticatedClientesIndexRoute: typeof AuthenticatedClientesIndexRoute
+  AuthenticatedFacturasIndexRoute: typeof AuthenticatedFacturasIndexRoute
+  AuthenticatedFacturasEditarInvoiceIdRoute: typeof AuthenticatedFacturasEditarInvoiceIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -349,7 +433,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
   AuthenticatedServiciosRoute: AuthenticatedServiciosRoute,
   AuthenticatedClientesClientIdRoute: AuthenticatedClientesClientIdRoute,
+  AuthenticatedFacturasInvoiceIdRoute: AuthenticatedFacturasInvoiceIdRoute,
+  AuthenticatedFacturasNuevaRoute: AuthenticatedFacturasNuevaRoute,
   AuthenticatedClientesIndexRoute: AuthenticatedClientesIndexRoute,
+  AuthenticatedFacturasIndexRoute: AuthenticatedFacturasIndexRoute,
+  AuthenticatedFacturasEditarInvoiceIdRoute:
+    AuthenticatedFacturasEditarInvoiceIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

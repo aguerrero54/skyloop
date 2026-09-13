@@ -101,6 +101,8 @@ export type Database = {
       }
       clients: {
         Row: {
+          address: string | null
+          company: string | null
           contact: string | null
           country: string | null
           created_at: string
@@ -109,10 +111,14 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          phone: string | null
           start_date: string | null
           status: string
+          tax_id: string | null
         }
         Insert: {
+          address?: string | null
+          company?: string | null
           contact?: string | null
           country?: string | null
           created_at?: string
@@ -121,10 +127,14 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          phone?: string | null
           start_date?: string | null
           status?: string
+          tax_id?: string | null
         }
         Update: {
+          address?: string | null
+          company?: string | null
           contact?: string | null
           country?: string | null
           created_at?: string
@@ -133,8 +143,10 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          phone?: string | null
           start_date?: string | null
           status?: string
+          tax_id?: string | null
         }
         Relationships: []
       }
@@ -254,6 +266,200 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_items: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          position: number
+          quantity: number
+          rate: number
+          service_id: string | null
+          tax: number
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          position?: number
+          quantity?: number
+          rate?: number
+          service_id?: string | null
+          tax?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          position?: number
+          quantity?: number
+          rate?: number
+          service_id?: string | null
+          tax?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string
+          reference: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          adjustment: number
+          amount_paid: number
+          attachments: Json
+          balance_due: number
+          client_id: string | null
+          created_at: string
+          currency: string
+          discount: number
+          discount_type: string
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          order_number: string | null
+          payment_terms: string
+          seller_id: string | null
+          shipping: number
+          status: string
+          subject: string | null
+          subtotal: number
+          tax: number
+          terms: string | null
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          adjustment?: number
+          amount_paid?: number
+          attachments?: Json
+          balance_due?: number
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          discount?: number
+          discount_type?: string
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          notes?: string | null
+          order_number?: string | null
+          payment_terms?: string
+          seller_id?: string | null
+          shipping?: number
+          status?: string
+          subject?: string | null
+          subtotal?: number
+          tax?: number
+          terms?: string | null
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          adjustment?: number
+          amount_paid?: number
+          attachments?: Json
+          balance_due?: number
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          discount?: number
+          discount_type?: string
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          order_number?: string | null
+          payment_terms?: string
+          seller_id?: string | null
+          shipping?: number
+          status?: string
+          subject?: string | null
+          subtotal?: number
+          tax?: number
+          terms?: string | null
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
         ]

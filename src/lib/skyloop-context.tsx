@@ -14,6 +14,7 @@ import {
   type Provider,
   type Service,
 } from "@/lib/finance";
+import type { Invoice, InvoiceItem, InvoicePayment } from "@/lib/invoices";
 
 export type FormKind =
   | "income"
@@ -32,6 +33,9 @@ export type SkyloopData = {
   expenses: Expense[];
   history: MonthlyHistory[];
   settings: AppSettings | null;
+  invoices: Invoice[];
+  invoiceItems: InvoiceItem[];
+  invoicePayments: InvoicePayment[];
 };
 
 const emptyData: SkyloopData = {
@@ -43,24 +47,51 @@ const emptyData: SkyloopData = {
   expenses: [],
   history: [],
   settings: null,
+  invoices: [],
+  invoiceItems: [],
+  invoicePayments: [],
 };
 
 async function fetchAll(): Promise<SkyloopData> {
-  const [clients, services, providers, clientServices, incomes, expenses, history, settings] =
-    await Promise.all([
-      supabase.from("clients").select("*").order("name"),
-      supabase.from("services").select("*").order("name"),
-      supabase.from("providers").select("*").order("name"),
-      supabase.from("client_services").select("*"),
-      supabase.from("incomes").select("*").order("invoice_date", { ascending: false }),
-      supabase.from("expenses").select("*").order("expense_date", { ascending: false }),
-      supabase.from("monthly_history").select("*").order("month"),
-      supabase.from("app_settings").select("*").eq("id", 1).maybeSingle(),
-    ]);
+  const [
+    clients,
+    services,
+    providers,
+    clientServices,
+    incomes,
+    expenses,
+    history,
+    settings,
+    invoices,
+    invoiceItems,
+    invoicePayments,
+  ] = await Promise.all([
+    supabase.from("clients").select("*").order("name"),
+    supabase.from("services").select("*").order("name"),
+    supabase.from("providers").select("*").order("name"),
+    supabase.from("client_services").select("*"),
+    supabase.from("incomes").select("*").order("invoice_date", { ascending: false }),
+    supabase.from("expenses").select("*").order("expense_date", { ascending: false }),
+    supabase.from("monthly_history").select("*").order("month"),
+    supabase.from("app_settings").select("*").eq("id", 1).maybeSingle(),
+    supabase.from("invoices").select("*").order("issue_date", { ascending: false }),
+    supabase.from("invoice_items").select("*").order("position"),
+    supabase.from("invoice_payments").select("*").order("payment_date"),
+  ]);
 
-  const failed = [clients, services, providers, clientServices, incomes, expenses, history, settings].find(
-    (result) => result.error,
-  );
+  const failed = [
+    clients,
+    services,
+    providers,
+    clientServices,
+    incomes,
+    expenses,
+    history,
+    settings,
+    invoices,
+    invoiceItems,
+    invoicePayments,
+  ].find((result) => result.error);
   if (failed?.error) throw failed.error;
 
   return {
@@ -72,6 +103,9 @@ async function fetchAll(): Promise<SkyloopData> {
     expenses: expenses.data ?? [],
     history: history.data ?? [],
     settings: settings.data ?? null,
+    invoices: invoices.data ?? [],
+    invoiceItems: invoiceItems.data ?? [],
+    invoicePayments: invoicePayments.data ?? [],
   };
 }
 
