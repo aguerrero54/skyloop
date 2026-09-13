@@ -186,6 +186,7 @@ export function InvoiceForm({
             quantity: String(Math.max(1, Math.round(num(item.quantity)))),
             rate: String(num(item.rate)),
             tax: String(num(item.tax)),
+            obligationId: item.obligation_id,
           }))
       : [emptyItem()],
   );
@@ -244,10 +245,62 @@ export function InvoiceForm({
     }
   }
 
-  async function submit(status: InvoiceStatus) {
-    if (!clientId) {
-      toast.error("Selecciona el cliente de la factura");
+  /** Cambiar el tipo reemplaza la entidad y los artículos, así que pide confirmación. */
+  function requestKindChange(next: InvoiceKind) {
+    if (next === kind) return;
+    const touched =
+      Boolean(clientId || vendorId) ||
+      items.some((item) => item.description.trim() || num(item.rate) > 0);
+    if (touched) {
+      const message =
+        next === "vendor"
+          ? "¿Cambiar el tipo de factura? La información del cliente será reemplazada por la selección de proveedores."
+          : "¿Cambiar el tipo de factura? La información del proveedor será reemplazada por la selección de clientes.";
+      if (!window.confirm(message)) return;
+    }
+    setKind(next);
+    setClientId("");
+    setVendorId("");
+    setItems([emptyItem()]);
+    setInvoiceNumber(
+      nextInvoiceNumber(
+        data.invoices.map((row) => row.invoice_number),
+        next,
+      ),
+    );
+  }
+
+  function applyObligation(key: string, obligationId: string) {
+    const obligation = obligations.find((row) => row.id === obligationId);
+    if (!obligation) {
+      updateItem(key, { obligationId: null });
       return;
+    }
+    updateItem(key, {
+      obligationId: obligation.id,
+      description: obligation.description,
+      quantity: "1",
+      rate: String(obligationBalance(obligation)),
+    });
+  }
+
+  async function submit(status: InvoiceStatus) {
+    if (!entityId) {
+      toast.error(
+        kind === "client"
+          ? "Selecciona el cliente de la factura"
+          : "Selecciona el proveedor del documento",
+      );
+      return;
+    }
+    if (kind === "vendor") {
+      const used = items
+        .map((item) => item.obligationId)
+        .filter((id): id is string => Boolean(id));
+      if (new Set(used).size !== used.length) {
+        toast.error("Un mismo servicio pendiente no puede repetirse en el documento");
+        return;
+      }
     }
     if (!items.some((item) => item.description.trim())) {
       toast.error("Agrega al menos un artículo o servicio");
