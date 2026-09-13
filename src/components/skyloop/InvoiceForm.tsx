@@ -2,20 +2,25 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
-import { money, num, todayISO, type Client } from "@/lib/finance";
+import { money, num, todayISO } from "@/lib/finance";
 import { supabase } from "@/integrations/supabase/client";
 import { saveInvoice, type InvoiceAttachment } from "@/lib/invoice-actions";
 import {
   DEFAULT_NOTES,
   DEFAULT_TERMS,
+  KIND_COPY,
   PAYMENT_TERMS,
   computeTotals,
   dueDateFor,
+  invoiceKind,
   itemAmount,
   nextInvoiceNumber,
+  obligationBalance,
+  pendingObligations,
   type DraftItem,
   type Invoice,
   type InvoiceItem,
+  type InvoiceKind,
   type InvoiceStatus,
 } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
