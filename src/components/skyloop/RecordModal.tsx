@@ -38,6 +38,7 @@ export function RecordModal() {
   const presetClient = formState.clientId ?? "";
   const editingAssignment = kind === "assignment" ? formState.assignment : undefined;
   const editingService = kind === "service" ? formState.service : undefined;
+  const editingProvider = kind === "provider" ? formState.provider : undefined;
 
   const clientOptions = data.clients.map((client) => ({ value: client.id, label: client.name }));
   const providerOptions = data.providers.map((provider) => ({
@@ -144,17 +145,45 @@ export function RecordModal() {
         ];
       case "provider":
         return [
-          { name: "name", label: "Nombre", type: "text", required: true },
-          { name: "specialty", label: "Especialidad", type: "text", required: true },
-          { name: "reference_rate", label: "Tarifa de referencia", type: "number" },
+          {
+            name: "name",
+            label: "Nombre",
+            type: "text",
+            required: true,
+            defaultValue: editingProvider?.name,
+          },
+          {
+            name: "specialty",
+            label: "Especialidad",
+            type: "text",
+            required: true,
+            defaultValue: editingProvider?.specialty ?? undefined,
+          },
+          {
+            name: "reference_rate",
+            label: "Tarifa de referencia",
+            type: "number",
+            defaultValue: editingProvider ? String(num(editingProvider.reference_rate)) : undefined,
+          },
           {
             name: "status",
             label: "Estado",
             type: "select",
+            defaultValue: editingProvider?.status ?? undefined,
             options: plain(["Activo", "Disponible", "No disponible", "Inactivo"]),
           },
-          { name: "phone", label: "Teléfono", type: "text" },
-          { name: "email", label: "Correo", type: "email" },
+          {
+            name: "phone",
+            label: "Teléfono",
+            type: "text",
+            defaultValue: editingProvider?.phone ?? undefined,
+          },
+          {
+            name: "email",
+            label: "Correo",
+            type: "email",
+            defaultValue: editingProvider?.email ?? undefined,
+          },
         ];
       case "service":
         return [
@@ -302,6 +331,18 @@ export function RecordModal() {
           notes: orNull("notes"),
           start_date: todayISO(),
         }));
+      } else if (kind === "provider" && editingProvider) {
+        ({ error } = await supabase
+          .from("providers")
+          .update({
+            name: get("name"),
+            specialty: orNull("specialty"),
+            reference_rate: num(get("reference_rate")),
+            status: get("status"),
+            phone: orNull("phone"),
+            email: orNull("email"),
+          })
+          .eq("id", editingProvider.id));
       } else if (kind === "provider") {
         ({ error } = await supabase.from("providers").insert({
           name: get("name"),
@@ -391,14 +432,18 @@ export function RecordModal() {
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
-              {editingAssignment || editingService ? "EDITAR REGISTRO" : "NUEVO REGISTRO"}
+              {editingAssignment || editingService || editingProvider
+                ? "EDITAR REGISTRO"
+                : "NUEVO REGISTRO"}
             </p>
             <h3 className="mt-1 text-lg font-bold text-foreground">
               {editingAssignment
                 ? "Editar asignación"
                 : editingService
                   ? "Editar servicio"
-                  : titles[kind]}
+                  : editingProvider
+                    ? "Editar proveedor"
+                    : titles[kind]}
             </h3>
           </div>
           <button
