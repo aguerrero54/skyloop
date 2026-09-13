@@ -123,8 +123,8 @@ type SkyloopContextValue = {
   providerName: (id: string | null) => string;
   serviceName: (id: string | null) => string;
   refresh: () => Promise<void>;
-  formState: { kind: FormKind; clientId?: string | undefined } | null;
-  openForm: (kind: FormKind, clientId?: string) => void;
+  formState: { kind: FormKind; clientId?: string | undefined; assignment?: ClientService | undefined } | null;
+  openForm: (kind: FormKind, clientId?: string, assignment?: ClientService) => void;
   closeForm: () => void;
 };
 
@@ -147,7 +147,11 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const month = selectedMonth && months.includes(selectedMonth) ? selectedMonth : (months[0] ?? "");
 
-  const [formState, setFormState] = useState<{ kind: FormKind; clientId?: string | undefined } | null>(null);
+  const [formState, setFormState] = useState<{
+    kind: FormKind;
+    clientId?: string | undefined;
+    assignment?: ClientService | undefined;
+  } | null>(null);
 
   const usdRate = num(data.settings?.usd_rate) || 60;
 
@@ -168,7 +172,7 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
       await queryClient.invalidateQueries({ queryKey: ["skyloop"] });
     },
     formState,
-    openForm: (kind, clientId) => setFormState({ kind, clientId }),
+    openForm: (kind, clientId, assignment) => setFormState({ kind, clientId, assignment }),
     closeForm: () => setFormState(null),
   };
 
