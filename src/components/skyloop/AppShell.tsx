@@ -225,6 +225,7 @@ function ShellBody({ children }: { children: ReactNode }) {
       </div>
 
       <RecordModal />
+      <DashboardCustomizer open={customizeOpen} onClose={() => setCustomizeOpen(false)} />
     </div>
   );
 }
