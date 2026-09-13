@@ -22,6 +22,14 @@ export function ProfitTable({ limit }: { limit?: number }) {
 
   if (limit) rows = rows.slice(0, limit);
 
+  const totalPayment = rows.reduce((total, row) => total + row.estimated.payment, 0);
+  const totalService = rows.reduce((total, row) => total + row.estimated.serviceCost, 0);
+  const totalEstimated = rows.reduce((total, row) => total + row.estimated.estimatedProfit, 0);
+  const totalRevenue = rows.reduce((total, row) => total + row.revenue, 0);
+  const totalCosts = rows.reduce((total, row) => total + row.costs, 0);
+  const totalProfit = rows.reduce((total, row) => total + row.profit, 0);
+  const totalMargin = totalRevenue ? (totalProfit / totalRevenue) * 100 : 0;
+
   return (
     <TableShell
       head={
@@ -35,6 +43,24 @@ export function ProfitTable({ limit }: { limit?: number }) {
           <th className="px-4 py-3 text-right font-semibold">Ganancia</th>
           <th className="px-4 py-3 text-right font-semibold">Margen</th>
         </tr>
+      }
+      footer={
+        rows.length > 0 ? (
+          <tr className="border-t-2 border-primary/40 bg-surface-raised font-bold">
+            <td className="px-4 py-3 text-sm uppercase tracking-wider text-muted-foreground">
+              Total ({rows.length})
+            </td>
+            <td className="px-4 py-3 text-right text-foreground">{money(totalPayment)}</td>
+            <td className="px-4 py-3 text-right text-foreground">{money(totalService)}</td>
+            <td className="px-4 py-3 text-right text-foreground">{money(totalEstimated)}</td>
+            <td className="px-4 py-3 text-right text-foreground">{money(totalRevenue)}</td>
+            <td className="px-4 py-3 text-right text-foreground">{money(totalCosts)}</td>
+            <td className="px-4 py-3 text-right text-foreground">{money(totalProfit)}</td>
+            <td className="px-4 py-3 text-right">
+              <MarginBadge margin={totalMargin} tone={marginTone(totalMargin)} />
+            </td>
+          </tr>
+        ) : null
       }
     >
       {rows.length === 0 ? (
