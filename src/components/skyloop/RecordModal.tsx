@@ -35,6 +35,7 @@ export function RecordModal() {
   if (!formState) return null;
   const kind = formState.kind;
   const presetClient = formState.clientId ?? "";
+  const editingAssignment = kind === "assignment" ? formState.assignment : undefined;
 
   const clientOptions = data.clients.map((client) => ({ value: client.id, label: client.name }));
   const providerOptions = data.providers.map((provider) => ({
@@ -168,7 +169,7 @@ export function RecordModal() {
             label: "Cliente",
             type: "select",
             required: true,
-            defaultValue: presetClient,
+            defaultValue: editingAssignment?.client_id ?? presetClient,
             options: clientOptions,
           },
           {
@@ -176,21 +177,28 @@ export function RecordModal() {
             label: "Servicio",
             type: "select",
             required: true,
+            defaultValue: editingAssignment?.service_id ?? undefined,
             options: serviceOptions,
           },
           {
             name: "provider_id",
             label: "Proveedor",
             type: "select",
+            defaultValue: editingAssignment?.provider_id ?? "",
             options: [{ value: "", label: "Sin proveedor" }, ...providerOptions],
           },
           {
             name: "monthly_quantity",
             label: "Cantidad ofrecida por mes",
             type: "number",
-            defaultValue: "0",
+            defaultValue: String(editingAssignment ? num(editingAssignment.monthly_quantity) : 0),
           },
-          { name: "cost", label: "Costo asignado", type: "number" },
+          {
+            name: "cost",
+            label: "Costo asignado",
+            type: "number",
+            defaultValue: editingAssignment ? String(num(editingAssignment.cost)) : undefined,
+          },
         ];
     }
   })();
@@ -260,6 +268,17 @@ export function RecordModal() {
           estimated_cost: num(get("estimated_cost")),
           status: get("status"),
         }));
+      } else if (editingAssignment) {
+        ({ error } = await supabase
+          .from("client_services")
+          .update({
+            client_id: orNull("client_id"),
+            service_id: orNull("service_id"),
+            provider_id: orNull("provider_id"),
+            cost: num(get("cost")),
+            monthly_quantity: num(get("monthly_quantity")),
+          })
+          .eq("id", editingAssignment.id));
       } else {
         ({ error } = await supabase.from("client_services").insert({
           client_id: orNull("client_id"),
@@ -302,7 +321,9 @@ export function RecordModal() {
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
               NUEVO REGISTRO
             </p>
-            <h3 className="mt-1 text-lg font-bold text-foreground">{titles[kind]}</h3>
+            <h3 className="mt-1 text-lg font-bold text-foreground">
+              {editingAssignment ? "Editar asignación" : titles[kind]}
+            </h3>
           </div>
           <button
             type="button"
