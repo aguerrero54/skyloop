@@ -217,7 +217,7 @@ export function buildInvoicePdf({ invoice, items, client }: InvoicePdfInput): js
   });
 
   doc.setFillColor(246, 246, 249);
-  doc.rect(labelX - 60, y - 4, right - labelX + 68, 30, "F");
+  doc.rect(labelX - 130, y - 4, right - labelX + 138, 30, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10.5);
   doc.setTextColor(...DARK);
