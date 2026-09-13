@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { toast } from "sonner";
 
+import { supabase } from "@/integrations/supabase/client";
 import {
   clientMetrics,
   expenseToMovement,
@@ -44,7 +47,12 @@ function ClientDetailPage() {
     clientName,
     providerName,
     serviceName,
+    refresh,
   } = useSkyloop();
+
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const client = data.clients.find((row) => row.id === clientId);
 
@@ -70,6 +78,34 @@ function ClientDetailPage() {
     ...monthIncomes.filter((row) => row.client_id === client.id).map(incomeToMovement),
     ...monthExpenses.filter((row) => row.client_id === client.id).map(expenseToMovement),
   ].sort((a, b) => b.date.localeCompare(a.date));
+
+  const selectedAssignment = assignments.find((row) => row.id === selectedId) ?? null;
+
+  function toggleSelectMode() {
+    setSelectMode((prev) => !prev);
+    setSelectedId(null);
+  }
+
+  async function deleteAssignment() {
+    if (!selectedAssignment) return;
+    const confirmed = window.confirm(
+      `¿Eliminar la asignación de "${serviceName(selectedAssignment.service_id)}"? Esta acción no se puede deshacer.`,
+    );
+    if (!confirmed) return;
+    setDeleting(true);
+    const { error } = await supabase
+      .from("client_services")
+      .delete()
+      .eq("id", selectedAssignment.id);
+    setDeleting(false);
+    if (error) {
+      toast.error("No se pudo eliminar", { description: error.message });
+      return;
+    }
+    toast.success("Asignación eliminada");
+    setSelectedId(null);
+    await refresh();
+  }
 
   return (
     <div className="grid gap-4">
@@ -119,15 +155,57 @@ function ClientDetailPage() {
           title="Servicios y equipo asignado"
           subtitle="Costos recurrentes / de producción"
           action={
-            <button
-              type="button"
-              onClick={() => openForm("assignment", client.id)}
-              className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
-            >
-              + Asignar
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={toggleSelectMode}
+                className={
+                  selectMode
+                    ? "rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                    : "rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
+                }
+              >
+                {selectMode ? "Cancelar" : "Seleccionar"}
+              </button>
+              <button
+                type="button"
+                onClick={() => openForm("assignment", client.id)}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
+              >
+                + Asignar
+              </button>
+            </div>
           }
         >
+          {selectMode && (
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface-raised px-4 py-2.5 text-xs text-muted-foreground">
+              {selectedAssignment ? (
+                <>
+                  <span className="font-semibold text-foreground">
+                    {serviceName(selectedAssignment.service_id)}
+                  </span>
+                  <span>seleccionado</span>
+                  <button
+                    type="button"
+                    onClick={() => openForm("assignment", client.id, selectedAssignment)}
+                    className="ml-auto rounded-lg bg-primary px-3 py-1.5 font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deleteAssignment}
+                    disabled={deleting}
+                    className="rounded-lg border border-destructive/40 px-3 py-1.5 font-bold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+                  >
+                    {deleting ? "Eliminando…" : "Eliminar"}
+                  </button>
+                </>
+              ) : (
+                <span>Toca un servicio de la tabla para editarlo o eliminarlo.</span>
+              )}
+            </div>
+          )}
           <TableShell
             head={
               <tr>
@@ -142,7 +220,21 @@ function ClientDetailPage() {
               <EmptyRow colSpan={4} label="Sin asignaciones" />
             ) : (
               assignments.map((row) => (
-                <tr key={row.id} className="border-t border-border">
+                <tr
+                  key={row.id}
+                  onClick={
+                    selectMode
+                      ? () => setSelectedId((prev) => (prev === row.id ? null : row.id))
+                      : undefined
+                  }
+                  className={
+                    selectMode
+                      ? row.id === selectedId
+                        ? "cursor-pointer border-t border-border bg-primary/10"
+                        : "cursor-pointer border-t border-border transition-colors hover:bg-secondary"
+                      : "border-t border-border"
+                  }
+                >
                   <td className="px-4 py-3 text-foreground">{serviceName(row.service_id)}</td>
                   <td className="px-4 py-3 text-right text-foreground">
                     {num(row.monthly_quantity) || "—"}
