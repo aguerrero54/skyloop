@@ -23,8 +23,6 @@ export function ProfitTable({ limit }: { limit?: number }) {
   if (limit) rows = rows.slice(0, limit);
 
   const totalPayment = rows.reduce((total, row) => total + row.estimated.payment, 0);
-  const totalService = rows.reduce((total, row) => total + row.estimated.serviceCost, 0);
-  const totalEstimated = rows.reduce((total, row) => total + row.estimated.estimatedProfit, 0);
   const totalRevenue = rows.reduce((total, row) => total + row.revenue, 0);
   const totalCosts = rows.reduce((total, row) => total + row.costs, 0);
   const totalProfit = rows.reduce((total, row) => total + row.profit, 0);
@@ -36,8 +34,6 @@ export function ProfitTable({ limit }: { limit?: number }) {
         <tr>
           <th className="px-4 py-3 font-semibold">Cliente</th>
           <th className="px-4 py-3 text-right font-semibold">Pago mensual</th>
-          <th className="px-4 py-3 text-right font-semibold">Servicios</th>
-          <th className="px-4 py-3 text-right font-semibold">Ganancia est.</th>
           <th className="px-4 py-3 text-right font-semibold">Facturación</th>
           <th className="px-4 py-3 text-right font-semibold">Costos</th>
           <th className="px-4 py-3 text-right font-semibold">Ganancia</th>
@@ -51,8 +47,6 @@ export function ProfitTable({ limit }: { limit?: number }) {
               Total ({rows.length})
             </td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalPayment)}</td>
-            <td className="px-4 py-3 text-right text-foreground">{money(totalService)}</td>
-            <td className="px-4 py-3 text-right text-foreground">{money(totalEstimated)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalRevenue)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalCosts)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalProfit)}</td>
@@ -61,7 +55,7 @@ export function ProfitTable({ limit }: { limit?: number }) {
       }
     >
       {rows.length === 0 ? (
-        <EmptyRow colSpan={8} label="Sin información en este mes" />
+        <EmptyRow colSpan={6} label="Sin información en este mes" />
       ) : (
         rows.map((row) => (
           <tr key={row.client.id} className="border-t border-border">
@@ -78,14 +72,6 @@ export function ProfitTable({ limit }: { limit?: number }) {
               {row.estimated.payment
                 ? money(row.estimated.paymentOriginal, row.estimated.paymentCurrency)
                 : "—"}
-            </td>
-            <td className="px-4 py-3 text-right">
-              {row.estimated.payment ? money(row.estimated.serviceCost) : "—"}
-            </td>
-            <td
-              className={`px-4 py-3 text-right font-bold ${row.estimated.estimatedProfit >= 0 ? "text-success" : "text-destructive"}`}
-            >
-              {row.estimated.payment ? money(row.estimated.estimatedProfit) : "—"}
             </td>
             <td className="px-4 py-3 text-right">{money(row.revenue)}</td>
             <td className="px-4 py-3 text-right">{money(row.costs)}</td>
