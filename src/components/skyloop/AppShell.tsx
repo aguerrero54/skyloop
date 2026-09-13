@@ -1,13 +1,14 @@
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, Settings2, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { monthLabel } from "@/lib/finance";
 import { SkyloopProvider, useSkyloop } from "@/lib/skyloop-context";
 import { RecordModal } from "@/components/skyloop/RecordModal";
+import { DashboardCustomizer } from "@/components/skyloop/DashboardCustomizer";
 
 export const navItems = [
   { to: "/dashboard", icon: "◫", label: "Dashboard", eyebrow: "RESUMEN FINANCIERO" },
@@ -115,12 +116,19 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
+function TopBar({
+  onOpenMenu,
+  onCustomize,
+}: {
+  onOpenMenu: () => void;
+  onCustomize: () => void;
+}) {
   const { month, months, setMonth } = useSkyloop();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const active =
     navItems.find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`)) ??
     navItems[0];
+  const isDashboard = pathname === "/dashboard";
 
   return (
     <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/90 px-5 py-4 backdrop-blur-lg lg:px-8">
@@ -154,6 +162,17 @@ function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
             </option>
           ))}
         </select>
+
+        {isDashboard && (
+          <button
+            type="button"
+            onClick={onCustomize}
+            className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-secondary"
+          >
+            <Settings2 className="size-4" />
+            Personalizar
+          </button>
+        )}
       </div>
     </header>
   );
@@ -161,6 +180,7 @@ function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
 
 function ShellBody({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const { isLoading, error } = useSkyloop();
 
   return (
@@ -187,7 +207,10 @@ function ShellBody({ children }: { children: ReactNode }) {
       )}
 
       <div className="lg:ml-[235px]">
-        <TopBar onOpenMenu={() => setMenuOpen(true)} />
+        <TopBar
+          onOpenMenu={() => setMenuOpen(true)}
+          onCustomize={() => setCustomizeOpen(true)}
+        />
         <main className="px-5 py-6 lg:px-8">
           {error ? (
             <div className="rounded-2xl border border-destructive/40 bg-destructive/10 p-5 text-sm text-destructive">
@@ -202,6 +225,7 @@ function ShellBody({ children }: { children: ReactNode }) {
       </div>
 
       <RecordModal />
+      <DashboardCustomizer open={customizeOpen} onClose={() => setCustomizeOpen(false)} />
     </div>
   );
 }

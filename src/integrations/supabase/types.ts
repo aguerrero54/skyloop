@@ -661,6 +661,7 @@ export type Database = {
       user_preferences: {
         Row: {
           background_color: string | null
+          dashboard_layout: Json | null
           theme_color: string
           theme_mode: string
           updated_at: string
@@ -668,6 +669,7 @@ export type Database = {
         }
         Insert: {
           background_color?: string | null
+          dashboard_layout?: Json | null
           theme_color?: string
           theme_mode?: string
           updated_at?: string
@@ -675,6 +677,7 @@ export type Database = {
         }
         Update: {
           background_color?: string | null
+          dashboard_layout?: Json | null
           theme_color?: string
           theme_mode?: string
           updated_at?: string

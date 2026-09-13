@@ -7,3 +7,4 @@
 - [x] Facturas de cliente (ingreso) y de proveedor (gasto) con servicios pendientes, pagos parciales, cuentas por cobrar y por pagar.
 - [x] Presupuesto mensual por cliente: pago cerrado del trato, servicios ofrecidos y ganancia estimada en ficha, lista y rentabilidad.
 - [x] Selección múltiple con casillas: editar un elemento o eliminar varios en servicios, proveedores y asignaciones.
+- [x] Personalizar Dashboard: botón junto al mes para mostrar/ocultar y reordenar bloques, guardado por usuario.
