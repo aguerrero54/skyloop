@@ -28,7 +28,7 @@ export function ProfitTable({ limit }: { limit?: number }) {
   const totalRevenue = rows.reduce((total, row) => total + row.revenue, 0);
   const totalCosts = rows.reduce((total, row) => total + row.costs, 0);
   const totalProfit = rows.reduce((total, row) => total + row.profit, 0);
-  const totalMargin = totalRevenue ? (totalProfit / totalRevenue) * 100 : 0;
+  
 
   return (
     <TableShell
