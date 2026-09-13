@@ -13,7 +13,7 @@ import {
   num,
 } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
-import { EmptyRow, MovementTable, Panel, TableShell } from "@/components/skyloop/ui";
+import { EmptyRow, MovementTable, Panel, ProgressBar, TableShell } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/clientes/$clientId")({
   head: () => ({
