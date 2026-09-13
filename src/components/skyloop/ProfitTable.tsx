@@ -56,9 +56,6 @@ export function ProfitTable({ limit }: { limit?: number }) {
             <td className="px-4 py-3 text-right text-foreground">{money(totalRevenue)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalCosts)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalProfit)}</td>
-            <td className="px-4 py-3 text-right">
-              <MarginBadge margin={totalMargin} tone={marginTone(totalMargin)} />
-            </td>
           </tr>
         ) : null
       }
