@@ -4,6 +4,90 @@ import { num, todayISO } from "@/lib/finance";
 export type Invoice = Tables<"invoices">;
 export type InvoiceItem = Tables<"invoice_items">;
 export type InvoicePayment = Tables<"invoice_payments">;
+export type ProviderObligation = Tables<"provider_obligations">;
+
+/** "client" = factura emitida a un cliente (ingreso). "vendor" = documento recibido de un proveedor (gasto). */
+export type InvoiceKind = "client" | "vendor";
+
+export function invoiceKind(invoice: Pick<Invoice, "invoice_type">): InvoiceKind {
+  return invoice.invoice_type === "vendor" ? "vendor" : "client";
+}
+
+export const KIND_COPY: Record<
+  InvoiceKind,
+  {
+    entity: string;
+    entityPanel: string;
+    entityLabel: string;
+    entityPlaceholder: string;
+    docTitle: string;
+    docTitleShort: string;
+    financial: string;
+    financialType: "income" | "expense";
+    ledger: string;
+    balanceLabel: string;
+    paymentLabel: string;
+    paymentAction: string;
+    numberPrefix: string;
+    pdfTitle: string;
+    pdfEntity: string;
+  }
+> = {
+  client: {
+    entity: "cliente",
+    entityPanel: "Información del cliente",
+    entityLabel: "Nombre del cliente",
+    entityPlaceholder: "Seleccionar o buscar un cliente",
+    docTitle: "Factura de cliente",
+    docTitleShort: "Factura",
+    financial: "Ingreso",
+    financialType: "income",
+    ledger: "Cuenta por cobrar",
+    balanceLabel: "Saldo por cobrar",
+    paymentLabel: "Pago recibido",
+    paymentAction: "Registrar cobro",
+    numberPrefix: "INV-",
+    pdfTitle: "FACTURA",
+    pdfEntity: "Facturar a",
+  },
+  vendor: {
+    entity: "proveedor",
+    entityPanel: "Información del proveedor",
+    entityLabel: "Nombre del proveedor",
+    entityPlaceholder: "Seleccionar o buscar un proveedor",
+    docTitle: "Factura de proveedor",
+    docTitleShort: "Gasto",
+    financial: "Gasto",
+    financialType: "expense",
+    ledger: "Cuenta por pagar",
+    balanceLabel: "Saldo por pagar",
+    paymentLabel: "Pago realizado",
+    paymentAction: "Registrar pago",
+    numberPrefix: "INV-P-",
+    pdfTitle: "FACTURA DE PROVEEDOR",
+    pdfEntity: "Proveedor",
+  },
+};
+
+export function obligationBalance(
+  obligation: Pick<ProviderObligation, "amount" | "amount_paid">,
+): number {
+  return round2(Math.max(num(obligation.amount) - num(obligation.amount_paid), 0));
+}
+
+/** Obligaciones aún no pagadas por completo; las pagadas dejan de estar disponibles. */
+export function pendingObligations(
+  obligations: ProviderObligation[],
+  providerId: string | null,
+): ProviderObligation[] {
+  if (!providerId) return [];
+  return obligations.filter(
+    (row) =>
+      row.provider_id === providerId &&
+      row.status !== "Pagado" &&
+      obligationBalance(row) > 0,
+  );
+}
 
 export type InvoiceStatus =
   | "Borrador"
