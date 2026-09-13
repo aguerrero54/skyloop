@@ -1,0 +1,1 @@
+ALTER TABLE public.client_services ADD COLUMN monthly_quantity numeric NOT NULL DEFAULT 0;

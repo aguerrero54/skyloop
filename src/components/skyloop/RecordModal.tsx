@@ -180,6 +180,12 @@ export function RecordModal() {
             type: "select",
             options: [{ value: "", label: "Sin proveedor" }, ...providerOptions],
           },
+          {
+            name: "monthly_quantity",
+            label: "Cantidad ofrecida por mes",
+            type: "number",
+            defaultValue: "0",
+          },
           { name: "cost", label: "Costo asignado", type: "number" },
         ];
     }
@@ -252,6 +258,7 @@ export function RecordModal() {
           service_id: orNull("service_id"),
           provider_id: orNull("provider_id"),
           cost: num(get("cost")),
+          monthly_quantity: num(get("monthly_quantity")),
           active: true,
         }));
       }
