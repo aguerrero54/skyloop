@@ -44,13 +44,16 @@ function cleanItems(items: DraftItem[]) {
   return items.filter((item) => item.description.trim() || num(item.rate) > 0);
 }
 
-async function generateNumber(): Promise<string> {
+async function generateNumber(kind: InvoiceKind): Promise<string> {
   const { data } = await supabase
     .from("invoices")
     .select("invoice_number")
     .order("invoice_number", { ascending: false })
-    .limit(50);
-  return nextInvoiceNumber((data ?? []).map((row) => row.invoice_number));
+    .limit(200);
+  return nextInvoiceNumber(
+    (data ?? []).map((row) => row.invoice_number),
+    kind,
+  );
 }
 
 export async function saveInvoice(input: InvoiceInput): Promise<string> {
