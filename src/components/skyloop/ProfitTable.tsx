@@ -36,39 +36,44 @@ export function ProfitTable({ limit }: { limit?: number }) {
           <th className="px-4 py-3 text-right font-semibold">Margen</th>
         </tr>
       }
+      footer={
+        rows.length > 0 ? (
+          <tr className="border-t-2 border-primary/40 bg-surface-raised font-bold">
+            <td className="px-4 py-3 text-sm uppercase tracking-wider text-muted-foreground">
+              Total ({rows.length})
+            </td>
+            <td className="px-4 py-3 text-right text-foreground">
+              {money(
+                rows.reduce((total, row) => total + row.estimated.payment, 0),
+              )}
+            </td>
+            <td className="px-4 py-3 text-right text-foreground">
+              {money(rows.reduce((total, row) => total + row.estimated.serviceCost, 0))}
+            </td>
+            <td className="px-4 py-3 text-right text-foreground">
+              {money(rows.reduce((total, row) => total + row.estimated.estimatedProfit, 0))}
+            </td>
+            <td className="px-4 py-3 text-right text-foreground">
+              {money(rows.reduce((total, row) => total + row.revenue, 0))}
+            </td>
+            <td className="px-4 py-3 text-right text-foreground">
+              {money(rows.reduce((total, row) => total + row.costs, 0))}
+            </td>
+            <td className="px-4 py-3 text-right text-foreground">
+              {money(rows.reduce((total, row) => total + row.profit, 0))}
+            </td>
+            <td className="px-4 py-3 text-right">
+              <MarginBadge
+                margin={
+                  totalRevenue ? (totalProfit / totalRevenue) * 100 : 0
+                }
+                tone={marginTone(totalRevenue ? (totalProfit / totalRevenue) * 100 : 0)}
+              />
+            </td>
+          </tr>
+        ) : null
+      }
     >
-      {rows.length === 0 ? (
-        <EmptyRow colSpan={8} label="Sin información en este mes" />
-      ) : (
-        rows.map((row) => (
-          <tr key={row.client.id} className="border-t border-border">
-            <td className="px-4 py-3">
-              <Link
-                to="/clientes/$clientId"
-                params={{ clientId: row.client.id }}
-                className="font-bold text-foreground hover:text-primary-soft"
-              >
-                {row.client.name}
-              </Link>
-            </td>
-            <td className="px-4 py-3 text-right">
-              {row.estimated.payment
-                ? money(row.estimated.paymentOriginal, row.estimated.paymentCurrency)
-                : "—"}
-            </td>
-            <td className="px-4 py-3 text-right">
-              {row.estimated.payment ? money(row.estimated.serviceCost) : "—"}
-            </td>
-            <td
-              className={`px-4 py-3 text-right font-bold ${row.estimated.estimatedProfit >= 0 ? "text-success" : "text-destructive"}`}
-            >
-              {row.estimated.payment ? money(row.estimated.estimatedProfit) : "—"}
-            </td>
-            <td className="px-4 py-3 text-right">{money(row.revenue)}</td>
-            <td className="px-4 py-3 text-right">{money(row.costs)}</td>
-            <td
-              className={`px-4 py-3 text-right font-bold ${row.profit >= 0 ? "text-success" : "text-destructive"}`}
-            >
               {money(row.profit)}
             </td>
             <td className="px-4 py-3 text-right">

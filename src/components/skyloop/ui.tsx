@@ -114,9 +114,11 @@ export function SectionTitle({
 
 export function TableShell({
   head,
+  footer,
   children,
 }: {
   head: ReactNode;
+  footer?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -126,6 +128,7 @@ export function TableShell({
           {head}
         </thead>
         <tbody>{children}</tbody>
+        {footer && <tfoot>{footer}</tfoot>}
       </table>
     </div>
   );
