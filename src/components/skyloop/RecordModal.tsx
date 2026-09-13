@@ -13,7 +13,7 @@ type Field = {
   type: "text" | "number" | "date" | "email" | "select" | "textarea";
   options?: Option[];
   required?: boolean;
-  defaultValue?: string;
+  defaultValue?: string | undefined;
   full?: boolean;
 };
 
