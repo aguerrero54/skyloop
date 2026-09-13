@@ -311,6 +311,17 @@ export function RecordModal() {
           phone: orNull("phone"),
           email: orNull("email"),
         }));
+      } else if (kind === "service" && editingService) {
+        ({ error } = await supabase
+          .from("services")
+          .update({
+            name: get("name"),
+            category: orNull("category"),
+            suggested_price: num(get("suggested_price")),
+            estimated_cost: num(get("estimated_cost")),
+            status: get("status"),
+          })
+          .eq("id", editingService.id));
       } else if (kind === "service") {
         ({ error } = await supabase.from("services").insert({
           name: get("name"),
@@ -380,10 +391,14 @@ export function RecordModal() {
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
-              {editingAssignment ? "EDITAR REGISTRO" : "NUEVO REGISTRO"}
+              {editingAssignment || editingService ? "EDITAR REGISTRO" : "NUEVO REGISTRO"}
             </p>
             <h3 className="mt-1 text-lg font-bold text-foreground">
-              {editingAssignment ? "Editar asignación" : titles[kind]}
+              {editingAssignment
+                ? "Editar asignación"
+                : editingService
+                  ? "Editar servicio"
+                  : titles[kind]}
             </h3>
           </div>
           <button
