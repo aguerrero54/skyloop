@@ -319,7 +319,7 @@ export function RecordModal() {
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
-              NUEVO REGISTRO
+              {editingAssignment ? "EDITAR REGISTRO" : "NUEVO REGISTRO"}
             </p>
             <h3 className="mt-1 text-lg font-bold text-foreground">
               {editingAssignment ? "Editar asignación" : titles[kind]}
