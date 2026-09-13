@@ -484,7 +484,7 @@ export function RecordModal() {
                 <input
                   name={field.name}
                   type={field.type}
-                  step={field.type === "number" ? "0.01" : undefined}
+                  step={field.type === "number" ? (field.integer ? "1" : "0.01") : undefined}
                   required={field.required}
                   defaultValue={field.defaultValue ?? ""}
                   className={inputClass}
