@@ -32,34 +32,45 @@ export const Route = createFileRoute("/_authenticated/equipo")({
 function TeamPage() {
   const { data, monthExpenses, usdRate, openForm, providerName, refresh } = useSkyloop();
   const [selecting, setSelecting] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
   const obligations = [...data.providerObligations].sort((a, b) =>
     a.status === b.status ? a.description.localeCompare(b.description) : a.status.localeCompare(b.status),
   );
 
-  const selected = data.providers.find((provider) => provider.id === selectedId) ?? null;
+  const selected =
+    selectedIds.length === 1
+      ? data.providers.find((provider) => provider.id === selectedIds[0]) ?? null
+      : null;
 
   function toggleSelecting() {
     setSelecting((current) => !current);
-    setSelectedId(null);
+    setSelectedIds([]);
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id],
+    );
   }
 
   async function handleDelete() {
-    if (!selected) return;
+    if (selectedIds.length === 0) return;
     const confirmed = window.confirm(
-      `¿Eliminar el proveedor "${selected.name}"? Esta acción no se puede deshacer.`,
+      selectedIds.length === 1
+        ? "¿Eliminar el proveedor seleccionado? Esta acción no se puede deshacer."
+        : `¿Eliminar los ${selectedIds.length} proveedores seleccionados? Esta acción no se puede deshacer.`,
     );
     if (!confirmed) return;
     setDeleting(true);
-    const { error } = await supabase.from("providers").delete().eq("id", selected.id);
+    const { error } = await supabase.from("providers").delete().in("id", selectedIds);
     setDeleting(false);
     if (error) {
       toast.error("No se pudo eliminar", { description: error.message });
       return;
     }
-    toast.success("Proveedor eliminado");
-    setSelectedId(null);
+    toast.success(selectedIds.length === 1 ? "Proveedor eliminado" : "Proveedores eliminados");
+    setSelectedIds([]);
     setSelecting(false);
     await refresh();
   }
@@ -91,16 +102,17 @@ function TeamPage() {
 
       {selecting && (
         <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-panel">
-          {selected ? (
+          {selectedIds.length > 0 ? (
             <>
               <p className="text-sm text-foreground">
-                Seleccionado: <b>{selected.name}</b>
+                <b>{selectedIds.length}</b> {selectedIds.length === 1 ? "seleccionado" : "seleccionados"}
               </p>
               <div className="ml-auto flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => openForm("provider", undefined, undefined, undefined, selected)}
-                  className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                  onClick={() => selected && openForm("provider", undefined, undefined, undefined, selected)}
+                  disabled={!selected}
+                  className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Editar
                 </button>
@@ -110,13 +122,13 @@ function TeamPage() {
                   disabled={deleting}
                   className="rounded-lg border border-destructive/40 px-3 py-2 text-sm font-bold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
                 >
-                  {deleting ? "Eliminando…" : "Eliminar"}
+                  {deleting ? "Eliminando…" : `Eliminar${selectedIds.length > 1 ? ` (${selectedIds.length})` : ""}`}
                 </button>
               </div>
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Toca un proveedor de la lista para editarlo o eliminarlo.
+              Marca uno para editarlo o varios para eliminarlos.
             </p>
           )}
         </div>
@@ -130,19 +142,30 @@ function TeamPage() {
             rows.filter((row) => row.status === "Pagado"),
             usdRate,
           );
-          const isSelected = selecting && selectedId === provider.id;
+          const isSelected = selecting && selectedIds.includes(provider.id);
           return (
             <article
               key={provider.id}
-              onClick={selecting ? () => setSelectedId(isSelected ? null : provider.id) : undefined}
+              onClick={selecting ? () => toggleSelected(provider.id) : undefined}
               className={`rounded-2xl border bg-card p-5 shadow-panel transition-colors ${
                 selecting ? "cursor-pointer" : ""
               } ${isSelected ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
             >
               <div className="flex items-center justify-between">
-                <span className="grid size-10 place-items-center rounded-xl bg-secondary text-sm font-bold text-foreground">
-                  {provider.name.slice(0, 2).toUpperCase()}
-                </span>
+                {selecting ? (
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleSelected(provider.id)}
+                    onClick={(event) => event.stopPropagation()}
+                    aria-label={`Seleccionar ${provider.name}`}
+                    className="size-5 cursor-pointer accent-primary"
+                  />
+                ) : (
+                  <span className="grid size-10 place-items-center rounded-xl bg-secondary text-sm font-bold text-foreground">
+                    {provider.name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
                 <StatusBadge status={provider.status} />
               </div>
               <h3 className="mt-4 text-base font-bold text-foreground">{provider.name}</h3>
