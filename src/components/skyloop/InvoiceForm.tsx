@@ -349,12 +349,64 @@ export function InvoiceForm({
 
   return (
     <div className="grid gap-4">
-      <Panel title="Información del cliente">
+      <Panel
+        title={copy.entityPanel}
+        subtitle={`${copy.docTitle} · se registra como ${copy.financial.toLowerCase()} (${copy.ledger.toLowerCase()})`}
+        action={
+          <div className="flex gap-2">
+            {(["client", "vendor"] as InvoiceKind[]).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => requestKindChange(option)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+                  kind === option
+                    ? "border-primary bg-primary/15 text-primary-soft"
+                    : "border-border text-muted-foreground hover:bg-secondary"
+                }`}
+              >
+                {option === "client" ? "Cliente · Ingreso" : "Proveedor · Gasto"}
+              </button>
+            ))}
+          </div>
+        }
+      >
         <div className="max-w-md">
           <label className={labelClass}>
-            Nombre del cliente <span className="text-destructive">*</span>
+            {copy.entityLabel} <span className="text-destructive">*</span>
           </label>
-          <ClientPicker clients={data.clients} value={clientId} onChange={setClientId} />
+          {kind === "client" ? (
+            <EntityPicker
+              options={data.clients}
+              value={clientId}
+              onChange={setClientId}
+              placeholder={copy.entityPlaceholder}
+              createLabel="+ Crear nuevo cliente"
+              onCreate={() => openForm("client")}
+            />
+          ) : (
+            <EntityPicker
+              options={data.providers.map((provider) => ({
+                id: provider.id,
+                name: provider.name,
+                company: provider.specialty,
+                email: provider.email,
+                phone: provider.phone,
+              }))}
+              value={vendorId}
+              onChange={setVendorId}
+              placeholder={copy.entityPlaceholder}
+              createLabel="+ Crear nuevo proveedor"
+              onCreate={() => openForm("provider")}
+            />
+          )}
+          {kind === "vendor" && vendorId ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {obligations.length
+                ? `${obligations.length} servicio(s) pendiente(s) disponibles para este proveedor`
+                : "Este proveedor no tiene servicios pendientes registrados"}
+            </p>
+          ) : null}
         </div>
       </Panel>
 
