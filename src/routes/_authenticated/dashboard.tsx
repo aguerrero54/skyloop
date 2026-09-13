@@ -100,7 +100,7 @@ function DashboardPage() {
           icon="↘"
         />
         <KpiCard
-          label="Ganancia contable"
+          label="Margen de Ganancias"
           value={money(metrics.accrualProfit)}
           footnote={
             metrics.billed
