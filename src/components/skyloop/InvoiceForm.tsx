@@ -142,7 +142,7 @@ export function InvoiceForm({
           .map((item) => ({
             key: newKey(),
             description: item.description,
-            quantity: String(num(item.quantity)),
+            quantity: String(Math.max(1, Math.round(num(item.quantity)))),
             rate: String(num(item.rate)),
             tax: String(num(item.tax)),
           }))
@@ -210,6 +210,10 @@ export function InvoiceForm({
     }
     if (!items.some((item) => item.description.trim())) {
       toast.error("Agrega al menos un artículo o servicio");
+      return;
+    }
+    if (items.some((item) => !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) {
+      toast.error("La cantidad debe ser un número entero mayor que cero");
       return;
     }
     setSaving(status);
@@ -377,9 +381,21 @@ export function InvoiceForm({
                   <td className="px-3 py-2">
                     <input
                       type="number"
-                      step="0.01"
+                      min="1"
+                      step="1"
+                      inputMode="numeric"
                       value={item.quantity}
-                      onChange={(event) => updateItem(item.key, { quantity: event.target.value })}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        if (value === "" || /^\d+$/.test(value)) {
+                          updateItem(item.key, { quantity: value });
+                        }
+                      }}
+                      onBlur={() => {
+                        if (!item.quantity || Number(item.quantity) < 1) {
+                          updateItem(item.key, { quantity: "1" });
+                        }
+                      }}
                       className={`${inputClass} text-right`}
                     />
                   </td>
