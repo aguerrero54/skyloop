@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Laptop, Moon, RotateCcw, Sun } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,13 +41,18 @@ export function PersonalizationPanel() {
   const { preferences, isLoading, isSaving, hasChanges, setPreferences, save, restore, discard } = useTheme();
   const [hex, setHex] = useState(preferences.backgroundColor ?? "#111827");
   const [hexError, setHexError] = useState(false);
+  const discardRef = useRef(discard);
 
   useEffect(() => {
     setHex(preferences.backgroundColor ?? (preferences.themeMode === "light" ? "#F8FAFC" : "#111827"));
     setHexError(false);
   }, [preferences.backgroundColor, preferences.themeMode]);
 
-  useEffect(() => () => discard(), [discard]);
+  useEffect(() => {
+    discardRef.current = discard;
+  }, [discard]);
+
+  useEffect(() => () => discardRef.current(), []);
 
   function updateMode(themeMode: ThemeMode) {
     setPreferences((current) => ({ ...current, themeMode }));
