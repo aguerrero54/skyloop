@@ -158,7 +158,7 @@ export function buildInvoicePdf({ invoice, items, client, vendor }: InvoicePdfIn
   doc.setFontSize(9);
   doc.setTextColor(...GREY);
   let billY = 296;
-  [client?.company, client?.address, client?.email, client?.phone, client?.tax_id ? `RNC/ID: ${client.tax_id}` : null]
+  entityLines
     .filter((line): line is string => Boolean(line))
     .forEach((line) => {
       doc.text(line, left, billY);
