@@ -28,7 +28,7 @@ export function ProfitTable({ limit }: { limit?: number }) {
   const totalRevenue = rows.reduce((total, row) => total + row.revenue, 0);
   const totalCosts = rows.reduce((total, row) => total + row.costs, 0);
   const totalProfit = rows.reduce((total, row) => total + row.profit, 0);
-  const totalMargin = totalRevenue ? (totalProfit / totalRevenue) * 100 : 0;
+  
 
   return (
     <TableShell
@@ -56,9 +56,6 @@ export function ProfitTable({ limit }: { limit?: number }) {
             <td className="px-4 py-3 text-right text-foreground">{money(totalRevenue)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalCosts)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalProfit)}</td>
-            <td className="px-4 py-3 text-right">
-              <MarginBadge margin={totalMargin} tone={marginTone(totalMargin)} />
-            </td>
           </tr>
         ) : null
       }
