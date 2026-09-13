@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { num } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { Panel } from "@/components/skyloop/ui";
+import { PersonalizationPanel } from "@/components/skyloop/PersonalizationPanel";
 
 export const Route = createFileRoute("/_authenticated/configuracion")({
   head: () => ({
@@ -98,6 +99,10 @@ function SettingsPage() {
           que puedes trabajar desde cualquier computadora o celular. Los montos en dólares se
           convierten a pesos usando la tasa configurada aquí.
         </p>
+      </Panel>
+
+      <Panel className="xl:col-span-2">
+        <PersonalizationPanel />
       </Panel>
     </div>
   );

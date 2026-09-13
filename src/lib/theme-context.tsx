@@ -73,6 +73,41 @@ function resolveMode(mode: ThemeMode): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+const customSurfaceVariables = [
+  "--background",
+  "--foreground",
+  "--surface",
+  "--surface-raised",
+  "--card",
+  "--card-foreground",
+  "--popover",
+  "--popover-foreground",
+  "--secondary",
+  "--secondary-foreground",
+  "--muted",
+  "--muted-foreground",
+  "--accent",
+  "--accent-foreground",
+  "--border",
+  "--input",
+  "--sidebar",
+  "--sidebar-foreground",
+  "--sidebar-accent",
+  "--sidebar-accent-foreground",
+  "--sidebar-border",
+];
+
+function readableForeground(hex: string): { main: string; muted: string; mix: string } {
+  const red = Number.parseInt(hex.slice(1, 3), 16) / 255;
+  const green = Number.parseInt(hex.slice(3, 5), 16) / 255;
+  const blue = Number.parseInt(hex.slice(5, 7), 16) / 255;
+  const channel = (value: number) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  const luminance = 0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue);
+  return luminance > 0.38
+    ? { main: "#111827", muted: "#4B5563", mix: "#000000" }
+    : { main: "#F8FAFC", muted: "#CBD5E1", mix: "#FFFFFF" };
+}
+
 function applyTheme(preferences: ThemePreferences) {
   const root = document.documentElement;
   const resolved = resolveMode(preferences.themeMode);
@@ -81,11 +116,32 @@ function applyTheme(preferences: ThemePreferences) {
   root.classList.toggle("dark", resolved === "dark");
   root.style.colorScheme = resolved;
   if (preferences.backgroundColor) {
+    const foreground = readableForeground(preferences.backgroundColor);
     root.dataset.customBackground = "true";
-    root.style.setProperty("--custom-background", preferences.backgroundColor);
+    root.style.setProperty("--background", preferences.backgroundColor);
+    root.style.setProperty("--foreground", foreground.main);
+    root.style.setProperty("--surface", `color-mix(in oklab, ${preferences.backgroundColor} 94%, ${foreground.mix})`);
+    root.style.setProperty("--surface-raised", `color-mix(in oklab, ${preferences.backgroundColor} 88%, ${foreground.mix})`);
+    root.style.setProperty("--card", `color-mix(in oklab, ${preferences.backgroundColor} 94%, ${foreground.mix})`);
+    root.style.setProperty("--card-foreground", foreground.main);
+    root.style.setProperty("--popover", `color-mix(in oklab, ${preferences.backgroundColor} 91%, ${foreground.mix})`);
+    root.style.setProperty("--popover-foreground", foreground.main);
+    root.style.setProperty("--secondary", `color-mix(in oklab, ${preferences.backgroundColor} 85%, ${foreground.mix})`);
+    root.style.setProperty("--secondary-foreground", foreground.main);
+    root.style.setProperty("--muted", `color-mix(in oklab, ${preferences.backgroundColor} 85%, ${foreground.mix})`);
+    root.style.setProperty("--muted-foreground", foreground.muted);
+    root.style.setProperty("--accent", `color-mix(in oklab, ${preferences.backgroundColor} 80%, var(--primary))`);
+    root.style.setProperty("--accent-foreground", foreground.main);
+    root.style.setProperty("--border", `color-mix(in oklab, ${preferences.backgroundColor} 72%, ${foreground.mix})`);
+    root.style.setProperty("--input", `color-mix(in oklab, ${preferences.backgroundColor} 70%, ${foreground.mix})`);
+    root.style.setProperty("--sidebar", `color-mix(in oklab, ${preferences.backgroundColor} 90%, ${foreground.mix})`);
+    root.style.setProperty("--sidebar-foreground", foreground.main);
+    root.style.setProperty("--sidebar-accent", `color-mix(in oklab, ${preferences.backgroundColor} 82%, ${foreground.mix})`);
+    root.style.setProperty("--sidebar-accent-foreground", foreground.main);
+    root.style.setProperty("--sidebar-border", `color-mix(in oklab, ${preferences.backgroundColor} 70%, ${foreground.mix})`);
   } else {
     delete root.dataset.customBackground;
-    root.style.removeProperty("--custom-background");
+    customSurfaceVariables.forEach((variable) => root.style.removeProperty(variable));
   }
 }
 
