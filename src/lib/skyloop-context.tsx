@@ -14,7 +14,12 @@ import {
   type Provider,
   type Service,
 } from "@/lib/finance";
-import type { Invoice, InvoiceItem, InvoicePayment } from "@/lib/invoices";
+import type {
+  Invoice,
+  InvoiceItem,
+  InvoicePayment,
+  ProviderObligation,
+} from "@/lib/invoices";
 
 export type FormKind =
   | "income"
@@ -36,6 +41,7 @@ export type SkyloopData = {
   invoices: Invoice[];
   invoiceItems: InvoiceItem[];
   invoicePayments: InvoicePayment[];
+  providerObligations: ProviderObligation[];
 };
 
 const emptyData: SkyloopData = {
@@ -50,6 +56,7 @@ const emptyData: SkyloopData = {
   invoices: [],
   invoiceItems: [],
   invoicePayments: [],
+  providerObligations: [],
 };
 
 async function fetchAll(): Promise<SkyloopData> {
@@ -65,6 +72,7 @@ async function fetchAll(): Promise<SkyloopData> {
     invoices,
     invoiceItems,
     invoicePayments,
+    providerObligations,
   ] = await Promise.all([
     supabase.from("clients").select("*").order("name"),
     supabase.from("services").select("*").order("name"),
@@ -77,6 +85,7 @@ async function fetchAll(): Promise<SkyloopData> {
     supabase.from("invoices").select("*").order("issue_date", { ascending: false }),
     supabase.from("invoice_items").select("*").order("position"),
     supabase.from("invoice_payments").select("*").order("payment_date"),
+    supabase.from("provider_obligations").select("*").order("created_at"),
   ]);
 
   const failed = [
@@ -91,6 +100,7 @@ async function fetchAll(): Promise<SkyloopData> {
     invoices,
     invoiceItems,
     invoicePayments,
+    providerObligations,
   ].find((result) => result.error);
   if (failed?.error) throw failed.error;
 
@@ -106,6 +116,7 @@ async function fetchAll(): Promise<SkyloopData> {
     invoices: invoices.data ?? [],
     invoiceItems: invoiceItems.data ?? [],
     invoicePayments: invoicePayments.data ?? [],
+    providerObligations: providerObligations.data ?? [],
   };
 }
 
