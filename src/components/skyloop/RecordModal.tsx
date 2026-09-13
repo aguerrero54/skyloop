@@ -15,6 +15,7 @@ type Field = {
   required?: boolean;
   defaultValue?: string | undefined;
   full?: boolean;
+  integer?: boolean;
 };
 
 const titles: Record<FormKind, string> = {
@@ -250,12 +251,14 @@ export function RecordModal() {
             name: "monthly_quantity",
             label: "Cantidad ofrecida por mes",
             type: "number",
+            integer: true,
             defaultValue: String(editingAssignment ? num(editingAssignment.monthly_quantity) : 0),
           },
           {
             name: "cost",
             label: "Costo asignado",
             type: "number",
+            integer: true,
             defaultValue: editingAssignment ? String(num(editingAssignment.cost)) : undefined,
           },
         ];
