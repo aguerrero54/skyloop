@@ -120,7 +120,7 @@ export function InvoiceForm({
 
   const [invoiceNumber, setInvoiceNumber] = useState(suggestedNumber);
   const [clientId, setClientId] = useState(invoice?.client_id ?? "");
-  const [sellerId, setSellerId] = useState(invoice?.seller_id ?? "");
+  
   const [orderNumber, setOrderNumber] = useState(invoice?.order_number ?? "");
   const [issueDate, setIssueDate] = useState(invoice?.issue_date ?? todayISO());
   const [terms, setTerms] = useState(invoice?.payment_terms ?? "Pagadera inmediatamente");
@@ -218,7 +218,7 @@ export function InvoiceForm({
         ...(invoice ? { id: invoice.id } : {}),
         invoiceNumber,
         clientId,
-        sellerId: sellerId || null,
+        sellerId: null,
         orderNumber: orderNumber.trim() || null,
         issueDate,
         dueDate: dueDate || null,
@@ -250,28 +250,11 @@ export function InvoiceForm({
   return (
     <div className="grid gap-4">
       <Panel title="Información del cliente">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className={labelClass}>
-              Nombre del cliente <span className="text-destructive">*</span>
-            </label>
-            <ClientPicker clients={data.clients} value={clientId} onChange={setClientId} />
-          </div>
-          <div>
-            <label className={labelClass}>Vendedor</label>
-            <select
-              value={sellerId}
-              onChange={(event) => setSellerId(event.target.value)}
-              className={inputClass}
-            >
-              <option value="">Seleccionar vendedor</option>
-              {data.providers.map((provider) => (
-                <option key={provider.id} value={provider.id}>
-                  {provider.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="max-w-md">
+          <label className={labelClass}>
+            Nombre del cliente <span className="text-destructive">*</span>
+          </label>
+          <ClientPicker clients={data.clients} value={clientId} onChange={setClientId} />
         </div>
       </Panel>
 
