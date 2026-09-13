@@ -84,7 +84,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             key={item.to}
             to={item.to}
             onClick={onNavigate}
-            className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground [&.active]:bg-secondary [&.active]:text-foreground"
+            className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-sidebar-nav-muted transition-colors hover:bg-secondary hover:text-foreground [&.active]:bg-secondary [&.active]:text-foreground"
             activeProps={{ className: "active font-semibold" }}
           >
             <span className="w-5 text-center opacity-90">{item.icon}</span>
