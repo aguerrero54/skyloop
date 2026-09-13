@@ -78,8 +78,12 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
     paid = round2((data ?? []).reduce((sum, row) => sum + num(row.amount), 0));
   }
 
+  const kind = input.invoiceType;
   const base = {
-    client_id: input.clientId,
+    invoice_type: kind,
+    financial_type: KIND_COPY[kind].financialType,
+    client_id: kind === "client" ? input.clientId : null,
+    vendor_id: kind === "vendor" ? input.vendorId : null,
     seller_id: input.sellerId,
     order_number: input.orderNumber,
     issue_date: input.issueDate,
