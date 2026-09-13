@@ -120,7 +120,7 @@ function ClientDetailPage() {
     const { error } = await supabase
       .from("clients")
       .update({ monthly_payment: num(form.get("monthly_payment")) })
-      .eq("id", client.id);
+      .eq("id", client!.id);
     setSavingPayment(false);
     if (error) {
       toast.error("No se pudo guardar", { description: error.message });
