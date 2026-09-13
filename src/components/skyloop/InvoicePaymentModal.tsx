@@ -101,7 +101,7 @@ export function InvoicePaymentModal({
             </label>
             <input
               type="number"
-              step="0.01"
+              step="any"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               required

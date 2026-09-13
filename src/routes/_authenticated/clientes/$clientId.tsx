@@ -306,7 +306,7 @@ function ClientDetailPage() {
               <input
                 type="number"
                 name="monthly_payment"
-                step="0.01"
+                step="any"
                 min="0"
                 defaultValue={String(num(client!.monthly_payment))}
                 className="w-40 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
