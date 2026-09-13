@@ -244,13 +244,19 @@ export const invoiceStatusTone: Record<
   Cancelada: "muted",
 };
 
-export function nextInvoiceNumber(existing: string[]): string {
-  const highest = existing.reduce((max, value) => {
+export function nextInvoiceNumber(existing: string[], kind: InvoiceKind = "client"): string {
+  const prefix = KIND_COPY[kind].numberPrefix;
+  const scoped = existing.filter((value) =>
+    kind === "vendor"
+      ? (value ?? "").startsWith(prefix)
+      : !(value ?? "").startsWith(KIND_COPY.vendor.numberPrefix),
+  );
+  const highest = scoped.reduce((max, value) => {
     const digits = /(\d+)\s*$/.exec(value ?? "");
     const parsed = digits ? Number(digits[1]) : 0;
     return Number.isFinite(parsed) && parsed > max ? parsed : max;
   }, 0);
-  return `INV-${String(highest + 1).padStart(6, "0")}`;
+  return `${prefix}${String(highest + 1).padStart(6, "0")}`;
 }
 
 export function formatLongDate(date: string | null): string {
