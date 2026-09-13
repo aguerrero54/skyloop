@@ -401,7 +401,7 @@ export function InvoiceForm({
                 phone: provider.phone,
               }))}
               value={vendorId}
-              onChange={setVendorId}
+              onChange={applyVendor}
               placeholder={copy.entityPlaceholder}
               createLabel="+ Crear nuevo proveedor"
               onCreate={() => openForm("provider")}
