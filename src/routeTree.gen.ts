@@ -13,6 +13,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedEquipoRouteImport } from './routes/_authenticated/equipo'
+import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated/gastos'
+import { Route as AuthenticatedIngresosRouteImport } from './routes/_authenticated/ingresos'
+import { Route as AuthenticatedPorCobrarRouteImport } from './routes/_authenticated/por-cobrar'
+import { Route as AuthenticatedPorPagarRouteImport } from './routes/_authenticated/por-pagar'
+import { Route as AuthenticatedRentabilidadRouteImport } from './routes/_authenticated/rentabilidad'
+import { Route as AuthenticatedServiciosRouteImport } from './routes/_authenticated/servicios'
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes/index'
 import { Route as AuthenticatedClientesClientIdRouteImport } from './routes/_authenticated/clientes/$clientId'
 
@@ -35,6 +42,42 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEquipoRoute = AuthenticatedEquipoRouteImport.update({
+  id: '/equipo',
+  path: '/equipo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGastosRoute = AuthenticatedGastosRouteImport.update({
+  id: '/gastos',
+  path: '/gastos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedIngresosRoute = AuthenticatedIngresosRouteImport.update({
+  id: '/ingresos',
+  path: '/ingresos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPorCobrarRoute = AuthenticatedPorCobrarRouteImport.update({
+  id: '/por-cobrar',
+  path: '/por-cobrar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPorPagarRoute = AuthenticatedPorPagarRouteImport.update({
+  id: '/por-pagar',
+  path: '/por-pagar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRentabilidadRoute =
+  AuthenticatedRentabilidadRouteImport.update({
+    id: '/rentabilidad',
+    path: '/rentabilidad',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedServiciosRoute = AuthenticatedServiciosRouteImport.update({
+  id: '/servicios',
+  path: '/servicios',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedClientesIndexRoute =
   AuthenticatedClientesIndexRouteImport.update({
     id: '/clientes/',
@@ -52,6 +95,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/equipo': typeof AuthenticatedEquipoRoute
+  '/gastos': typeof AuthenticatedGastosRoute
+  '/ingresos': typeof AuthenticatedIngresosRoute
+  '/por-cobrar': typeof AuthenticatedPorCobrarRoute
+  '/por-pagar': typeof AuthenticatedPorPagarRoute
+  '/rentabilidad': typeof AuthenticatedRentabilidadRoute
+  '/servicios': typeof AuthenticatedServiciosRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
   '/clientes/': typeof AuthenticatedClientesIndexRoute
 }
@@ -59,6 +109,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/equipo': typeof AuthenticatedEquipoRoute
+  '/gastos': typeof AuthenticatedGastosRoute
+  '/ingresos': typeof AuthenticatedIngresosRoute
+  '/por-cobrar': typeof AuthenticatedPorCobrarRoute
+  '/por-pagar': typeof AuthenticatedPorPagarRoute
+  '/rentabilidad': typeof AuthenticatedRentabilidadRoute
+  '/servicios': typeof AuthenticatedServiciosRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
   '/clientes': typeof AuthenticatedClientesIndexRoute
 }
@@ -68,20 +125,58 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/equipo': typeof AuthenticatedEquipoRoute
+  '/_authenticated/gastos': typeof AuthenticatedGastosRoute
+  '/_authenticated/ingresos': typeof AuthenticatedIngresosRoute
+  '/_authenticated/por-cobrar': typeof AuthenticatedPorCobrarRoute
+  '/_authenticated/por-pagar': typeof AuthenticatedPorPagarRoute
+  '/_authenticated/rentabilidad': typeof AuthenticatedRentabilidadRoute
+  '/_authenticated/servicios': typeof AuthenticatedServiciosRoute
   '/_authenticated/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
   '/_authenticated/clientes/': typeof AuthenticatedClientesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/clientes/$clientId' | '/clientes/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/equipo'
+    | '/gastos'
+    | '/ingresos'
+    | '/por-cobrar'
+    | '/por-pagar'
+    | '/rentabilidad'
+    | '/servicios'
+    | '/clientes/$clientId'
+    | '/clientes/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/clientes/$clientId' | '/clientes'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/equipo'
+    | '/gastos'
+    | '/ingresos'
+    | '/por-cobrar'
+    | '/por-pagar'
+    | '/rentabilidad'
+    | '/servicios'
+    | '/clientes/$clientId'
+    | '/clientes'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
+    | '/_authenticated/equipo'
+    | '/_authenticated/gastos'
+    | '/_authenticated/ingresos'
+    | '/_authenticated/por-cobrar'
+    | '/_authenticated/por-pagar'
+    | '/_authenticated/rentabilidad'
+    | '/_authenticated/servicios'
     | '/_authenticated/clientes/$clientId'
     | '/_authenticated/clientes/'
   fileRoutesById: FileRoutesById
@@ -122,6 +217,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/equipo': {
+      id: '/_authenticated/equipo'
+      path: '/equipo'
+      fullPath: '/equipo'
+      preLoaderRoute: typeof AuthenticatedEquipoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gastos': {
+      id: '/_authenticated/gastos'
+      path: '/gastos'
+      fullPath: '/gastos'
+      preLoaderRoute: typeof AuthenticatedGastosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ingresos': {
+      id: '/_authenticated/ingresos'
+      path: '/ingresos'
+      fullPath: '/ingresos'
+      preLoaderRoute: typeof AuthenticatedIngresosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/por-cobrar': {
+      id: '/_authenticated/por-cobrar'
+      path: '/por-cobrar'
+      fullPath: '/por-cobrar'
+      preLoaderRoute: typeof AuthenticatedPorCobrarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/por-pagar': {
+      id: '/_authenticated/por-pagar'
+      path: '/por-pagar'
+      fullPath: '/por-pagar'
+      preLoaderRoute: typeof AuthenticatedPorPagarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rentabilidad': {
+      id: '/_authenticated/rentabilidad'
+      path: '/rentabilidad'
+      fullPath: '/rentabilidad'
+      preLoaderRoute: typeof AuthenticatedRentabilidadRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/servicios': {
+      id: '/_authenticated/servicios'
+      path: '/servicios'
+      fullPath: '/servicios'
+      preLoaderRoute: typeof AuthenticatedServiciosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/clientes/': {
       id: '/_authenticated/clientes/'
       path: '/clientes'
@@ -141,12 +285,26 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEquipoRoute: typeof AuthenticatedEquipoRoute
+  AuthenticatedGastosRoute: typeof AuthenticatedGastosRoute
+  AuthenticatedIngresosRoute: typeof AuthenticatedIngresosRoute
+  AuthenticatedPorCobrarRoute: typeof AuthenticatedPorCobrarRoute
+  AuthenticatedPorPagarRoute: typeof AuthenticatedPorPagarRoute
+  AuthenticatedRentabilidadRoute: typeof AuthenticatedRentabilidadRoute
+  AuthenticatedServiciosRoute: typeof AuthenticatedServiciosRoute
   AuthenticatedClientesClientIdRoute: typeof AuthenticatedClientesClientIdRoute
   AuthenticatedClientesIndexRoute: typeof AuthenticatedClientesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEquipoRoute: AuthenticatedEquipoRoute,
+  AuthenticatedGastosRoute: AuthenticatedGastosRoute,
+  AuthenticatedIngresosRoute: AuthenticatedIngresosRoute,
+  AuthenticatedPorCobrarRoute: AuthenticatedPorCobrarRoute,
+  AuthenticatedPorPagarRoute: AuthenticatedPorPagarRoute,
+  AuthenticatedRentabilidadRoute: AuthenticatedRentabilidadRoute,
+  AuthenticatedServiciosRoute: AuthenticatedServiciosRoute,
   AuthenticatedClientesClientIdRoute: AuthenticatedClientesClientIdRoute,
   AuthenticatedClientesIndexRoute: AuthenticatedClientesIndexRoute,
 }
