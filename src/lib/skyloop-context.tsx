@@ -135,8 +135,18 @@ type SkyloopContextValue = {
   providerName: (id: string | null) => string;
   serviceName: (id: string | null) => string;
   refresh: () => Promise<void>;
-  formState: { kind: FormKind; clientId?: string | undefined; assignment?: ClientService | undefined } | null;
-  openForm: (kind: FormKind, clientId?: string, assignment?: ClientService) => void;
+  formState: {
+    kind: FormKind;
+    clientId?: string | undefined;
+    assignment?: ClientService | undefined;
+    service?: Service | undefined;
+  } | null;
+  openForm: (
+    kind: FormKind,
+    clientId?: string,
+    assignment?: ClientService,
+    service?: Service,
+  ) => void;
   closeForm: () => void;
 };
 
@@ -163,6 +173,7 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
     kind: FormKind;
     clientId?: string | undefined;
     assignment?: ClientService | undefined;
+    service?: Service | undefined;
   } | null>(null);
 
   const usdRate = num(data.settings?.usd_rate) || 60;
@@ -184,7 +195,8 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
       await queryClient.invalidateQueries({ queryKey: ["skyloop"] });
     },
     formState,
-    openForm: (kind, clientId, assignment) => setFormState({ kind, clientId, assignment }),
+    openForm: (kind, clientId, assignment, service) =>
+      setFormState({ kind, clientId, assignment, service }),
     closeForm: () => setFormState(null),
   };
 
