@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { toast } from "sonner";
 
+import { supabase } from "@/integrations/supabase/client";
 import {
   clientMetrics,
   expenseToMovement,
@@ -44,7 +47,12 @@ function ClientDetailPage() {
     clientName,
     providerName,
     serviceName,
+    refresh,
   } = useSkyloop();
+
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const client = data.clients.find((row) => row.id === clientId);
 
