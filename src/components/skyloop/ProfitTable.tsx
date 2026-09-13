@@ -11,7 +11,7 @@ export function ProfitTable({ limit }: { limit?: number }) {
     .map((client) => ({
       client,
       ...clientMetrics(client.id, monthIncomes, monthExpenses, usdRate),
-      estimated: estimatedMetrics(client, data.clientServices),
+      estimated: estimatedMetrics(client, data.clientServices, usdRate),
     }))
     .filter((row) => row.revenue || row.costs || row.estimated.payment)
     .sort(
@@ -53,20 +53,16 @@ export function ProfitTable({ limit }: { limit?: number }) {
             </td>
             <td className="px-4 py-3 text-right">
               {row.estimated.payment
-                ? money(row.estimated.payment, row.client.currency)
+                ? money(row.estimated.paymentOriginal, row.estimated.paymentCurrency)
                 : "—"}
             </td>
             <td className="px-4 py-3 text-right">
-              {row.estimated.payment
-                ? money(row.estimated.serviceCost, row.client.currency)
-                : "—"}
+              {row.estimated.payment ? money(row.estimated.serviceCost) : "—"}
             </td>
             <td
               className={`px-4 py-3 text-right font-bold ${row.estimated.estimatedProfit >= 0 ? "text-success" : "text-destructive"}`}
             >
-              {row.estimated.payment
-                ? money(row.estimated.estimatedProfit, row.client.currency)
-                : "—"}
+              {row.estimated.payment ? money(row.estimated.estimatedProfit) : "—"}
             </td>
             <td className="px-4 py-3 text-right">{money(row.revenue)}</td>
             <td className="px-4 py-3 text-right">{money(row.costs)}</td>

@@ -543,7 +543,7 @@ export function InvoiceForm({
                     <input
                       type="number"
                       min="1"
-                      step="1"
+                      step="any"
                       inputMode="numeric"
                       value={item.quantity}
                       onChange={(event) => {
@@ -563,7 +563,7 @@ export function InvoiceForm({
                   <td className="px-3 py-2">
                     <input
                       type="number"
-                      step="0.01"
+                      step="any"
                       value={item.rate}
                       onChange={(event) => updateItem(item.key, { rate: event.target.value })}
                       className={`${inputClass} text-right`}
@@ -572,7 +572,7 @@ export function InvoiceForm({
                   <td className="px-3 py-2">
                     <input
                       type="number"
-                      step="0.01"
+                      step="any"
                       value={item.tax}
                       onChange={(event) => updateItem(item.key, { tax: event.target.value })}
                       className={`${inputClass} text-right`}
@@ -638,7 +638,7 @@ export function InvoiceForm({
               <div className="flex items-center gap-2">
                 <input
                   type="number"
-                  step="0.01"
+                  step="any"
                   value={discount}
                   onChange={(event) => setDiscount(event.target.value)}
                   className="w-24 rounded-lg border border-input bg-background px-2 py-1.5 text-right text-sm text-foreground outline-none focus:border-primary"
@@ -660,7 +660,7 @@ export function InvoiceForm({
               <span className="text-sm text-muted-foreground">Cargos de envío</span>
               <input
                 type="number"
-                step="0.01"
+                step="any"
                 value={shipping}
                 onChange={(event) => setShipping(event.target.value)}
                 className="w-32 rounded-lg border border-input bg-background px-2 py-1.5 text-right text-sm text-foreground outline-none focus:border-primary"
@@ -670,7 +670,7 @@ export function InvoiceForm({
               <span className="text-sm text-muted-foreground">Ajuste</span>
               <input
                 type="number"
-                step="0.01"
+                step="any"
                 value={adjustment}
                 onChange={(event) => setAdjustment(event.target.value)}
                 className="w-32 rounded-lg border border-input bg-background px-2 py-1.5 text-right text-sm text-foreground outline-none focus:border-primary"

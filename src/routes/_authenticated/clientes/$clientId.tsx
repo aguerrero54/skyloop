@@ -74,7 +74,7 @@ function ClientDetailPage() {
   }
 
   const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
-  const est = estimatedMetrics(client, data.clientServices);
+  const est = estimatedMetrics(client, data.clientServices, usdRate);
   const committedPct =
     est.payment > 0 ? Math.min(100, (est.serviceCost / est.payment) * 100) : 0;
   const assignments = data.clientServices.filter(
@@ -119,7 +119,10 @@ function ClientDetailPage() {
     setSavingPayment(true);
     const { error } = await supabase
       .from("clients")
-      .update({ monthly_payment: num(form.get("monthly_payment")) })
+      .update({
+        monthly_payment: num(form.get("monthly_payment")),
+        currency: String(form.get("currency") ?? "DOP"),
+      })
       .eq("id", client!.id);
     setSavingPayment(false);
     if (error) {
@@ -302,15 +305,33 @@ function ClientDetailPage() {
           }
         >
           {editingPayment ? (
-            <form onSubmit={savePayment} className="flex flex-wrap items-center gap-2">
-              <input
-                type="number"
-                name="monthly_payment"
-                step="0.01"
-                min="0"
-                defaultValue={String(num(client!.monthly_payment))}
-                className="w-40 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-              />
+            <form onSubmit={savePayment} className="flex flex-wrap items-end gap-2">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+                  Pago mensual
+                </label>
+                <input
+                  type="number"
+                  name="monthly_payment"
+                  step="any"
+                  min="0"
+                  defaultValue={String(num(client!.monthly_payment))}
+                  className="w-40 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+                  Moneda
+                </label>
+                <select
+                  name="currency"
+                  defaultValue={client!.currency}
+                  className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+                >
+                  <option value="DOP">Pesos (DOP)</option>
+                  <option value="USD">Dólares (USD)</option>
+                </select>
+              </div>
               <button
                 type="submit"
                 disabled={savingPayment}
@@ -327,16 +348,19 @@ function ClientDetailPage() {
                     PAGO MENSUAL
                   </small>
                   <b className="block text-base text-foreground">
-                    {money(est.payment, client!.currency)}
+                    {money(est.paymentOriginal, est.paymentCurrency)}
                   </b>
+                  {est.paymentCurrency === "USD" && (
+                    <small className="block text-[11px] text-muted-foreground">
+                      ≈ {money(est.payment)} a RD${num(usdRate)}
+                    </small>
+                  )}
                 </div>
                 <div>
                   <small className="text-[10px] tracking-wider text-muted-foreground">
                     SERVICIOS OFRECIDOS
                   </small>
-                  <b className="block text-base text-foreground">
-                    {money(est.serviceCost, client!.currency)}
-                  </b>
+                  <b className="block text-base text-foreground">{money(est.serviceCost)}</b>
                 </div>
                 <div>
                   <small className="text-[10px] tracking-wider text-muted-foreground">
@@ -345,7 +369,7 @@ function ClientDetailPage() {
                   <b
                     className={`block text-base ${est.estimatedProfit >= 0 ? "text-success" : "text-destructive"}`}
                   >
-                    {money(est.estimatedProfit, client!.currency)}
+                    {money(est.estimatedProfit)}
                   </b>
                 </div>
               </div>
@@ -357,8 +381,9 @@ function ClientDetailPage() {
                 <ProgressBar percent={committedPct} />
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                Ganancia estimada = pago mensual − costo de los servicios ofrecidos. Margen
-                estimado: {est.estimatedMargin.toFixed(1)}%.
+                Ganancia estimada = pago mensual (convertido a pesos) − costo de los servicios
+                ofrecidos, que se pagan en pesos. Margen estimado:{" "}
+                {est.estimatedMargin.toFixed(1)}%.
               </p>
             </>
           ) : (

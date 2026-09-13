@@ -142,7 +142,11 @@ export function marginTone(margin: number): "success" | "warning" | "danger" {
 }
 
 export type EstimatedMetrics = {
+  /** Pago mensual convertido a pesos (moneda de los costos de servicios). */
   payment: number;
+  /** Pago mensual tal como se cobra al cliente. */
+  paymentOriginal: number;
+  paymentCurrency: string;
   serviceCost: number;
   estimatedProfit: number;
   estimatedMargin: number;
@@ -151,14 +155,18 @@ export type EstimatedMetrics = {
 export function estimatedMetrics(
   client: Client,
   assignments: ClientService[],
+  usdRate = 1,
 ): EstimatedMetrics {
-  const payment = num(client.monthly_payment);
+  const paymentOriginal = num(client.monthly_payment);
+  const payment = toDop(paymentOriginal, client.currency, usdRate);
   const serviceCost = assignments
     .filter((row) => row.client_id === client.id && row.active)
     .reduce((total, row) => total + num(row.cost), 0);
   const estimatedProfit = payment - serviceCost;
   return {
     payment,
+    paymentOriginal,
+    paymentCurrency: client.currency,
     serviceCost,
     estimatedProfit,
     estimatedMargin: payment ? (estimatedProfit / payment) * 100 : 0,

@@ -76,7 +76,7 @@ function SettingsPage() {
             </label>
             <input
               type="number"
-              step="0.01"
+              step="any"
               value={rate}
               onChange={(event) => setRate(event.target.value)}
               className={inputClass}
