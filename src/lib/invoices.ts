@@ -268,3 +268,55 @@ export function formatLongDate(date: string | null): string {
     .toLocaleDateString("es-DO", { day: "2-digit", month: "short", year: "numeric" })
     .replace(".", "");
 }
+
+export type InvoiceLedger = {
+  incomeBilled: number;
+  incomePaid: number;
+  receivable: number;
+  expenseBilled: number;
+  expensePaid: number;
+  payable: number;
+  netFlow: number;
+  incomeOpen: Invoice[];
+  expenseOpen: Invoice[];
+};
+
+export function invoiceBalance(invoice: Invoice): number {
+  return Math.max(num(invoice.total) - num(invoice.amount_paid), 0);
+}
+
+/** Consolida las facturas activas separando ingresos (clientes) de gastos (proveedores). */
+export function invoiceLedger(invoices: Invoice[], usdRate: number): InvoiceLedger {
+  const dop = (invoice: Invoice, value: number) =>
+    invoice.currency === "USD" ? value * usdRate : value;
+  const active = invoices.filter(
+    (invoice) => invoice.status !== "Borrador" && invoice.status !== "Cancelada",
+  );
+  const income = active.filter((invoice) => invoiceKind(invoice) === "client");
+  const expense = active.filter((invoice) => invoiceKind(invoice) === "vendor");
+  const total = (rows: Invoice[]) =>
+    rows.reduce((sum, invoice) => sum + dop(invoice, num(invoice.total)), 0);
+  const paidSum = (rows: Invoice[]) =>
+    rows.reduce((sum, invoice) => sum + dop(invoice, num(invoice.amount_paid)), 0);
+  const open = (rows: Invoice[]) =>
+    rows
+      .filter((invoice) => invoiceBalance(invoice) > 0)
+      .sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""));
+
+  const incomeBilled = total(income);
+  const incomePaid = paidSum(income);
+  const expenseBilled = total(expense);
+  const expensePaid = paidSum(expense);
+
+  return {
+    incomeBilled,
+    incomePaid,
+    receivable: Math.max(incomeBilled - incomePaid, 0),
+    expenseBilled,
+    expensePaid,
+    payable: Math.max(expenseBilled - expensePaid, 0),
+    netFlow: incomePaid - expensePaid,
+    incomeOpen: open(income),
+    expenseOpen: open(expense),
+  };
+}
