@@ -5,3 +5,4 @@
 - [x] Integrar Personalización dentro de Configuración.
 - [x] Verificar cambios en tiempo real, guardado, restauración y pantallas existentes.
 - [x] Facturas de cliente (ingreso) y de proveedor (gasto) con servicios pendientes, pagos parciales, cuentas por cobrar y por pagar.
+- [x] Presupuesto mensual por cliente: pago cerrado del trato, servicios ofrecidos y ganancia estimada en ficha, lista y rentabilidad.
