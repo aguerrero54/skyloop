@@ -14,6 +14,7 @@ export const navItems = [
   { to: "/clientes", icon: "◎", label: "Clientes", eyebrow: "CARTERA DE MARCAS" },
   { to: "/servicios", icon: "◇", label: "Servicios", eyebrow: "CATÁLOGO DE SKYLOOP" },
   { to: "/equipo", icon: "♙", label: "Equipo / Proveedores", eyebrow: "SUBCONTRATADOS" },
+  { to: "/facturas", icon: "🧾", label: "Facturas", eyebrow: "FACTURACIÓN DE CLIENTES" },
   { to: "/ingresos", icon: "↗", label: "Ingresos", eyebrow: "FACTURACIÓN Y COBROS" },
   { to: "/gastos", icon: "↘", label: "Gastos", eyebrow: "COSTOS DE LA AGENCIA" },
   { to: "/por-cobrar", icon: "◷", label: "Cuentas por cobrar", eyebrow: "CLIENTES / PENDIENTES" },
