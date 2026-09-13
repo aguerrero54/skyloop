@@ -166,7 +166,7 @@ function TopBar({
         {isDashboard && (
           <button
             type="button"
-            onClick={() => setCustomizeOpen(true)}
+            onClick={onCustomize}
             className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-secondary"
           >
             <Settings2 className="size-4" />
@@ -174,16 +174,13 @@ function TopBar({
           </button>
         )}
       </div>
-
-      {isDashboard && (
-        <DashboardCustomizer open={customizeOpen} onClose={() => setCustomizeOpen(false)} />
-      )}
     </header>
   );
 }
 
 function ShellBody({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const { isLoading, error } = useSkyloop();
 
   return (
