@@ -314,8 +314,10 @@ export function InvoiceForm({
     try {
       const id = await saveInvoice({
         ...(invoice ? { id: invoice.id } : {}),
+        invoiceType: kind,
         invoiceNumber,
-        clientId,
+        clientId: clientId || null,
+        vendorId: vendorId || null,
         sellerId: null,
         orderNumber: orderNumber.trim() || null,
         issueDate,
