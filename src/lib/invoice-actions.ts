@@ -126,7 +126,7 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
     if (deleteError) throw new Error(deleteError.message);
   } else {
     let attempt = 0;
-    let number = input.invoiceNumber || (await generateNumber());
+    let number = input.invoiceNumber || (await generateNumber(kind));
     for (;;) {
       const { data, error } = await supabase
         .from("invoices")
@@ -139,7 +139,7 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
       }
       if (error?.code === "23505" && attempt < 5) {
         attempt += 1;
-        number = await generateNumber();
+        number = await generateNumber(kind);
         continue;
       }
       throw new Error(error?.message ?? "No se pudo crear la factura");
@@ -156,6 +156,7 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
         tax: num(item.tax),
         amount: round2(itemAmount(item.quantity, item.rate)),
         position: index,
+        obligation_id: kind === "vendor" ? (item.obligationId ?? null) : null,
       })),
     );
     if (error) throw new Error(error.message);
