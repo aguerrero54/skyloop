@@ -48,6 +48,7 @@ export type Database = {
           cost: number
           created_at: string
           id: string
+          monthly_quantity: number
           provider_id: string | null
           sale_price: number
           service_id: string | null
@@ -58,6 +59,7 @@ export type Database = {
           cost?: number
           created_at?: string
           id?: string
+          monthly_quantity?: number
           provider_id?: string | null
           sale_price?: number
           service_id?: string | null
@@ -68,6 +70,7 @@ export type Database = {
           cost?: number
           created_at?: string
           id?: string
+          monthly_quantity?: number
           provider_id?: string | null
           sale_price?: number
           service_id?: string | null
