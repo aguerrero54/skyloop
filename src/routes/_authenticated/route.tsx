@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/skyloop/AppShell";
 import { ThemeProvider } from "@/lib/theme-context";
+import { DashboardPrefsProvider } from "@/lib/dashboard-prefs";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -18,9 +19,11 @@ function AuthenticatedLayout() {
   const { user } = Route.useRouteContext();
   return (
     <ThemeProvider userId={user.id}>
-      <AppShell>
-        <Outlet />
-      </AppShell>
+      <DashboardPrefsProvider userId={user.id}>
+        <AppShell>
+          <Outlet />
+        </AppShell>
+      </DashboardPrefsProvider>
     </ThemeProvider>
   );
 }

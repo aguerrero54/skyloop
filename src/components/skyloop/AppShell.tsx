@@ -1,13 +1,14 @@
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, Settings2, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { monthLabel } from "@/lib/finance";
 import { SkyloopProvider, useSkyloop } from "@/lib/skyloop-context";
 import { RecordModal } from "@/components/skyloop/RecordModal";
+import { DashboardCustomizer } from "@/components/skyloop/DashboardCustomizer";
 
 export const navItems = [
   { to: "/dashboard", icon: "◫", label: "Dashboard", eyebrow: "RESUMEN FINANCIERO" },
@@ -156,7 +157,22 @@ function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
             </option>
           ))}
         </select>
+
+        {isDashboard && (
+          <button
+            type="button"
+            onClick={() => setCustomizeOpen(true)}
+            className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-secondary"
+          >
+            <Settings2 className="size-4" />
+            Personalizar
+          </button>
+        )}
       </div>
+
+      {isDashboard && (
+        <DashboardCustomizer open={customizeOpen} onClose={() => setCustomizeOpen(false)} />
+      )}
     </header>
   );
 }
