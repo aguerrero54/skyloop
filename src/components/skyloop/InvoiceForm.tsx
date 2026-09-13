@@ -631,7 +631,7 @@ export function InvoiceForm({
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           <div className="grid gap-4">
             <div>
-              <label className={labelClass}>Notas del cliente</label>
+              <label className={labelClass}>Notas del {copy.entity}</label>
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
@@ -777,7 +777,11 @@ export function InvoiceForm({
           onClick={() => void submit("Pendiente")}
           className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
         >
-          {saving === "Pendiente" ? "Guardando…" : "Guardar y emitir"}
+          {saving === "Pendiente"
+            ? "Guardando…"
+            : kind === "vendor"
+              ? "Guardar y registrar gasto"
+              : "Guardar y emitir"}
         </button>
       </div>
     </div>
