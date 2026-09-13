@@ -74,7 +74,7 @@ function ClientDetailPage() {
   }
 
   const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
-  const est = estimatedMetrics(client, data.clientServices);
+  const est = estimatedMetrics(client, data.clientServices, usdRate);
   const committedPct =
     est.payment > 0 ? Math.min(100, (est.serviceCost / est.payment) * 100) : 0;
   const assignments = data.clientServices.filter(
@@ -119,7 +119,10 @@ function ClientDetailPage() {
     setSavingPayment(true);
     const { error } = await supabase
       .from("clients")
-      .update({ monthly_payment: num(form.get("monthly_payment")) })
+      .update({
+        monthly_payment: num(form.get("monthly_payment")),
+        currency: String(form.get("currency") ?? "DOP"),
+      })
       .eq("id", client!.id);
     setSavingPayment(false);
     if (error) {
