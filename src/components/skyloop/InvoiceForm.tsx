@@ -133,20 +133,34 @@ function EntityPicker({
 export function InvoiceForm({
   invoice,
   existingItems,
+  kind: initialKind = "client",
 }: {
   invoice?: Invoice;
   existingItems?: InvoiceItem[];
+  kind?: InvoiceKind;
 }) {
-  const { data, refresh } = useSkyloop();
+  const { data, refresh, openForm } = useSkyloop();
   const navigate = useNavigate();
 
+  const [kind, setKind] = useState<InvoiceKind>(invoice ? invoiceKind(invoice) : initialKind);
+  const copy = KIND_COPY[kind];
+
   const suggestedNumber = useMemo(
-    () => invoice?.invoice_number ?? nextInvoiceNumber(data.invoices.map((row) => row.invoice_number)),
-    [invoice, data.invoices],
+    () =>
+      invoice?.invoice_number ??
+      nextInvoiceNumber(
+        data.invoices.map((row) => row.invoice_number),
+        kind,
+      ),
+    [invoice, data.invoices, kind],
   );
 
   const [invoiceNumber, setInvoiceNumber] = useState(suggestedNumber);
   const [clientId, setClientId] = useState(invoice?.client_id ?? "");
+  const [vendorId, setVendorId] = useState(invoice?.vendor_id ?? "");
+  const entityId = kind === "client" ? clientId : vendorId;
+  const obligations = pendingObligations(data.providerObligations, vendorId || null);
+  
   
   const [orderNumber, setOrderNumber] = useState(invoice?.order_number ?? "");
   const [issueDate, setIssueDate] = useState(invoice?.issue_date ?? todayISO());
