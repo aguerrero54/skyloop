@@ -116,7 +116,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
-  const { month, months, setMonth, openForm } = useSkyloop();
+  const { month, months, setMonth } = useSkyloop();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const active =
     navItems.find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`)) ??
