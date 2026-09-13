@@ -6,6 +6,7 @@ import {
   incomeToMovement,
   monthLabel,
   money,
+  num,
 } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { EmptyRow, MovementTable, Panel, TableShell } from "@/components/skyloop/ui";
@@ -131,17 +132,21 @@ function ClientDetailPage() {
             head={
               <tr>
                 <th className="px-4 py-3 font-semibold">Servicio</th>
+                <th className="px-4 py-3 text-right font-semibold">Cantidad / mes</th>
                 <th className="px-4 py-3 font-semibold">Proveedor</th>
                 <th className="px-4 py-3 text-right font-semibold">Costo base</th>
               </tr>
             }
           >
             {assignments.length === 0 ? (
-              <EmptyRow colSpan={3} label="Sin asignaciones" />
+              <EmptyRow colSpan={4} label="Sin asignaciones" />
             ) : (
               assignments.map((row) => (
                 <tr key={row.id} className="border-t border-border">
                   <td className="px-4 py-3 text-foreground">{serviceName(row.service_id)}</td>
+                  <td className="px-4 py-3 text-right text-foreground">
+                    {num(row.monthly_quantity) || "—"}
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {providerName(row.provider_id)}
                   </td>
