@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 
 import { money, num, sumDop } from "@/lib/finance";
 import { obligationBalance } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
+import { supabase } from "@/integrations/supabase/client";
 import { EmptyRow, Panel, SectionTitle, StatusBadge, TableShell } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/equipo")({
@@ -27,10 +30,39 @@ export const Route = createFileRoute("/_authenticated/equipo")({
 });
 
 function TeamPage() {
-  const { data, monthExpenses, usdRate, openForm, providerName } = useSkyloop();
+  const { data, monthExpenses, usdRate, openForm, providerName, refresh } = useSkyloop();
+  const [selecting, setSelecting] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const obligations = [...data.providerObligations].sort((a, b) =>
     a.status === b.status ? a.description.localeCompare(b.description) : a.status.localeCompare(b.status),
   );
+
+  const selected = data.providers.find((provider) => provider.id === selectedId) ?? null;
+
+  function toggleSelecting() {
+    setSelecting((current) => !current);
+    setSelectedId(null);
+  }
+
+  async function handleDelete() {
+    if (!selected) return;
+    const confirmed = window.confirm(
+      `¿Eliminar el proveedor "${selected.name}"? Esta acción no se puede deshacer.`,
+    );
+    if (!confirmed) return;
+    setDeleting(true);
+    const { error } = await supabase.from("providers").delete().eq("id", selected.id);
+    setDeleting(false);
+    if (error) {
+      toast.error("No se pudo eliminar", { description: error.message });
+      return;
+    }
+    toast.success("Proveedor eliminado");
+    setSelectedId(null);
+    setSelecting(false);
+    await refresh();
+  }
 
   return (
     <div className="grid gap-6">
@@ -38,15 +70,57 @@ function TeamPage() {
         title="Directorio de proveedores"
         description="Consulta cuánto has generado y cuánto está pendiente con cada colaborador."
         action={
-          <button
-            type="button"
-            onClick={() => openForm("provider")}
-            className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            + Nuevo proveedor
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleSelecting}
+              className="rounded-lg border border-border px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-secondary"
+            >
+              {selecting ? "Cancelar" : "Seleccionar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => openForm("provider")}
+              className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              + Nuevo proveedor
+            </button>
+          </div>
         }
       />
+
+      {selecting && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-panel">
+          {selected ? (
+            <>
+              <p className="text-sm text-foreground">
+                Seleccionado: <b>{selected.name}</b>
+              </p>
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openForm("provider", undefined, undefined, undefined, selected)}
+                  className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="rounded-lg border border-destructive/40 px-3 py-2 text-sm font-bold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+                >
+                  {deleting ? "Eliminando…" : "Eliminar"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Toca un proveedor de la lista para editarlo o eliminarlo.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {data.providers.map((provider) => {
@@ -56,10 +130,14 @@ function TeamPage() {
             rows.filter((row) => row.status === "Pagado"),
             usdRate,
           );
+          const isSelected = selecting && selectedId === provider.id;
           return (
             <article
               key={provider.id}
-              className="rounded-2xl border border-border bg-card p-5 shadow-panel"
+              onClick={selecting ? () => setSelectedId(isSelected ? null : provider.id) : undefined}
+              className={`rounded-2xl border bg-card p-5 shadow-panel transition-colors ${
+                selecting ? "cursor-pointer" : ""
+              } ${isSelected ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
             >
               <div className="flex items-center justify-between">
                 <span className="grid size-10 place-items-center rounded-xl bg-secondary text-sm font-bold text-foreground">
