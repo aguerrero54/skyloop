@@ -40,21 +40,40 @@ function emptyItem(): DraftItem {
   return { key: newKey(), description: "", quantity: "1", rate: "0", tax: "0" };
 }
 
-function ClientPicker({
-  clients,
+type PickerOption = {
+  id: string;
+  name: string;
+  company?: string | null;
+  email?: string | null;
+  phone?: string | null;
+};
+
+/** Selector único que se alimenta de clientes o de proveedores según el tipo de documento. */
+function EntityPicker({
+  options,
   value,
   onChange,
+  placeholder,
+  createLabel,
+  onCreate,
 }: {
-  clients: Client[];
+  options: PickerOption[];
   value: string;
   onChange: (id: string) => void;
+  placeholder: string;
+  createLabel: string;
+  onCreate: () => void;
 }) {
-  const { openForm } = useSkyloop();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const selected = clients.find((client) => client.id === value);
-  const matches = clients.filter((client) =>
-    client.name.toLowerCase().includes(query.trim().toLowerCase()),
+  const selected = options.find((option) => option.id === value);
+  const needle = query.trim().toLowerCase();
+  const matches = options.filter((option) =>
+    [option.name, option.company, option.email, option.phone]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(needle),
   );
 
   return (
@@ -62,7 +81,7 @@ function ClientPicker({
       <input
         type="text"
         value={open ? query : (selected?.name ?? "")}
-        placeholder="Seleccionar o buscar un cliente"
+        placeholder={placeholder}
         onFocus={() => {
           setOpen(true);
           setQuery("");
@@ -73,19 +92,22 @@ function ClientPicker({
       />
       {open && (
         <div className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-panel">
-          {matches.map((client) => (
+          {matches.map((option) => (
             <button
-              key={client.id}
+              key={option.id}
               type="button"
               onMouseDown={() => {
-                onChange(client.id);
+                onChange(option.id);
                 setOpen(false);
               }}
               className="block w-full rounded-md px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-secondary"
             >
-              {client.name}
-              {client.company ? (
-                <span className="ml-2 text-xs text-muted-foreground">{client.company}</span>
+              {option.name}
+              {option.company ? (
+                <span className="ml-2 text-xs text-muted-foreground">{option.company}</span>
+              ) : null}
+              {option.email ? (
+                <span className="ml-2 text-xs text-muted-foreground">{option.email}</span>
               ) : null}
             </button>
           ))}
@@ -96,11 +118,11 @@ function ClientPicker({
             type="button"
             onMouseDown={() => {
               setOpen(false);
-              openForm("client");
+              onCreate();
             }}
             className="mt-1 block w-full rounded-md border-t border-border px-3 py-2 text-left text-sm font-bold text-primary-soft"
           >
-            + Crear nuevo cliente
+            {createLabel}
           </button>
         </div>
       )}
