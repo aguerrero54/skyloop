@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 
 import { money, num } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
+import { supabase } from "@/integrations/supabase/client";
 import { SectionTitle, StatusBadge } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/servicios")({
@@ -26,7 +29,36 @@ export const Route = createFileRoute("/_authenticated/servicios")({
 });
 
 function ServicesPage() {
-  const { data, openForm } = useSkyloop();
+  const { data, openForm, refresh } = useSkyloop();
+  const [selecting, setSelecting] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const selected = data.services.find((service) => service.id === selectedId) ?? null;
+
+  function toggleSelecting() {
+    setSelecting((current) => !current);
+    setSelectedId(null);
+  }
+
+  async function handleDelete() {
+    if (!selected) return;
+    const confirmed = window.confirm(
+      `¿Eliminar el servicio "${selected.name}"? Esta acción no se puede deshacer.`,
+    );
+    if (!confirmed) return;
+    setDeleting(true);
+    const { error } = await supabase.from("services").delete().eq("id", selected.id);
+    setDeleting(false);
+    if (error) {
+      toast.error("No se pudo eliminar", { description: error.message });
+      return;
+    }
+    toast.success("Servicio eliminado");
+    setSelectedId(null);
+    setSelecting(false);
+    await refresh();
+  }
 
   return (
     <div>
@@ -34,25 +66,73 @@ function ServicesPage() {
         title="Catálogo de servicios"
         description="Precio, costo estimado y margen de cada servicio."
         action={
-          <button
-            type="button"
-            onClick={() => openForm("service")}
-            className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            + Nuevo servicio
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleSelecting}
+              className="rounded-lg border border-border px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-secondary"
+            >
+              {selecting ? "Cancelar" : "Seleccionar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => openForm("service")}
+              className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              + Nuevo servicio
+            </button>
+          </div>
         }
       />
+
+      {selecting && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-panel">
+          {selected ? (
+            <>
+              <p className="text-sm text-foreground">
+                Seleccionado: <b>{selected.name}</b>
+              </p>
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openForm("service", undefined, undefined, selected)}
+                  className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="rounded-lg border border-destructive/40 px-3 py-2 text-sm font-bold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+                >
+                  {deleting ? "Eliminando…" : "Eliminar"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Toca un servicio de la lista para editarlo o eliminarlo.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {data.services.map((service) => {
           const price = num(service.suggested_price);
           const cost = num(service.estimated_cost);
           const margin = price ? ((price - cost) / price) * 100 : 0;
+          const isSelected = selecting && selectedId === service.id;
           return (
             <article
               key={service.id}
-              className="rounded-2xl border border-border bg-card p-5 shadow-panel"
+              onClick={
+                selecting ? () => setSelectedId(isSelected ? null : service.id) : undefined
+              }
+              className={`rounded-2xl border bg-card p-5 shadow-panel transition-colors ${
+                selecting ? "cursor-pointer" : ""
+              } ${isSelected ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
             >
               <div className="flex items-center justify-between">
                 <span className="grid size-10 place-items-center rounded-xl bg-secondary text-foreground">

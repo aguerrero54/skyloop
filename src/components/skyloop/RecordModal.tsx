@@ -37,6 +37,7 @@ export function RecordModal() {
   const kind = formState.kind;
   const presetClient = formState.clientId ?? "";
   const editingAssignment = kind === "assignment" ? formState.assignment : undefined;
+  const editingService = kind === "service" ? formState.service : undefined;
 
   const clientOptions = data.clients.map((client) => ({ value: client.id, label: client.name }));
   const providerOptions = data.providers.map((provider) => ({
@@ -157,11 +158,39 @@ export function RecordModal() {
         ];
       case "service":
         return [
-          { name: "name", label: "Nombre", type: "text", required: true },
-          { name: "category", label: "Categoría", type: "text", required: true },
-          { name: "suggested_price", label: "Precio sugerido", type: "number" },
-          { name: "estimated_cost", label: "Costo estimado", type: "number" },
-          { name: "status", label: "Estado", type: "select", options: plain(["Activo", "Inactivo"]) },
+          {
+            name: "name",
+            label: "Nombre",
+            type: "text",
+            required: true,
+            defaultValue: editingService?.name,
+          },
+          {
+            name: "category",
+            label: "Categoría",
+            type: "text",
+            required: true,
+            defaultValue: editingService?.category ?? undefined,
+          },
+          {
+            name: "suggested_price",
+            label: "Precio sugerido",
+            type: "number",
+            defaultValue: editingService ? String(num(editingService.suggested_price)) : undefined,
+          },
+          {
+            name: "estimated_cost",
+            label: "Costo estimado",
+            type: "number",
+            defaultValue: editingService ? String(num(editingService.estimated_cost)) : undefined,
+          },
+          {
+            name: "status",
+            label: "Estado",
+            type: "select",
+            defaultValue: editingService?.status ?? undefined,
+            options: plain(["Activo", "Inactivo"]),
+          },
         ];
       case "assignment":
         return [
@@ -282,6 +311,17 @@ export function RecordModal() {
           phone: orNull("phone"),
           email: orNull("email"),
         }));
+      } else if (kind === "service" && editingService) {
+        ({ error } = await supabase
+          .from("services")
+          .update({
+            name: get("name"),
+            category: orNull("category"),
+            suggested_price: num(get("suggested_price")),
+            estimated_cost: num(get("estimated_cost")),
+            status: get("status"),
+          })
+          .eq("id", editingService.id));
       } else if (kind === "service") {
         ({ error } = await supabase.from("services").insert({
           name: get("name"),
@@ -351,10 +391,14 @@ export function RecordModal() {
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
-              {editingAssignment ? "EDITAR REGISTRO" : "NUEVO REGISTRO"}
+              {editingAssignment || editingService ? "EDITAR REGISTRO" : "NUEVO REGISTRO"}
             </p>
             <h3 className="mt-1 text-lg font-bold text-foreground">
-              {editingAssignment ? "Editar asignación" : titles[kind]}
+              {editingAssignment
+                ? "Editar asignación"
+                : editingService
+                  ? "Editar servicio"
+                  : titles[kind]}
             </h3>
           </div>
           <button
