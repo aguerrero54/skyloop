@@ -207,7 +207,10 @@ function ShellBody({ children }: { children: ReactNode }) {
       )}
 
       <div className="lg:ml-[235px]">
-        <TopBar onOpenMenu={() => setMenuOpen(true)} />
+        <TopBar
+          onOpenMenu={() => setMenuOpen(true)}
+          onCustomize={() => setCustomizeOpen(true)}
+        />
         <main className="px-5 py-6 lg:px-8">
           {error ? (
             <div className="rounded-2xl border border-destructive/40 bg-destructive/10 p-5 text-sm text-destructive">
