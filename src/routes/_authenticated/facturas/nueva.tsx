@@ -60,9 +60,10 @@ function NewInvoicePage() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-xl">
-        <h3 className="text-lg font-bold text-foreground">
+        <h3 className="text-center text-lg font-bold text-foreground">
           ¿Qué tipo de factura deseas crear?
         </h3>
+
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {OPTIONS.map((option) => (
