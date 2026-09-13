@@ -64,7 +64,7 @@ function ClientsPage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {clients.map((client) => {
             const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
-            const est = estimatedMetrics(client, data.clientServices);
+            const est = estimatedMetrics(client, data.clientServices, usdRate);
             return (
               <Link
                 key={client.id}
@@ -102,12 +102,14 @@ function ClientsPage() {
                   <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl border border-border bg-surface-raised p-3 text-xs">
                     <div>
                       <small className="block text-muted-foreground">Pago mensual</small>
-                      <b className="text-foreground">{money(est.payment, client.currency)}</b>
+                      <b className="text-foreground">
+                        {money(est.paymentOriginal, est.paymentCurrency)}
+                      </b>
                     </div>
                     <div>
                       <small className="block text-muted-foreground">Ganancia estimada</small>
                       <b className={est.estimatedProfit >= 0 ? "text-success" : "text-destructive"}>
-                        {money(est.estimatedProfit, client.currency)}
+                        {money(est.estimatedProfit)}
                       </b>
                     </div>
                   </div>
