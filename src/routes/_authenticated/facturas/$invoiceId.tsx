@@ -92,7 +92,7 @@ function InvoiceDetailPage() {
     window.open(signed.signedUrl, "_blank", "noopener");
   }
 
-  function sendByEmail() {
+  const sendByEmail = () => {
     const to = client?.email ?? "";
     const subject = `Factura ${invoice.invoice_number} — Skyloop Agency`;
     const body = [
@@ -106,7 +106,7 @@ function InvoiceDetailPage() {
       "Skyloop Agency",
     ].join("\n");
     window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  }
+  };
 
   return (
     <div className="grid gap-4">
