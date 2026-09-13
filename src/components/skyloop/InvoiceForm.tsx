@@ -270,18 +270,25 @@ export function InvoiceForm({
     );
   }
 
-  function applyObligation(key: string, obligationId: string) {
-    const obligation = obligations.find((row) => row.id === obligationId);
-    if (!obligation) {
-      updateItem(key, { obligationId: null });
-      return;
+  /** Elegir proveedor: si hay servicios pendientes y las filas están vacías, se agregan solos. */
+  function applyVendor(id: string) {
+    setVendorId(id);
+    const pending = pendingObligations(data.providerObligations, id || null);
+    const untouched = items.every(
+      (item) => !item.description.trim() && !item.obligationId && num(item.rate) === 0,
+    );
+    if (pending.length && untouched) {
+      setItems(
+        pending.map((obligation) => ({
+          key: newKey(),
+          description: obligation.description,
+          quantity: "1",
+          rate: String(obligationBalance(obligation)),
+          tax: "0",
+          obligationId: obligation.id,
+        })),
+      );
     }
-    updateItem(key, {
-      obligationId: obligation.id,
-      description: obligation.description,
-      quantity: "1",
-      rate: String(obligationBalance(obligation)),
-    });
   }
 
   async function submit(status: InvoiceStatus) {
@@ -495,7 +502,7 @@ export function InvoiceForm({
         {...(kind === "vendor"
           ? {
               subtitle:
-                "Selecciona los servicios pendientes del proveedor o escribe un concepto nuevo",
+                "Al elegir un proveedor, sus servicios pendientes se agregan automáticamente; también puedes escribir conceptos nuevos",
             }
           : {})}
         action={
