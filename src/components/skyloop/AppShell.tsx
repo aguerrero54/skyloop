@@ -20,8 +20,7 @@ export const navItems = [
   { to: "/gastos", icon: "↘", label: "Gastos", eyebrow: "COSTOS DE LA AGENCIA" },
   { to: "/por-cobrar", icon: "◷", label: "Cuentas por cobrar", eyebrow: "CLIENTES / PENDIENTES" },
   { to: "/por-pagar", icon: "◴", label: "Cuentas por pagar", eyebrow: "PROVEEDORES / OBLIGACIONES" },
-  { to: "/rentabilidad", icon: "△", label: "Rentabilidad", eyebrow: "MARGEN POR CLIENTE" },
-  { to: "/reportes", icon: "▤", label: "Reportes", eyebrow: "EXPORTACIÓN Y ANÁLISIS" },
+  { to: "/reportes", icon: "▤", label: "Reportes", eyebrow: "MARGEN POR CLIENTE Y EXPORTACIÓN" },
   { to: "/configuracion", icon: "⚙", label: "Configuración", eyebrow: "PREFERENCIAS" },
 ] as const;
 
