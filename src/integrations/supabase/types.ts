@@ -41,6 +41,54 @@ export type Database = {
         }
         Relationships: []
       }
+      client_service_months: {
+        Row: {
+          client_service_id: string
+          cost: number
+          created_at: string
+          id: string
+          month: string
+          monthly_quantity: number
+          provider_id: string | null
+          user_id: string
+        }
+        Insert: {
+          client_service_id: string
+          cost?: number
+          created_at?: string
+          id?: string
+          month: string
+          monthly_quantity?: number
+          provider_id?: string | null
+          user_id?: string
+        }
+        Update: {
+          client_service_id?: string
+          cost?: number
+          created_at?: string
+          id?: string
+          month?: string
+          monthly_quantity?: number
+          provider_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_service_months_client_service_id_fkey"
+            columns: ["client_service_id"]
+            isOneToOne: false
+            referencedRelation: "client_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_service_months_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_services: {
         Row: {
           active: boolean
