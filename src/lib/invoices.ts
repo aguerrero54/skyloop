@@ -1,5 +1,5 @@
 import type { Tables } from "@/integrations/supabase/types";
-import { num, todayISO } from "@/lib/finance";
+import { num, todayISO, type Movement } from "@/lib/finance";
 
 export type Invoice = Tables<"invoices">;
 export type InvoiceItem = Tables<"invoice_items">;
