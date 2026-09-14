@@ -144,8 +144,10 @@ function ServicesPage() {
                 selecting ? "cursor-pointer" : ""
               } ${isSelected ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
             >
-              <div className="flex items-center justify-between">
-                {selecting ? (
+              <div
+                className={`flex items-center ${selecting ? "justify-between" : "justify-end"}`}
+              >
+                {selecting && (
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -154,10 +156,6 @@ function ServicesPage() {
                     aria-label={`Seleccionar ${service.name}`}
                     className="size-5 cursor-pointer accent-primary"
                   />
-                ) : (
-                  <span className="grid size-10 place-items-center rounded-xl bg-secondary text-foreground">
-                    ◇
-                  </span>
                 )}
                 <StatusBadge status={service.status} />
               </div>

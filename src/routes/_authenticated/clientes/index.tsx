@@ -72,10 +72,7 @@ function ClientsPage() {
                 params={{ clientId: client.id }}
                 className="rounded-2xl border border-border bg-card p-5 shadow-panel transition-colors hover:border-primary/50"
               >
-                <div className="flex items-center justify-between">
-                  <span className="grid size-10 place-items-center rounded-xl bg-secondary text-sm font-bold text-foreground">
-                    {client.name.slice(0, 2).toUpperCase()}
-                  </span>
+                <div className="flex items-center justify-end">
                   <StatusBadge status={client.status} />
                 </div>
                 <h3 className="mt-4 text-base font-bold text-foreground">{client.name}</h3>
