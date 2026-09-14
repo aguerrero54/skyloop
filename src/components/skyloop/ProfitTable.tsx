@@ -46,7 +46,7 @@ export function ProfitTable({ limit, showPayment = true }: { limit?: number; sho
             <td className="px-4 py-3 text-sm uppercase tracking-wider text-muted-foreground">
               Total ({rows.length})
             </td>
-            <td className="px-4 py-3 text-right text-foreground">{money(totalPayment)}</td>
+            {showPayment && <td className="px-4 py-3 text-right text-foreground">{money(totalPayment)}</td>}
             <td className="px-4 py-3 text-right text-foreground">{money(totalRevenue)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalCosts)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalProfit)}</td>
@@ -55,7 +55,7 @@ export function ProfitTable({ limit, showPayment = true }: { limit?: number; sho
       }
     >
       {rows.length === 0 ? (
-        <EmptyRow colSpan={6} label="Sin información en este mes" />
+        <EmptyRow colSpan={showPayment ? 6 : 5} label="Sin información en este mes" />
       ) : (
         rows.map((row) => (
           <tr key={row.client.id} className="border-t border-border">
