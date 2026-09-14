@@ -385,7 +385,10 @@ export function InvoiceForm({
             <EntityPicker
               options={data.clients}
               value={clientId}
-              onChange={setClientId}
+              onChange={(id) => {
+                setClientId(id);
+                applyNumberPrefix(id);
+              }}
               placeholder={copy.entityPlaceholder}
               createLabel="+ Crear nuevo cliente"
               onCreate={() => openForm("client")}
