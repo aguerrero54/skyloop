@@ -219,28 +219,6 @@ function InvoicesPage() {
               </button>
             ))}
           </div>
-          <div className="flex flex-wrap gap-2 xl:col-span-5">
-            {[
-              { label: "Pagadas", value: "Pagada" },
-              { label: "Pendientes", value: "Pendiente" },
-              { label: "Vencidas", value: "Vencida" },
-              { label: "Parciales", value: "Parcialmente pagada" },
-              { label: "Todas", value: "todas" },
-            ].map((chip) => (
-              <button
-                key={chip.value}
-                type="button"
-                onClick={() => setStatus(chip.value)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
-                  status === chip.value
-                    ? "border-primary bg-primary/15 text-primary-soft"
-                    : "border-border text-muted-foreground hover:bg-secondary"
-                }`}
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
         </div>
       </Panel>
 
