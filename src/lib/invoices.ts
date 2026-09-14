@@ -246,6 +246,16 @@ export const invoiceStatusTone: Record<
   Cancelada: "muted",
 };
 
+/** Iniciales del cliente para la nomenclatura de facturas: "Gran Hotel Europa" → "GHE". */
+export function clientInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 3)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export function nextInvoiceNumber(existing: string[], kind: InvoiceKind = "client"): string {
   const prefix = KIND_COPY[kind].numberPrefix;
   const scoped = existing.filter((value) =>
