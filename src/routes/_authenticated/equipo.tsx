@@ -151,9 +151,7 @@ function TeamPage() {
                 selecting ? "cursor-pointer" : ""
               } ${isSelected ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
             >
-              <div
-                className={`flex items-center ${selecting ? "justify-between" : "justify-end"}`}
-              >
+              <div className="flex items-center gap-3">
                 {selecting && (
                   <input
                     type="checkbox"
@@ -161,12 +159,14 @@ function TeamPage() {
                     onChange={() => toggleSelected(provider.id)}
                     onClick={(event) => event.stopPropagation()}
                     aria-label={`Seleccionar ${provider.name}`}
-                    className="size-5 cursor-pointer accent-primary"
+                    className="size-5 shrink-0 cursor-pointer accent-primary"
                   />
                 )}
+                <h3 className="min-w-0 flex-1 truncate text-base font-bold text-foreground">
+                  {provider.name}
+                </h3>
                 <StatusBadge status={provider.status} />
               </div>
-              <h3 className="mt-4 text-base font-bold text-foreground">{provider.name}</h3>
               <p className="mt-1 text-xs text-muted-foreground">{provider.specialty}</p>
               <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
                 <div>
