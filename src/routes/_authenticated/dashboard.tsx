@@ -248,7 +248,7 @@ function DashboardPage() {
           </Link>
         }
       >
-        <ProfitTable limit={4} />
+        <ProfitTable limit={4} showPayment={false} />
       </Panel>
     ),
     attention: (

@@ -4,7 +4,7 @@ import { clientMetrics, estimatedMetrics, marginTone, money } from "@/lib/financ
 import { useSkyloop } from "@/lib/skyloop-context";
 import { EmptyRow, MarginBadge, TableShell } from "@/components/skyloop/ui";
 
-export function ProfitTable({ limit }: { limit?: number }) {
+export function ProfitTable({ limit, showPayment = true }: { limit?: number; showPayment?: boolean }) {
   const { data, monthIncomes, monthExpenses, monthClientServices, usdRate } = useSkyloop();
 
   let rows = data.clients
@@ -33,7 +33,7 @@ export function ProfitTable({ limit }: { limit?: number }) {
       head={
         <tr>
           <th className="px-4 py-3 font-semibold">Cliente</th>
-          <th className="px-4 py-3 text-right font-semibold">Pago mensual</th>
+          {showPayment && <th className="px-4 py-3 text-right font-semibold">Pago mensual</th>}
           <th className="px-4 py-3 text-right font-semibold">Facturación</th>
           <th className="px-4 py-3 text-right font-semibold">Costos</th>
           <th className="px-4 py-3 text-right font-semibold">Ganancia</th>
@@ -46,7 +46,7 @@ export function ProfitTable({ limit }: { limit?: number }) {
             <td className="px-4 py-3 text-sm uppercase tracking-wider text-muted-foreground">
               Total ({rows.length})
             </td>
-            <td className="px-4 py-3 text-right text-foreground">{money(totalPayment)}</td>
+            {showPayment && <td className="px-4 py-3 text-right text-foreground">{money(totalPayment)}</td>}
             <td className="px-4 py-3 text-right text-foreground">{money(totalRevenue)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalCosts)}</td>
             <td className="px-4 py-3 text-right text-foreground">{money(totalProfit)}</td>
@@ -55,7 +55,7 @@ export function ProfitTable({ limit }: { limit?: number }) {
       }
     >
       {rows.length === 0 ? (
-        <EmptyRow colSpan={6} label="Sin información en este mes" />
+        <EmptyRow colSpan={showPayment ? 6 : 5} label="Sin información en este mes" />
       ) : (
         rows.map((row) => (
           <tr key={row.client.id} className="border-t border-border">
@@ -68,11 +68,13 @@ export function ProfitTable({ limit }: { limit?: number }) {
                 {row.client.name}
               </Link>
             </td>
-            <td className="px-4 py-3 text-right">
-              {row.estimated.payment
-                ? money(row.estimated.paymentOriginal, row.estimated.paymentCurrency)
-                : "—"}
-            </td>
+            {showPayment && (
+              <td className="px-4 py-3 text-right">
+                {row.estimated.payment
+                  ? money(row.estimated.paymentOriginal, row.estimated.paymentCurrency)
+                  : "—"}
+              </td>
+            )}
             <td className="px-4 py-3 text-right">{money(row.revenue)}</td>
             <td className="px-4 py-3 text-right">{money(row.costs)}</td>
             <td
