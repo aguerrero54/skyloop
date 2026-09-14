@@ -185,20 +185,26 @@ function InvoicesPage() {
               </option>
             ))}
           </select>
-          <input
-            type="date"
-            value={from}
-            onChange={(event) => setFrom(event.target.value)}
-            className={inputClass}
-            aria-label="Desde"
-          />
-          <input
-            type="date"
-            value={to}
-            onChange={(event) => setTo(event.target.value)}
-            className={inputClass}
-            aria-label="Hasta"
-          />
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">Desde</span>
+            <input
+              type="date"
+              value={from}
+              onChange={(event) => setFrom(event.target.value)}
+              className={inputClass}
+              aria-label="Desde"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">Hasta</span>
+            <input
+              type="date"
+              value={to}
+              onChange={(event) => setTo(event.target.value)}
+              className={inputClass}
+              aria-label="Hasta"
+            />
+          </div>
           <div className="flex flex-wrap gap-2 xl:col-span-6">
             {[
               { label: "Todas", value: "todas" as const },
