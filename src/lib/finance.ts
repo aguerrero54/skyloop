@@ -4,6 +4,33 @@ export type Client = Tables<"clients">;
 export type Service = Tables<"services">;
 export type Provider = Tables<"providers">;
 export type ClientService = Tables<"client_services">;
+export type ClientServiceMonth = Tables<"client_service_months">;
+/** Asignación con los valores efectivos de un mes concreto (base + ajuste mensual). */
+export type EffectiveClientService = ClientService & { monthAdjusted: boolean };
+
+/**
+ * Devuelve las asignaciones con los valores que aplican en `month`:
+ * si existe un ajuste mensual, su costo/cantidad/proveedor reemplazan los del valor habitual.
+ */
+export function effectiveAssignments(
+  assignments: ClientService[],
+  overrides: ClientServiceMonth[],
+  month: string,
+): EffectiveClientService[] {
+  return assignments.map((row) => {
+    const override = overrides.find(
+      (item) => item.client_service_id === row.id && item.month === month,
+    );
+    if (!override) return { ...row, monthAdjusted: false };
+    return {
+      ...row,
+      cost: override.cost,
+      monthly_quantity: override.monthly_quantity,
+      provider_id: override.provider_id,
+      monthAdjusted: true,
+    };
+  });
+}
 export type Income = Tables<"incomes">;
 export type Expense = Tables<"expenses">;
 export type MonthlyHistory = Tables<"monthly_history">;
