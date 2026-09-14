@@ -292,15 +292,21 @@ export type InvoiceLedger = {
 };
 
 /** Convierte una factura en un movimiento para las tablas de ingresos/gastos del cliente. */
-export function invoiceToMovement(invoice: Invoice): Movement {
+export function invoiceToMovement(invoice: Invoice, items: InvoiceItem[] = []): Movement {
   const kind = invoiceKind(invoice);
+  const services = [
+    ...new Set(
+      items
+        .map((item) => item.description.trim())
+        .filter((description) => description.length > 0),
+    ),
+  ];
+  const detail = services.length > 0 ? services.join(", ") : invoice.subject?.trim() || "";
   return {
     id: `invoice-${invoice.id}`,
     kind: kind === "vendor" ? "Gasto" : "Ingreso",
     date: invoice.issue_date,
-    concept: invoice.subject?.trim()
-      ? `${invoice.invoice_number} · ${invoice.subject.trim()}`
-      : invoice.invoice_number,
+    concept: detail ? `${invoice.invoice_number} · ${detail}` : invoice.invoice_number,
     clientId: invoice.client_id,
     status: effectiveStatus(invoice),
     amount: num(invoice.total),
