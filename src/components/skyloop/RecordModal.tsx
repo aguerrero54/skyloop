@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { num, todayISO } from "@/lib/finance";
+import { monthLabel, num, todayISO } from "@/lib/finance";
 import { useSkyloop, type FormKind } from "@/lib/skyloop-context";
 
 type Option = { value: string; label: string };
@@ -31,7 +31,7 @@ const titles: Record<FormKind, string> = {
 const plain = (values: string[]): Option[] => values.map((value) => ({ value, label: value }));
 
 export function RecordModal() {
-  const { formState, closeForm, data, refresh } = useSkyloop();
+  const { formState, closeForm, data, refresh, month } = useSkyloop();
   const [saving, setSaving] = useState(false);
 
   if (!formState) return null;
@@ -466,16 +466,38 @@ export function RecordModal() {
           notes: orNull("notes"),
         }));
       } else if (editingAssignment) {
-        ({ error } = await supabase
-          .from("client_services")
-          .update({
-            client_id: orNull("client_id"),
-            service_id: orNull("service_id"),
-            provider_id: orNull("provider_id"),
-            cost: num(get("cost")),
-            monthly_quantity: num(get("monthly_quantity")),
-          })
-          .eq("id", editingAssignment.id));
+        if (get("apply_all_months") === "on") {
+          ({ error } = await supabase
+            .from("client_services")
+            .update({
+              client_id: orNull("client_id"),
+              service_id: orNull("service_id"),
+              provider_id: orNull("provider_id"),
+              cost: num(get("cost")),
+              monthly_quantity: num(get("monthly_quantity")),
+            })
+            .eq("id", editingAssignment.id));
+          if (!error) {
+            // El valor habitual cambia: el ajuste de este mes deja de tener sentido.
+            await supabase
+              .from("client_service_months")
+              .delete()
+              .eq("client_service_id", editingAssignment.id)
+              .eq("month", month);
+          }
+        } else {
+          // Ajuste solo para el mes seleccionado: no toca el valor habitual ni otros meses.
+          ({ error } = await supabase.from("client_service_months").upsert(
+            {
+              client_service_id: editingAssignment.id,
+              month,
+              cost: num(get("cost")),
+              monthly_quantity: num(get("monthly_quantity")),
+              provider_id: orNull("provider_id"),
+            },
+            { onConflict: "client_service_id,month" },
+          ));
+        }
       } else {
         ({ error } = await supabase.from("client_services").insert({
           client_id: orNull("client_id"),
@@ -575,6 +597,23 @@ export function RecordModal() {
               )}
             </div>
           ))}
+
+          {editingAssignment && (
+            <div className="rounded-xl border border-border bg-surface-raised px-4 py-3 sm:col-span-2">
+              <p className="text-xs text-muted-foreground">
+                Este cambio aplica solo a <b className="text-foreground">{monthLabel(month)}</b>;
+                los demás meses conservan sus valores.
+              </p>
+              <label className="mt-2 flex cursor-pointer items-center gap-2 text-xs font-semibold text-foreground">
+                <input
+                  type="checkbox"
+                  name="apply_all_months"
+                  className="size-4 accent-primary"
+                />
+                Aplicar también a todos los meses (cambia el valor habitual)
+              </label>
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 sm:col-span-2">
             <button
