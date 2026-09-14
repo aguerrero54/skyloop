@@ -229,7 +229,6 @@ function InvoiceDetailPage() {
             <Field label="Fecha de emisión" value={formatLongDate(invoice.issue_date)} />
             <Field label="Fecha de vencimiento" value={formatLongDate(invoice.due_date)} />
             <Field label="Términos" value={invoice.payment_terms} />
-            <Field label="Número de orden" value={invoice.order_number ?? "—"} />
             <Field label="Asunto" value={invoice.subject ?? "—"} />
             <Field label="Moneda" value={invoice.currency} />
           </div>
