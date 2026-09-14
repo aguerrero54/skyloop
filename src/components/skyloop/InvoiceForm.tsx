@@ -10,6 +10,7 @@ import {
   DEFAULT_TERMS,
   KIND_COPY,
   PAYMENT_TERMS,
+  clientInitials,
   computeTotals,
   dueDateFor,
   invoiceKind,
