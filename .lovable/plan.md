@@ -40,6 +40,15 @@ No se borra ni se pierde ningún dato existente.
 3. Confirmar que la cuenta de prueba NO ve tus clientes ni tus facturas.
 4. Borrar la cuenta de prueba y sus datos al terminar.
 
+## Ajuste visual adicional (formulario de factura)
+
+En la sección "Información de la factura" de la creación de facturas:
+
+- Los campos de rellenar (N.º de factura, Número de orden, Moneda, Fecha de la factura, Términos, Fecha de vencimiento) se reducen un 25% de largo.
+- El campo "Asunto" se reduce un 50% de largo.
+
+Solo cambia el ancho de los campos; la distribución de columnas y el resto del formulario quedan igual.
+
 ## Fuera de alcance
 
 - Cada cuenta con su propia Configuración (moneda, tasa, nombre de agencia) — cambio aparte si lo quieres.
