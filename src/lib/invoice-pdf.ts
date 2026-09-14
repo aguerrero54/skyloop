@@ -136,7 +136,6 @@ export function buildInvoicePdf({ invoice, items, client, vendor }: InvoicePdfIn
     ["Términos :", invoice.payment_terms],
     ["Fecha de vencimiento :", formatLongDate(invoice.due_date)],
   ];
-  if (invoice.order_number) metaRows.push(["Número de orden :", invoice.order_number]);
   doc.setFontSize(9);
   metaRows.forEach(([label, value]) => {
     doc.setTextColor(...GREY);
