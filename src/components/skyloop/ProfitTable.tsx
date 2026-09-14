@@ -35,7 +35,7 @@ export function ProfitTable({ limit, showPayment = true }: { limit?: number; sho
           <th className="px-4 py-3 font-semibold">Cliente</th>
           {showPayment && <th className="px-4 py-3 text-right font-semibold">Pago mensual</th>}
           <th className="px-4 py-3 text-right font-semibold">Facturación</th>
-          <th className="px-4 py-3 text-right font-semibold">Costos</th>
+          <th className="px-4 py-3 text-right font-semibold">GASTOS</th>
           <th className="px-4 py-3 text-right font-semibold">Ganancia</th>
           <th className="px-4 py-3 text-right font-semibold">Margen</th>
         </tr>
