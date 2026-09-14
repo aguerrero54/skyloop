@@ -135,21 +135,27 @@ type SkyloopContextValue = {
   providerName: (id: string | null) => string;
   serviceName: (id: string | null) => string;
   refresh: () => Promise<void>;
-  formState: {
-    kind: FormKind;
-    clientId?: string | undefined;
-    assignment?: ClientService | undefined;
-    service?: Service | undefined;
-    provider?: Provider | undefined;
-  } | null;
+  formState: FormState | null;
   openForm: (
     kind: FormKind,
-    clientId?: string,
-    assignment?: ClientService,
-    service?: Service,
-    provider?: Provider,
+    options?: {
+      clientId?: string;
+      assignment?: ClientService;
+      service?: Service;
+      provider?: Provider;
+      client?: Client;
+    },
   ) => void;
   closeForm: () => void;
+};
+
+export type FormState = {
+  kind: FormKind;
+  clientId?: string | undefined;
+  assignment?: ClientService | undefined;
+  service?: Service | undefined;
+  provider?: Provider | undefined;
+  client?: Client | undefined;
 };
 
 const SkyloopContext = createContext<SkyloopContextValue | null>(null);
@@ -171,13 +177,7 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const month = selectedMonth && months.includes(selectedMonth) ? selectedMonth : (months[0] ?? "");
 
-  const [formState, setFormState] = useState<{
-    kind: FormKind;
-    clientId?: string | undefined;
-    assignment?: ClientService | undefined;
-    service?: Service | undefined;
-    provider?: Provider | undefined;
-  } | null>(null);
+  const [formState, setFormState] = useState<FormState | null>(null);
 
   const usdRate = num(data.settings?.usd_rate) || 60;
 
@@ -198,8 +198,7 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
       await queryClient.invalidateQueries({ queryKey: ["skyloop"] });
     },
     formState,
-    openForm: (kind, clientId, assignment, service, provider) =>
-      setFormState({ kind, clientId, assignment, service, provider }),
+    openForm: (kind, options = {}) => setFormState({ kind, ...options }),
     closeForm: () => setFormState(null),
   };
 

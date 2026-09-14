@@ -110,7 +110,7 @@ function TeamPage() {
               <div className="ml-auto flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => selected && openForm("provider", undefined, undefined, undefined, selected)}
+                  onClick={() => selected && openForm("provider", { provider: selected })}
                   disabled={!selected}
                   className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >

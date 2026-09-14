@@ -221,7 +221,7 @@ function ClientDetailPage() {
               </button>
               <button
                 type="button"
-                onClick={() => openForm("assignment", client.id)}
+                onClick={() => openForm("assignment", { clientId: client.id })}
                 className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
               >
                 + Asignar
@@ -237,7 +237,10 @@ function ClientDetailPage() {
                   <span>{selectedIds.length === 1 ? "seleccionado" : "seleccionados"}</span>
                   <button
                     type="button"
-                    onClick={() => selectedAssignment && openForm("assignment", client.id, selectedAssignment)}
+                    onClick={() =>
+                      selectedAssignment &&
+                      openForm("assignment", { clientId: client.id, assignment: selectedAssignment })
+                    }
                     disabled={!selectedAssignment}
                     className="ml-auto rounded-lg bg-primary px-3 py-1.5 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
