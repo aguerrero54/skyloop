@@ -19,7 +19,6 @@ import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedIngresosRouteImport } from './routes/_authenticated/ingresos'
 import { Route as AuthenticatedPorCobrarRouteImport } from './routes/_authenticated/por-cobrar'
 import { Route as AuthenticatedPorPagarRouteImport } from './routes/_authenticated/por-pagar'
-import { Route as AuthenticatedRentabilidadRouteImport } from './routes/_authenticated/rentabilidad'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
 import { Route as AuthenticatedServiciosRouteImport } from './routes/_authenticated/servicios'
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes/index'
@@ -79,12 +78,6 @@ const AuthenticatedPorPagarRoute = AuthenticatedPorPagarRouteImport.update({
   path: '/por-pagar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedRentabilidadRoute =
-  AuthenticatedRentabilidadRouteImport.update({
-    id: '/rentabilidad',
-    path: '/rentabilidad',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedReportesRoute = AuthenticatedReportesRouteImport.update({
   id: '/reportes',
   path: '/reportes',
@@ -142,7 +135,6 @@ export interface FileRoutesByFullPath {
   '/ingresos': typeof AuthenticatedIngresosRoute
   '/por-cobrar': typeof AuthenticatedPorCobrarRoute
   '/por-pagar': typeof AuthenticatedPorPagarRoute
-  '/rentabilidad': typeof AuthenticatedRentabilidadRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/servicios': typeof AuthenticatedServiciosRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
@@ -162,7 +154,6 @@ export interface FileRoutesByTo {
   '/ingresos': typeof AuthenticatedIngresosRoute
   '/por-cobrar': typeof AuthenticatedPorCobrarRoute
   '/por-pagar': typeof AuthenticatedPorPagarRoute
-  '/rentabilidad': typeof AuthenticatedRentabilidadRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/servicios': typeof AuthenticatedServiciosRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
@@ -184,7 +175,6 @@ export interface FileRoutesById {
   '/_authenticated/ingresos': typeof AuthenticatedIngresosRoute
   '/_authenticated/por-cobrar': typeof AuthenticatedPorCobrarRoute
   '/_authenticated/por-pagar': typeof AuthenticatedPorPagarRoute
-  '/_authenticated/rentabilidad': typeof AuthenticatedRentabilidadRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
   '/_authenticated/servicios': typeof AuthenticatedServiciosRoute
   '/_authenticated/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
@@ -206,7 +196,6 @@ export interface FileRouteTypes {
     | '/ingresos'
     | '/por-cobrar'
     | '/por-pagar'
-    | '/rentabilidad'
     | '/reportes'
     | '/servicios'
     | '/clientes/$clientId'
@@ -226,7 +215,6 @@ export interface FileRouteTypes {
     | '/ingresos'
     | '/por-cobrar'
     | '/por-pagar'
-    | '/rentabilidad'
     | '/reportes'
     | '/servicios'
     | '/clientes/$clientId'
@@ -247,7 +235,6 @@ export interface FileRouteTypes {
     | '/_authenticated/ingresos'
     | '/_authenticated/por-cobrar'
     | '/_authenticated/por-pagar'
-    | '/_authenticated/rentabilidad'
     | '/_authenticated/reportes'
     | '/_authenticated/servicios'
     | '/_authenticated/clientes/$clientId'
@@ -336,13 +323,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPorPagarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/rentabilidad': {
-      id: '/_authenticated/rentabilidad'
-      path: '/rentabilidad'
-      fullPath: '/rentabilidad'
-      preLoaderRoute: typeof AuthenticatedRentabilidadRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/reportes': {
       id: '/_authenticated/reportes'
       path: '/reportes'
@@ -410,7 +390,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIngresosRoute: typeof AuthenticatedIngresosRoute
   AuthenticatedPorCobrarRoute: typeof AuthenticatedPorCobrarRoute
   AuthenticatedPorPagarRoute: typeof AuthenticatedPorPagarRoute
-  AuthenticatedRentabilidadRoute: typeof AuthenticatedRentabilidadRoute
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
   AuthenticatedServiciosRoute: typeof AuthenticatedServiciosRoute
   AuthenticatedClientesClientIdRoute: typeof AuthenticatedClientesClientIdRoute
@@ -429,7 +408,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIngresosRoute: AuthenticatedIngresosRoute,
   AuthenticatedPorCobrarRoute: AuthenticatedPorCobrarRoute,
   AuthenticatedPorPagarRoute: AuthenticatedPorPagarRoute,
-  AuthenticatedRentabilidadRoute: AuthenticatedRentabilidadRoute,
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
   AuthenticatedServiciosRoute: AuthenticatedServiciosRoute,
   AuthenticatedClientesClientIdRoute: AuthenticatedClientesClientIdRoute,
