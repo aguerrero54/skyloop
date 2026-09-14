@@ -303,7 +303,11 @@ function InvoiceDetailPage() {
               <th className="px-4 py-3 font-semibold">Artículo & Descripción</th>
               <th className="px-4 py-3 text-right font-semibold">Cant.</th>
               <th className="px-4 py-3 text-right font-semibold">Tarifa</th>
-              <th className="px-4 py-3 text-right font-semibold">Impuesto</th>
+              <th
+                className={`px-4 py-3 font-semibold ${invoice.multi_client ? "" : "text-right"}`}
+              >
+                {invoice.multi_client ? "Cliente" : "Impuesto"}
+              </th>
               <th className="px-4 py-3 text-right font-semibold">Importe</th>
             </tr>
           }
