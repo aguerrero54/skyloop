@@ -82,7 +82,8 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
   const base = {
     invoice_type: kind,
     financial_type: KIND_COPY[kind].financialType,
-    client_id: kind === "client" ? input.clientId : null,
+    // En documentos de proveedor el cliente es opcional: vincula el gasto a la marca.
+    client_id: input.clientId,
     vendor_id: kind === "vendor" ? input.vendorId : null,
     seller_id: input.sellerId,
     order_number: input.orderNumber,
