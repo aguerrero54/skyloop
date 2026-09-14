@@ -159,6 +159,9 @@ export function InvoiceForm({
   const [invoiceNumber, setInvoiceNumber] = useState(suggestedNumber);
   const [clientId, setClientId] = useState(invoice?.client_id ?? "");
   const [vendorId, setVendorId] = useState(invoice?.vendor_id ?? "");
+  const [multiClient, setMultiClient] = useState(Boolean(invoice?.multi_client));
+  /** Solo los gastos de proveedor se reparten entre varias marcas. */
+  const splitByClient = kind === "vendor" && multiClient;
   const entityId = kind === "client" ? clientId : vendorId;
   const obligations = pendingObligations(data.providerObligations, vendorId || null);
   
@@ -188,6 +191,7 @@ export function InvoiceForm({
             rate: String(num(item.rate)),
             tax: String(num(item.tax)),
             obligationId: item.obligation_id,
+            clientId: item.client_id,
           }))
       : [emptyItem()],
   );
@@ -324,6 +328,13 @@ export function InvoiceForm({
       toast.error("Agrega al menos un artículo o servicio");
       return;
     }
+    if (
+      splitByClient &&
+      items.some((item) => (item.description.trim() || num(item.rate) > 0) && !item.clientId)
+    ) {
+      toast.error("Selecciona el cliente de cada fila de la tabla de artículos");
+      return;
+    }
     if (items.some((item) => !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) {
       toast.error("La cantidad debe ser un número entero mayor que cero");
       return;
@@ -336,6 +347,7 @@ export function InvoiceForm({
         invoiceNumber,
         clientId: clientId || null,
         vendorId: vendorId || null,
+        multiClient: splitByClient,
         sellerId: null,
         orderNumber: orderNumber.trim() || null,
         issueDate,
@@ -445,18 +457,48 @@ export function InvoiceForm({
           {kind === "vendor" ? (
             <div>
               <label className={labelClass}>Cliente</label>
-              <div className="w-3/4">
-                <EntityPicker
-                  options={data.clients}
-                  value={clientId}
-                  onChange={setClientId}
-                  placeholder="Vincular este gasto a un cliente"
-                  createLabel="+ Crear nuevo cliente"
-                  onCreate={() => openForm("client")}
+              {multiClient ? (
+                <p className="rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground w-3/4">
+                  Cada fila de la tabla de artículos lleva su propio cliente.
+                </p>
+              ) : (
+                <div className="w-3/4">
+                  <EntityPicker
+                    options={data.clients}
+                    value={clientId}
+                    onChange={setClientId}
+                    placeholder="Vincular este gasto a un cliente"
+                    createLabel="+ Crear nuevo cliente"
+                    onCreate={() => openForm("client")}
+                  />
+                </div>
+              )}
+              <label className="mt-2 flex items-center gap-2 text-xs font-semibold text-foreground">
+                <input
+                  type="checkbox"
+                  checked={multiClient}
+                  onChange={(event) => {
+                    const next = event.target.checked;
+                    setMultiClient(next);
+                    if (next) {
+                      setItems((prev) =>
+                        prev.map((row) => ({
+                          ...row,
+                          tax: "0",
+                          clientId: row.clientId ?? clientId ?? null,
+                        })),
+                      );
+                      setClientId("");
+                    }
+                  }}
+                  className="size-4 accent-primary"
                 />
-              </div>
+                Varios clientes
+              </label>
               <p className="mt-1.5 text-[11px] text-muted-foreground">
-                El gasto aparecerá en los movimientos de este cliente.
+                {multiClient
+                  ? "La tarifa se divide por marca y cada gasto aparece en los movimientos de su cliente."
+                  : "El gasto aparecerá en los movimientos de este cliente."}
               </p>
             </div>
           ) : (
@@ -554,7 +596,9 @@ export function InvoiceForm({
                 <th className="px-3 py-3 font-semibold">Artículo / Descripción</th>
                 <th className="px-3 py-3 text-right font-semibold">Cantidad</th>
                 <th className="px-3 py-3 text-right font-semibold">Tarifa</th>
-                <th className="px-3 py-3 text-right font-semibold">Impuesto %</th>
+                <th className={`px-3 py-3 font-semibold ${splitByClient ? "" : "text-right"}`}>
+                  {splitByClient ? "Cliente" : "Impuesto %"}
+                </th>
                 <th className="px-3 py-3 text-right font-semibold">Importe</th>
                 <th className="px-3 py-3" />
               </tr>
@@ -602,13 +646,30 @@ export function InvoiceForm({
                     />
                   </td>
                   <td className="px-3 py-2">
-                    <input
-                      type="number"
-                      step="any"
-                      value={item.tax}
-                      onChange={(event) => updateItem(item.key, { tax: event.target.value })}
-                      className={`${inputClass} text-right`}
-                    />
+                    {splitByClient ? (
+                      <select
+                        value={item.clientId ?? ""}
+                        onChange={(event) =>
+                          updateItem(item.key, { clientId: event.target.value || null })
+                        }
+                        className={inputClass}
+                      >
+                        <option value="">Seleccionar cliente</option>
+                        {data.clients.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="number"
+                        step="any"
+                        value={item.tax}
+                        onChange={(event) => updateItem(item.key, { tax: event.target.value })}
+                        className={`${inputClass} text-right`}
+                      />
+                    )}
                   </td>
                   <td className="px-3 py-2 text-right font-bold text-foreground">
                     {money(itemAmount(item.quantity, item.rate), currency)}

@@ -22,6 +22,8 @@ export type InvoiceInput = {
   invoiceNumber: string;
   clientId: string | null;
   vendorId: string | null;
+  /** Reparte el documento entre varias marcas: cada fila lleva su propio cliente. */
+  multiClient?: boolean;
   sellerId: string | null;
   orderNumber: string | null;
   issueDate: string;
@@ -83,7 +85,8 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
     invoice_type: kind,
     financial_type: KIND_COPY[kind].financialType,
     // En documentos de proveedor el cliente es opcional: vincula el gasto a la marca.
-    client_id: input.clientId,
+    client_id: input.multiClient ? null : input.clientId,
+    multi_client: Boolean(input.multiClient),
     vendor_id: kind === "vendor" ? input.vendorId : null,
     seller_id: input.sellerId,
     order_number: input.orderNumber,
@@ -158,6 +161,7 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
         amount: round2(itemAmount(item.quantity, item.rate)),
         position: index,
         obligation_id: kind === "vendor" ? (item.obligationId ?? null) : null,
+        client_id: input.multiClient ? (item.clientId ?? null) : null,
       })),
     );
     if (error) throw new Error(error.message);

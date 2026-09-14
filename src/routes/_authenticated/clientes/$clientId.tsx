@@ -82,21 +82,20 @@ function ClientDetailPage() {
   const assignments = monthClientServices.filter(
     (row) => row.client_id === client.id && row.active,
   );
+  const invoiceItemsOf = (invoiceId: string) =>
+    data.invoiceItems.filter((item) => item.invoice_id === invoiceId);
   const clientInvoices = data.invoices.filter(
     (row) =>
-      row.client_id === client.id &&
       row.status !== "Borrador" &&
       row.status !== "Cancelada" &&
-      (row.issue_date ?? "").startsWith(month),
+      (row.issue_date ?? "").startsWith(month) &&
+      invoiceTouchesClient(row, invoiceItemsOf(row.id), client.id),
   );
   const movements = [
     ...monthIncomes.filter((row) => row.client_id === client.id).map(incomeToMovement),
     ...monthExpenses.filter((row) => row.client_id === client.id).map(expenseToMovement),
     ...clientInvoices.map((invoice) =>
-      invoiceToMovement(
-        invoice,
-        data.invoiceItems.filter((item) => item.invoice_id === invoice.id),
-      ),
+      invoiceToClientMovement(invoice, invoiceItemsOf(invoice.id), client.id),
     ),
   ].sort((a, b) => b.date.localeCompare(a.date));
 

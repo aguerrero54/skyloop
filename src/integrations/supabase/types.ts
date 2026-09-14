@@ -336,6 +336,7 @@ export type Database = {
       invoice_items: {
         Row: {
           amount: number
+          client_id: string | null
           created_at: string
           description: string
           id: string
@@ -350,6 +351,7 @@ export type Database = {
         }
         Insert: {
           amount?: number
+          client_id?: string | null
           created_at?: string
           description: string
           id?: string
@@ -364,6 +366,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          client_id?: string | null
           created_at?: string
           description?: string
           id?: string
@@ -377,6 +380,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invoice_items_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoice_items_invoice_id_fkey"
             columns: ["invoice_id"]
@@ -461,6 +471,7 @@ export type Database = {
           invoice_number: string
           invoice_type: string
           issue_date: string
+          multi_client: boolean
           notes: string | null
           order_number: string | null
           payment_terms: string
@@ -492,6 +503,7 @@ export type Database = {
           invoice_number: string
           invoice_type?: string
           issue_date?: string
+          multi_client?: boolean
           notes?: string | null
           order_number?: string | null
           payment_terms?: string
@@ -523,6 +535,7 @@ export type Database = {
           invoice_number?: string
           invoice_type?: string
           issue_date?: string
+          multi_client?: boolean
           notes?: string | null
           order_number?: string | null
           payment_terms?: string

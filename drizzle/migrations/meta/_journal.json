@@ -78,6 +78,13 @@
       "when": 1789350108679,
       "tag": "0010_client_service_months",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789357226656,
+      "tag": "0011_invoice_multi_client",
+      "breakpoints": true
     }
   ]
 }

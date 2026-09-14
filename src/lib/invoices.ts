@@ -155,6 +155,8 @@ export type DraftItem = {
   tax: string;
   /** Obligación del proveedor a la que corresponde la fila (solo documentos de proveedor). */
   obligationId?: string | null;
+  /** Cliente al que se le imputa la fila cuando la factura reparte el gasto entre varias marcas. */
+  clientId?: string | null;
 };
 
 export type TotalsInput = {
@@ -316,6 +318,34 @@ export function invoiceToMovement(invoice: Invoice, items: InvoiceItem[] = []): 
 
 export function invoiceBalance(invoice: Invoice): number {
   return Math.max(num(invoice.total) - num(invoice.amount_paid), 0);
+}
+
+/**
+ * Movimiento de una factura visto desde la ficha de un cliente. Si la factura
+ * reparte el gasto entre varias marcas, solo cuenta las filas de ese cliente.
+ */
+export function invoiceToClientMovement(
+  invoice: Invoice,
+  items: InvoiceItem[],
+  clientId: string,
+): Movement {
+  if (!invoice.multi_client) return invoiceToMovement(invoice, items);
+  const scoped = items.filter((item) => item.client_id === clientId);
+  const movement = invoiceToMovement(invoice, scoped);
+  return {
+    ...movement,
+    amount: round2(scoped.reduce((sum, item) => sum + num(item.amount), 0)),
+  };
+}
+
+/** ¿Esta factura toca a este cliente, ya sea directa o por reparto entre marcas? */
+export function invoiceTouchesClient(
+  invoice: Invoice,
+  items: InvoiceItem[],
+  clientId: string,
+): boolean {
+  if (invoice.multi_client) return items.some((item) => item.client_id === clientId);
+  return invoice.client_id === clientId;
 }
 
 /** Consolida las facturas activas separando ingresos (clientes) de gastos (proveedores). */
