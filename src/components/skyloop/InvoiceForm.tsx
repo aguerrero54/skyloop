@@ -490,7 +490,7 @@ export function InvoiceForm({
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
               placeholder="Factura del mes de septiembre"
-              className={`${inputClass} w-1/2`}
+              className={`${inputClass} w-1/3`}
             />
           </div>
         </div>
