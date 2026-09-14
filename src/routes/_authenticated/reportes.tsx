@@ -71,6 +71,16 @@ function ReportsPage() {
         />
       </div>
 
+      <div>
+        <SectionTitle
+          title="¿Qué clientes realmente te dejan dinero?"
+          description="Facturación menos los gastos directos asociados a cada marca."
+        />
+        <ProfitTable />
+      </div>
+
+
+
       <Panel
         title="Exportar información"
         subtitle="Descarga tus datos para respaldo o análisis externo."
