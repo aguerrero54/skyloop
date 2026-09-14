@@ -3,21 +3,23 @@ import { toast } from "sonner";
 
 import { downloadFile, monthMetrics, money, toCSV } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
-import { KpiCard, Panel } from "@/components/skyloop/ui";
+import { KpiCard, Panel, SectionTitle } from "@/components/skyloop/ui";
+import { ProfitTable } from "@/components/skyloop/ProfitTable";
 
 export const Route = createFileRoute("/_authenticated/reportes")({
   head: () => ({
     meta: [
-      { title: "Reportes y exportación — Skyloop Control" },
+      { title: "Reportes y rentabilidad — Skyloop Control" },
       {
         name: "description",
         content:
-          "Resumen del período y exportación de ingresos, gastos y respaldo completo de la información.",
+          "Resumen del período, rentabilidad por cliente y exportación de ingresos, gastos y respaldo completo.",
       },
-      { property: "og:title", content: "Reportes y exportación — Skyloop Control" },
+      { property: "og:title", content: "Reportes y rentabilidad — Skyloop Control" },
       {
         property: "og:description",
-        content: "Descarga tus ingresos, gastos y un respaldo completo de la agencia.",
+        content:
+          "Margen real de cada marca y descarga de ingresos, gastos y respaldo de la agencia.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

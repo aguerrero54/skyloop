@@ -241,7 +241,7 @@ function DashboardPage() {
         subtitle="Facturación menos costos directos"
         action={
           <Link
-            to="/rentabilidad"
+            to="/reportes"
             className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
           >
             Ver todo
