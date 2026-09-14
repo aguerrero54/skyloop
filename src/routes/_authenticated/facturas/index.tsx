@@ -40,7 +40,7 @@ const inputClass =
   "rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary";
 
 function InvoicesPage() {
-  const { data, clientName, providerName, usdRate } = useSkyloop();
+  const { data, clientName, providerName, usdRate, refresh } = useSkyloop();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("todas");
   const [kindFilter, setKindFilter] = useState<"todas" | "client" | "vendor">("todas");
