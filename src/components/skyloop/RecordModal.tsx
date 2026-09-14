@@ -40,6 +40,7 @@ export function RecordModal() {
   const editingAssignment = kind === "assignment" ? formState.assignment : undefined;
   const editingService = kind === "service" ? formState.service : undefined;
   const editingProvider = kind === "provider" ? formState.provider : undefined;
+  const editingClient = kind === "client" ? formState.client : undefined;
 
   const clientOptions = data.clients.map((client) => ({ value: client.id, label: client.name }));
   const providerOptions = data.providers.map((provider) => ({
@@ -127,23 +128,83 @@ export function RecordModal() {
         ];
       case "client":
         return [
-          { name: "name", label: "Nombre de la marca", type: "text", required: true },
+          {
+            name: "name",
+            label: "Nombre de la marca",
+            type: "text",
+            required: true,
+            defaultValue: editingClient?.name,
+          },
           {
             name: "status",
             label: "Estado",
             type: "select",
+            defaultValue: editingClient?.status ?? undefined,
             options: plain(["Activo", "Prospecto", "Pausado", "Finalizado"]),
           },
-          { name: "company", label: "Empresa", type: "text" },
-          { name: "country", label: "País", type: "text" },
-          { name: "contact", label: "Contacto", type: "text" },
-          { name: "email", label: "Correo", type: "email" },
-          { name: "phone", label: "Teléfono", type: "text" },
-          { name: "tax_id", label: "RNC / Identificación fiscal", type: "text" },
-          { name: "address", label: "Dirección", type: "text", full: true },
-          { name: "currency", label: "Moneda", type: "select", options: plain(["DOP", "USD"]) },
-          { name: "monthly_payment", label: "Pago mensual", type: "number" },
-          { name: "notes", label: "Notas internas", type: "textarea", full: true },
+          {
+            name: "company",
+            label: "Empresa",
+            type: "text",
+            defaultValue: editingClient?.company ?? undefined,
+          },
+          {
+            name: "country",
+            label: "País",
+            type: "text",
+            defaultValue: editingClient?.country ?? undefined,
+          },
+          {
+            name: "contact",
+            label: "Contacto",
+            type: "text",
+            defaultValue: editingClient?.contact ?? undefined,
+          },
+          {
+            name: "email",
+            label: "Correo",
+            type: "email",
+            defaultValue: editingClient?.email ?? undefined,
+          },
+          {
+            name: "phone",
+            label: "Teléfono",
+            type: "text",
+            defaultValue: editingClient?.phone ?? undefined,
+          },
+          {
+            name: "tax_id",
+            label: "RNC / Identificación fiscal",
+            type: "text",
+            defaultValue: editingClient?.tax_id ?? undefined,
+          },
+          {
+            name: "address",
+            label: "Dirección",
+            type: "text",
+            full: true,
+            defaultValue: editingClient?.address ?? undefined,
+          },
+          {
+            name: "currency",
+            label: "Moneda",
+            type: "select",
+            defaultValue: editingClient?.currency ?? undefined,
+            options: plain(["DOP", "USD"]),
+          },
+          {
+            name: "monthly_payment",
+            label: "Pago mensual",
+            type: "number",
+            defaultValue: editingClient ? String(num(editingClient.monthly_payment)) : undefined,
+          },
+          {
+            name: "notes",
+            label: "Notas internas",
+            type: "textarea",
+            full: true,
+            defaultValue: editingClient?.notes ?? undefined,
+          },
         ];
       case "provider":
         return [
@@ -320,6 +381,24 @@ export function RecordModal() {
           due_date: orNull("due_date"),
           direct_cost: Boolean(get("client_id")),
         }));
+      } else if (kind === "client" && editingClient) {
+        ({ error } = await supabase
+          .from("clients")
+          .update({
+            name: get("name"),
+            status: get("status"),
+            company: orNull("company"),
+            country: orNull("country"),
+            contact: orNull("contact"),
+            email: orNull("email"),
+            phone: orNull("phone"),
+            tax_id: orNull("tax_id"),
+            address: orNull("address"),
+            currency: get("currency"),
+            monthly_payment: num(get("monthly_payment")),
+            notes: orNull("notes"),
+          })
+          .eq("id", editingClient.id));
       } else if (kind === "client") {
         ({ error } = await supabase.from("clients").insert({
           name: get("name"),
@@ -437,7 +516,7 @@ export function RecordModal() {
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
-              {editingAssignment || editingService || editingProvider
+              {editingAssignment || editingService || editingProvider || editingClient
                 ? "EDITAR REGISTRO"
                 : "NUEVO REGISTRO"}
             </p>
@@ -448,7 +527,9 @@ export function RecordModal() {
                   ? "Editar servicio"
                   : editingProvider
                     ? "Editar proveedor"
-                    : titles[kind]}
+                    : editingClient
+                      ? "Editar cliente"
+                      : titles[kind]}
             </h3>
           </div>
           <button

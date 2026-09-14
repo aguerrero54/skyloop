@@ -170,10 +170,21 @@ function ClientDetailPage() {
 
       <div className="grid gap-5 rounded-2xl border border-border bg-card p-6 shadow-panel xl:grid-cols-[1fr_auto]">
         <div>
-          <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
-            {client.status.toUpperCase()}
-          </p>
-          <h3 className="mt-1 text-xl font-bold text-foreground">{client.name}</h3>
+          <div className="flex flex-wrap items-center gap-3">
+            <div>
+              <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
+                {client.status.toUpperCase()}
+              </p>
+              <h3 className="mt-1 text-xl font-bold text-foreground">{client.name}</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => openForm("client", { client })}
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
+            >
+              Editar
+            </button>
+          </div>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             {client.notes || "Sin notas internas."}
           </p>
@@ -221,7 +232,7 @@ function ClientDetailPage() {
               </button>
               <button
                 type="button"
-                onClick={() => openForm("assignment", client.id)}
+                onClick={() => openForm("assignment", { clientId: client.id })}
                 className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
               >
                 + Asignar
@@ -237,7 +248,10 @@ function ClientDetailPage() {
                   <span>{selectedIds.length === 1 ? "seleccionado" : "seleccionados"}</span>
                   <button
                     type="button"
-                    onClick={() => selectedAssignment && openForm("assignment", client.id, selectedAssignment)}
+                    onClick={() =>
+                      selectedAssignment &&
+                      openForm("assignment", { clientId: client.id, assignment: selectedAssignment })
+                    }
                     disabled={!selectedAssignment}
                     className="ml-auto rounded-lg bg-primary px-3 py-1.5 font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
@@ -439,14 +453,14 @@ function ClientDetailPage() {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => openForm("expense", client.id)}
+              onClick={() => openForm("expense", { clientId: client.id })}
               className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
             >
               + Gasto
             </button>
             <button
               type="button"
-              onClick={() => openForm("income", client.id)}
+              onClick={() => openForm("income", { clientId: client.id })}
               className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90"
             >
               + Ingreso
