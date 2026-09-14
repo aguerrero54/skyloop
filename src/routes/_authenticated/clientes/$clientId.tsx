@@ -91,7 +91,12 @@ function ClientDetailPage() {
   const movements = [
     ...monthIncomes.filter((row) => row.client_id === client.id).map(incomeToMovement),
     ...monthExpenses.filter((row) => row.client_id === client.id).map(expenseToMovement),
-    ...clientInvoices.map(invoiceToMovement),
+    ...clientInvoices.map((invoice) =>
+      invoiceToMovement(
+        invoice,
+        data.invoiceItems.filter((item) => item.invoice_id === invoice.id),
+      ),
+    ),
   ].sort((a, b) => b.date.localeCompare(a.date));
 
   const selectedAssignment =
