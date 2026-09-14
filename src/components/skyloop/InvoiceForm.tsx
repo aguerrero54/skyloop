@@ -159,6 +159,9 @@ export function InvoiceForm({
   const [invoiceNumber, setInvoiceNumber] = useState(suggestedNumber);
   const [clientId, setClientId] = useState(invoice?.client_id ?? "");
   const [vendorId, setVendorId] = useState(invoice?.vendor_id ?? "");
+  const [multiClient, setMultiClient] = useState(Boolean(invoice?.multi_client));
+  /** Solo los gastos de proveedor se reparten entre varias marcas. */
+  const splitByClient = kind === "vendor" && multiClient;
   const entityId = kind === "client" ? clientId : vendorId;
   const obligations = pendingObligations(data.providerObligations, vendorId || null);
   
@@ -188,6 +191,7 @@ export function InvoiceForm({
             rate: String(num(item.rate)),
             tax: String(num(item.tax)),
             obligationId: item.obligation_id,
+            clientId: item.client_id,
           }))
       : [emptyItem()],
   );
