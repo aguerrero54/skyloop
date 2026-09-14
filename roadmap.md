@@ -9,4 +9,4 @@
 - [x] Selección múltiple con casillas: editar un elemento o eliminar varios en servicios, proveedores y asignaciones.
 - [x] Personalizar Dashboard: botón junto al mes para mostrar/ocultar y reordenar bloques, guardado por usuario.
 - [x] Ajustes visuales del formulario de factura: campos 25% más cortos, Asunto a la mitad y subtítulo del panel eliminado.
-- [ ] Cuentas aisladas: cada usuario ve y edita únicamente sus propios clientes, facturas y movimientos; los datos existentes quedan en la cuenta de Arli Guerrero.
+- [x] Cuentas aisladas: cada usuario ve y edita únicamente sus propios clientes, facturas y movimientos; los datos existentes quedan en la cuenta de Arli Guerrero.
