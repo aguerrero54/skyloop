@@ -3,11 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
+  effectiveAssignments,
   monthOf,
   num,
   type AppSettings,
   type Client,
   type ClientService,
+  type ClientServiceMonth,
+  type EffectiveClientService,
   type Expense,
   type Income,
   type MonthlyHistory,
@@ -35,6 +38,7 @@ export type SkyloopData = {
   services: Service[];
   providers: Provider[];
   clientServices: ClientService[];
+  clientServiceMonths: ClientServiceMonth[];
   incomes: Income[];
   expenses: Expense[];
   history: MonthlyHistory[];
@@ -50,6 +54,7 @@ const emptyData: SkyloopData = {
   services: [],
   providers: [],
   clientServices: [],
+  clientServiceMonths: [],
   incomes: [],
   expenses: [],
   history: [],
