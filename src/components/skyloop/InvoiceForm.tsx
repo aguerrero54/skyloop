@@ -442,14 +442,33 @@ export function InvoiceForm({
               className={`${inputClass} w-3/4!`}
             />
           </div>
-          <div>
-            <label className={labelClass}>Número de orden</label>
-            <input
-              value={orderNumber}
-              onChange={(event) => setOrderNumber(event.target.value)}
-              className={`${inputClass} w-3/4!`}
-            />
-          </div>
+          {kind === "vendor" ? (
+            <div>
+              <label className={labelClass}>Cliente</label>
+              <div className="w-3/4">
+                <EntityPicker
+                  options={data.clients}
+                  value={clientId}
+                  onChange={setClientId}
+                  placeholder="Vincular este gasto a un cliente"
+                  createLabel="+ Crear nuevo cliente"
+                  onCreate={() => openForm("client")}
+                />
+              </div>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                El gasto aparecerá en los movimientos de este cliente.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <label className={labelClass}>Número de orden</label>
+              <input
+                value={orderNumber}
+                onChange={(event) => setOrderNumber(event.target.value)}
+                className={`${inputClass} w-3/4!`}
+              />
+            </div>
+          )}
           <div>
             <label className={labelClass}>Moneda</label>
             <select

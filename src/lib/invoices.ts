@@ -1,5 +1,5 @@
 import type { Tables } from "@/integrations/supabase/types";
-import { num, todayISO } from "@/lib/finance";
+import { num, todayISO, type Movement } from "@/lib/finance";
 
 export type Invoice = Tables<"invoices">;
 export type InvoiceItem = Tables<"invoice_items">;
@@ -290,6 +290,23 @@ export type InvoiceLedger = {
   incomeOpen: Invoice[];
   expenseOpen: Invoice[];
 };
+
+/** Convierte una factura en un movimiento para las tablas de ingresos/gastos del cliente. */
+export function invoiceToMovement(invoice: Invoice): Movement {
+  const kind = invoiceKind(invoice);
+  return {
+    id: `invoice-${invoice.id}`,
+    kind: kind === "vendor" ? "Gasto" : "Ingreso",
+    date: invoice.issue_date,
+    concept: invoice.subject?.trim()
+      ? `${invoice.invoice_number} · ${invoice.subject.trim()}`
+      : invoice.invoice_number,
+    clientId: invoice.client_id,
+    status: effectiveStatus(invoice),
+    amount: num(invoice.total),
+    currency: invoice.currency,
+  };
+}
 
 export function invoiceBalance(invoice: Invoice): number {
   return Math.max(num(invoice.total) - num(invoice.amount_paid), 0);

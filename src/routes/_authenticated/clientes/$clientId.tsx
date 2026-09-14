@@ -12,6 +12,7 @@ import {
   money,
   num,
 } from "@/lib/finance";
+import { invoiceToMovement } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { EmptyRow, MovementTable, Panel, ProgressBar, TableShell } from "@/components/skyloop/ui";
 
@@ -80,9 +81,17 @@ function ClientDetailPage() {
   const assignments = data.clientServices.filter(
     (row) => row.client_id === client.id && row.active,
   );
+  const clientInvoices = data.invoices.filter(
+    (row) =>
+      row.client_id === client.id &&
+      row.status !== "Borrador" &&
+      row.status !== "Cancelada" &&
+      (row.issue_date ?? "").startsWith(month),
+  );
   const movements = [
     ...monthIncomes.filter((row) => row.client_id === client.id).map(incomeToMovement),
     ...monthExpenses.filter((row) => row.client_id === client.id).map(expenseToMovement),
+    ...clientInvoices.map(invoiceToMovement),
   ].sort((a, b) => b.date.localeCompare(a.date));
 
   const selectedAssignment =
