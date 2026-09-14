@@ -168,6 +168,7 @@ function TeamPage() {
                 <StatusBadge status={provider.status} />
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{provider.specialty}</p>
+              <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
                 <div>
                   <small className="block text-muted-foreground">Generado</small>
                   <b className="text-foreground">{money(total)}</b>
