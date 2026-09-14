@@ -5,13 +5,13 @@ import { useSkyloop } from "@/lib/skyloop-context";
 import { EmptyRow, MarginBadge, TableShell } from "@/components/skyloop/ui";
 
 export function ProfitTable({ limit }: { limit?: number }) {
-  const { data, monthIncomes, monthExpenses, usdRate } = useSkyloop();
+  const { data, monthIncomes, monthExpenses, monthClientServices, usdRate } = useSkyloop();
 
   let rows = data.clients
     .map((client) => ({
       client,
       ...clientMetrics(client.id, monthIncomes, monthExpenses, usdRate),
-      estimated: estimatedMetrics(client, data.clientServices, usdRate),
+      estimated: estimatedMetrics(client, monthClientServices, usdRate),
     }))
     .filter((row) => row.revenue || row.costs || row.estimated.payment)
     .sort(
