@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/clientes/")({
 });
 
 function ClientsPage() {
-  const { data, month, monthIncomes, monthExpenses, usdRate, openForm } = useSkyloop();
+  const { data, month, monthIncomes, monthExpenses, monthClientServices, usdRate, openForm } = useSkyloop();
   const [search, setSearch] = useState("");
 
   const clients = data.clients.filter((client) =>
@@ -64,7 +64,7 @@ function ClientsPage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {clients.map((client) => {
             const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
-            const est = estimatedMetrics(client, data.clientServices, usdRate);
+            const est = estimatedMetrics(client, monthClientServices, usdRate);
             return (
               <Link
                 key={client.id}

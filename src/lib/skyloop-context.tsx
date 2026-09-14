@@ -3,11 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
+  effectiveAssignments,
   monthOf,
   num,
   type AppSettings,
   type Client,
   type ClientService,
+  type ClientServiceMonth,
+  type EffectiveClientService,
   type Expense,
   type Income,
   type MonthlyHistory,
@@ -35,6 +38,7 @@ export type SkyloopData = {
   services: Service[];
   providers: Provider[];
   clientServices: ClientService[];
+  clientServiceMonths: ClientServiceMonth[];
   incomes: Income[];
   expenses: Expense[];
   history: MonthlyHistory[];
@@ -50,6 +54,7 @@ const emptyData: SkyloopData = {
   services: [],
   providers: [],
   clientServices: [],
+  clientServiceMonths: [],
   incomes: [],
   expenses: [],
   history: [],
@@ -66,6 +71,7 @@ async function fetchAll(): Promise<SkyloopData> {
     services,
     providers,
     clientServices,
+    clientServiceMonths,
     incomes,
     expenses,
     history,
@@ -79,6 +85,7 @@ async function fetchAll(): Promise<SkyloopData> {
     supabase.from("services").select("*").order("name"),
     supabase.from("providers").select("*").order("name"),
     supabase.from("client_services").select("*"),
+    supabase.from("client_service_months").select("*"),
     supabase.from("incomes").select("*").order("invoice_date", { ascending: false }),
     supabase.from("expenses").select("*").order("expense_date", { ascending: false }),
     supabase.from("monthly_history").select("*").order("month"),
@@ -94,6 +101,7 @@ async function fetchAll(): Promise<SkyloopData> {
     services,
     providers,
     clientServices,
+    clientServiceMonths,
     incomes,
     expenses,
     history,
@@ -110,6 +118,7 @@ async function fetchAll(): Promise<SkyloopData> {
     services: services.data ?? [],
     providers: providers.data ?? [],
     clientServices: clientServices.data ?? [],
+    clientServiceMonths: clientServiceMonths.data ?? [],
     incomes: incomes.data ?? [],
     expenses: expenses.data ?? [],
     history: history.data ?? [],
@@ -131,6 +140,8 @@ type SkyloopContextValue = {
   usdRate: number;
   monthIncomes: Income[];
   monthExpenses: Expense[];
+  /** Asignaciones con los valores efectivos del mes seleccionado. */
+  monthClientServices: EffectiveClientService[];
   clientName: (id: string | null) => string;
   providerName: (id: string | null) => string;
   serviceName: (id: string | null) => string;
@@ -191,6 +202,7 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
     usdRate,
     monthIncomes: data.incomes.filter((row) => monthOf(row.invoice_date) === month),
     monthExpenses: data.expenses.filter((row) => monthOf(row.expense_date) === month),
+    monthClientServices: effectiveAssignments(data.clientServices, data.clientServiceMonths, month),
     clientName: (id) => data.clients.find((row) => row.id === id)?.name ?? "—",
     providerName: (id) => data.providers.find((row) => row.id === id)?.name ?? "—",
     serviceName: (id) => data.services.find((row) => row.id === id)?.name ?? "—",
