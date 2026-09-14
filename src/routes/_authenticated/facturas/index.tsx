@@ -282,7 +282,31 @@ function InvoicesPage() {
                 {money(Math.max(num(invoice.total) - num(invoice.amount_paid), 0), invoice.currency)}
               </td>
               <td className="px-4 py-3">
-                <InvoiceStatusBadge status={rowStatus} />
+                {rowStatus === "Pagada" ? (
+                  <button
+                    type="button"
+                    title="Cambiar a Pendiente"
+                    className="rounded-full transition-opacity hover:opacity-75"
+                    onClick={async () => {
+                      const paid = num(invoice.amount_paid);
+                      const confirmMessage = `¿Cambiar ${invoice.invoice_number} a Pendiente?\n\nSe eliminarán los ${money(paid, invoice.currency)} en pagos registrados y el saldo volverá al total. Esta acción no se puede deshacer.`;
+                      if (!window.confirm(confirmMessage)) return;
+                      try {
+                        await revertPaidInvoiceToPending(invoice);
+                        await refresh();
+                        toast.success("Factura cambiada a Pendiente");
+                      } catch (error) {
+                        toast.error("No se pudo cambiar el estado", {
+                          description: error instanceof Error ? error.message : undefined,
+                        });
+                      }
+                    }}
+                  >
+                    <InvoiceStatusBadge status={rowStatus} />
+                  </button>
+                ) : (
+                  <InvoiceStatusBadge status={rowStatus} />
+                )}
               </td>
               <td className="px-4 py-3">
                 <div className="flex gap-2">
