@@ -64,6 +64,13 @@
       "when": 1789342778317,
       "tag": "0008_add_user_preferences_dashboard_layout",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789345954628,
+      "tag": "0009_user_data_isolation",
+      "breakpoints": true
     }
   ]
 }
