@@ -12,7 +12,7 @@ import {
   money,
   num,
 } from "@/lib/finance";
-import { invoiceToMovement } from "@/lib/invoices";
+import { invoiceToClientMovement, invoiceTouchesClient } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { EmptyRow, MovementTable, Panel, ProgressBar, TableShell } from "@/components/skyloop/ui";
 
