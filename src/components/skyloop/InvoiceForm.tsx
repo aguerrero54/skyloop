@@ -425,7 +425,7 @@ export function InvoiceForm({
             <input
               value={invoiceNumber}
               onChange={(event) => setInvoiceNumber(event.target.value)}
-              className={`${inputClass} w-3/4`}
+              className={`${inputClass} w-3/4!`}
             />
           </div>
           <div>
@@ -433,7 +433,7 @@ export function InvoiceForm({
             <input
               value={orderNumber}
               onChange={(event) => setOrderNumber(event.target.value)}
-              className={`${inputClass} w-3/4`}
+              className={`${inputClass} w-3/4!`}
             />
           </div>
           <div>
@@ -441,7 +441,7 @@ export function InvoiceForm({
             <select
               value={currency}
               onChange={(event) => setCurrency(event.target.value)}
-              className={`${inputClass} w-3/4`}
+              className={`${inputClass} w-3/4!`}
             >
               <option value="DOP">DOP</option>
               <option value="USD">USD</option>
@@ -455,7 +455,7 @@ export function InvoiceForm({
               type="date"
               value={issueDate}
               onChange={(event) => applyIssueDate(event.target.value)}
-              className={`${inputClass} w-3/4`}
+              className={`${inputClass} w-3/4!`}
             />
           </div>
           <div>
@@ -463,7 +463,7 @@ export function InvoiceForm({
             <select
               value={terms}
               onChange={(event) => applyTerms(event.target.value)}
-              className={`${inputClass} w-3/4`}
+              className={`${inputClass} w-3/4!`}
             >
               {PAYMENT_TERMS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -481,7 +481,7 @@ export function InvoiceForm({
                 setDueDate(event.target.value);
                 setTerms("Personalizada");
               }}
-              className={`${inputClass} w-3/4`}
+              className={`${inputClass} w-3/4!`}
             />
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
@@ -490,7 +490,7 @@ export function InvoiceForm({
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
               placeholder="Factura del mes de septiembre"
-              className={`${inputClass} w-1/2`}
+              className={`${inputClass} w-1/3!`}
             />
           </div>
         </div>
