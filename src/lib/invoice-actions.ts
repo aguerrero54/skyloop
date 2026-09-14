@@ -235,6 +235,17 @@ export async function deleteInvoice(invoice: Invoice): Promise<void> {
   }
 }
 
+/**
+ * Revierte una factura "Pagada" a pendiente: elimina sus pagos registrados y el
+ * trigger de recálculo deja el estado en Pendiente (o Vencida si ya pasó la fecha
+ * de vencimiento) con saldo igual al total. Las obligaciones de proveedor
+ * vinculadas se recalan solas a 0.
+ */
+export async function revertPaidInvoiceToPending(invoice: Invoice): Promise<void> {
+  const { error } = await supabase.from("invoice_payments").delete().eq("invoice_id", invoice.id);
+  if (error) throw new Error(error.message);
+}
+
 export async function setInvoiceStatus(
   invoice: Invoice,
   status: InvoiceStatus,
