@@ -170,10 +170,21 @@ function ClientDetailPage() {
 
       <div className="grid gap-5 rounded-2xl border border-border bg-card p-6 shadow-panel xl:grid-cols-[1fr_auto]">
         <div>
-          <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
-            {client.status.toUpperCase()}
-          </p>
-          <h3 className="mt-1 text-xl font-bold text-foreground">{client.name}</h3>
+          <div className="flex flex-wrap items-center gap-3">
+            <div>
+              <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
+                {client.status.toUpperCase()}
+              </p>
+              <h3 className="mt-1 text-xl font-bold text-foreground">{client.name}</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => openForm("client", { client })}
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
+            >
+              Editar
+            </button>
+          </div>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             {client.notes || "Sin notas internas."}
           </p>
