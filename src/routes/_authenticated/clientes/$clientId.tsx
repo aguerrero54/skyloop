@@ -442,14 +442,14 @@ function ClientDetailPage() {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => openForm("expense", client.id)}
+              onClick={() => openForm("expense", { clientId: client.id })}
               className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
             >
               + Gasto
             </button>
             <button
               type="button"
-              onClick={() => openForm("income", client.id)}
+              onClick={() => openForm("income", { clientId: client.id })}
               className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90"
             >
               + Ingreso
