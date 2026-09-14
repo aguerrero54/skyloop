@@ -588,7 +588,9 @@ export function InvoiceForm({
                 <th className="px-3 py-3 font-semibold">Artículo / Descripción</th>
                 <th className="px-3 py-3 text-right font-semibold">Cantidad</th>
                 <th className="px-3 py-3 text-right font-semibold">Tarifa</th>
-                <th className="px-3 py-3 text-right font-semibold">Impuesto %</th>
+                <th className={`px-3 py-3 font-semibold ${splitByClient ? "" : "text-right"}`}>
+                  {splitByClient ? "Cliente" : "Impuesto %"}
+                </th>
                 <th className="px-3 py-3 text-right font-semibold">Importe</th>
                 <th className="px-3 py-3" />
               </tr>
@@ -636,13 +638,30 @@ export function InvoiceForm({
                     />
                   </td>
                   <td className="px-3 py-2">
-                    <input
-                      type="number"
-                      step="any"
-                      value={item.tax}
-                      onChange={(event) => updateItem(item.key, { tax: event.target.value })}
-                      className={`${inputClass} text-right`}
-                    />
+                    {splitByClient ? (
+                      <select
+                        value={item.clientId ?? ""}
+                        onChange={(event) =>
+                          updateItem(item.key, { clientId: event.target.value || null })
+                        }
+                        className={inputClass}
+                      >
+                        <option value="">Seleccionar cliente</option>
+                        {data.clients.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="number"
+                        step="any"
+                        value={item.tax}
+                        onChange={(event) => updateItem(item.key, { tax: event.target.value })}
+                        className={`${inputClass} text-right`}
+                      />
+                    )}
                   </td>
                   <td className="px-3 py-2 text-right font-bold text-foreground">
                     {money(itemAmount(item.quantity, item.rate), currency)}
