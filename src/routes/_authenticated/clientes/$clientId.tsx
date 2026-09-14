@@ -345,7 +345,7 @@ function ClientDetailPage() {
             {money(metrics.profit)}
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            Ganancia bruta después de los costos asociados a esta marca.
+            Ganancia bruta después de los gastos asociados a esta marca.
           </p>
           <p className="mt-4 rounded-xl border border-border bg-surface-raised p-4 text-xs text-muted-foreground">
             Un gasto registrado con este cliente se descuenta automáticamente de su rentabilidad.
