@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { money, num } from "@/lib/finance";
 import { supabase } from "@/integrations/supabase/client";
-import { deletePayment, duplicateInvoice, issueInvoice, setInvoiceStatus } from "@/lib/invoice-actions";
+import { deleteInvoice, deletePayment, duplicateInvoice, issueInvoice, setInvoiceStatus } from "@/lib/invoice-actions";
 import { downloadInvoicePdf } from "@/lib/invoice-pdf";
 import {
   effectiveStatus,
@@ -209,6 +209,35 @@ function InvoiceDetailPage() {
               Cancelar factura
             </button>
           )}
+          <button
+            type="button"
+            disabled={busy}
+            className="rounded-lg bg-destructive px-3 py-2 text-sm font-bold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            onClick={() => {
+              if (
+                !window.confirm(
+                  "¿Eliminar esta factura? Se borrarán también sus artículos y pagos registrados. Esta acción no se puede deshacer.",
+                )
+              )
+                return;
+              void (async () => {
+                setBusy(true);
+                try {
+                  await deleteInvoice(invoice);
+                  await refresh();
+                  toast.success("Factura eliminada");
+                  navigate({ to: "/facturas" });
+                } catch (error) {
+                  toast.error("No se pudo eliminar la factura", {
+                    description: error instanceof Error ? error.message : undefined,
+                  });
+                  setBusy(false);
+                }
+              })();
+            }}
+          >
+            Eliminar
+          </button>
           {status !== "Pagada" && status !== "Cancelada" && (
             <button
               type="button"
