@@ -10,3 +10,5 @@
 - [x] Personalizar Dashboard: botón junto al mes para mostrar/ocultar y reordenar bloques, guardado por usuario.
 - [x] Ajustes visuales del formulario de factura: campos 25% más cortos, Asunto a la mitad y subtítulo del panel eliminado.
 - [x] Cuentas aisladas: cada usuario ve y edita únicamente sus propios clientes, facturas y movimientos; los datos existentes quedan en la cuenta de Arli Guerrero.
+- [x] Gasto de proveedor repartido entre varias marcas: casilla "Varios clientes", columna Cliente por fila y reflejo en los movimientos de cada cliente.
+- [x] Quitar el círculo de iniciales en las tarjetas de proveedores, clientes y servicios.

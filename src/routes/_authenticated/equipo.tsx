@@ -151,8 +151,10 @@ function TeamPage() {
                 selecting ? "cursor-pointer" : ""
               } ${isSelected ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
             >
-              <div className="flex items-center justify-between">
-                {selecting ? (
+              <div
+                className={`flex items-center ${selecting ? "justify-between" : "justify-end"}`}
+              >
+                {selecting && (
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -161,10 +163,6 @@ function TeamPage() {
                     aria-label={`Seleccionar ${provider.name}`}
                     className="size-5 cursor-pointer accent-primary"
                   />
-                ) : (
-                  <span className="grid size-10 place-items-center rounded-xl bg-secondary text-sm font-bold text-foreground">
-                    {provider.name.slice(0, 2).toUpperCase()}
-                  </span>
                 )}
                 <StatusBadge status={provider.status} />
               </div>
