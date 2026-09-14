@@ -44,6 +44,7 @@ function ClientDetailPage() {
     month,
     monthIncomes,
     monthExpenses,
+    monthClientServices,
     usdRate,
     openForm,
     clientName,
@@ -75,10 +76,10 @@ function ClientDetailPage() {
   }
 
   const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
-  const est = estimatedMetrics(client, data.clientServices, usdRate);
+  const est = estimatedMetrics(client, monthClientServices, usdRate);
   const committedPct =
     est.payment > 0 ? Math.min(100, (est.serviceCost / est.payment) * 100) : 0;
-  const assignments = data.clientServices.filter(
+  const assignments = monthClientServices.filter(
     (row) => row.client_id === client.id && row.active,
   );
   const clientInvoices = data.invoices.filter(
@@ -313,7 +314,17 @@ function ClientDetailPage() {
                       />
                     </td>
                   )}
-                  <td className="px-4 py-3 text-foreground">{serviceName(row.service_id)}</td>
+                  <td className="px-4 py-3 text-foreground">
+                    {serviceName(row.service_id)}
+                    {row.monthAdjusted && (
+                      <span
+                        className="ml-2 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-soft"
+                        title="Este mes tiene valores distintos al habitual"
+                      >
+                        ajustado
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right text-foreground">
                     {num(row.monthly_quantity) || "—"}
                   </td>
