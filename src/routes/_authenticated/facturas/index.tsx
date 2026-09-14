@@ -45,7 +45,7 @@ function InvoicesPage() {
   const [client, setClient] = useState("todos");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [dueBefore, setDueBefore] = useState("");
+  
 
   const rows = useMemo(() => {
     return data.invoices
@@ -65,7 +65,7 @@ function InvoicesPage() {
         if (client !== "todos" && row.invoice.client_id !== client) return false;
         if (from && row.invoice.issue_date < from) return false;
         if (to && row.invoice.issue_date > to) return false;
-        if (dueBefore && (!row.invoice.due_date || row.invoice.due_date > dueBefore)) return false;
+
         const query = search.trim().toLowerCase();
         if (!query) return true;
         return [
@@ -87,8 +87,8 @@ function InvoicesPage() {
     client,
     from,
     to,
-    dueBefore,
     search,
+
   ]);
 
   const totals = useMemo(() => {
@@ -198,13 +198,6 @@ function InvoicesPage() {
             onChange={(event) => setTo(event.target.value)}
             className={inputClass}
             aria-label="Hasta"
-          />
-          <input
-            type="date"
-            value={dueBefore}
-            onChange={(event) => setDueBefore(event.target.value)}
-            className={inputClass}
-            aria-label="Vence antes de"
           />
           <div className="flex flex-wrap gap-2 xl:col-span-6">
             {[
