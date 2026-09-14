@@ -202,6 +202,7 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
     usdRate,
     monthIncomes: data.incomes.filter((row) => monthOf(row.invoice_date) === month),
     monthExpenses: data.expenses.filter((row) => monthOf(row.expense_date) === month),
+    monthClientServices: effectiveAssignments(data.clientServices, data.clientServiceMonths, month),
     clientName: (id) => data.clients.find((row) => row.id === id)?.name ?? "—",
     providerName: (id) => data.providers.find((row) => row.id === id)?.name ?? "—",
     serviceName: (id) => data.services.find((row) => row.id === id)?.name ?? "—",
