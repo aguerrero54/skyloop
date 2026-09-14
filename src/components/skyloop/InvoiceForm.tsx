@@ -328,6 +328,13 @@ export function InvoiceForm({
       toast.error("Agrega al menos un artículo o servicio");
       return;
     }
+    if (
+      splitByClient &&
+      items.some((item) => (item.description.trim() || num(item.rate) > 0) && !item.clientId)
+    ) {
+      toast.error("Selecciona el cliente de cada fila de la tabla de artículos");
+      return;
+    }
     if (items.some((item) => !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) {
       toast.error("La cantidad debe ser un número entero mayor que cero");
       return;
@@ -340,6 +347,7 @@ export function InvoiceForm({
         invoiceNumber,
         clientId: clientId || null,
         vendorId: vendorId || null,
+        multiClient: splitByClient,
         sellerId: null,
         orderNumber: orderNumber.trim() || null,
         issueDate,
