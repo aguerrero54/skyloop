@@ -68,11 +68,13 @@ export function ProfitTable({ limit, showPayment = true }: { limit?: number; sho
                 {row.client.name}
               </Link>
             </td>
-            <td className="px-4 py-3 text-right">
-              {row.estimated.payment
-                ? money(row.estimated.paymentOriginal, row.estimated.paymentCurrency)
-                : "—"}
-            </td>
+            {showPayment && (
+              <td className="px-4 py-3 text-right">
+                {row.estimated.payment
+                  ? money(row.estimated.paymentOriginal, row.estimated.paymentCurrency)
+                  : "—"}
+              </td>
+            )}
             <td className="px-4 py-3 text-right">{money(row.revenue)}</td>
             <td className="px-4 py-3 text-right">{money(row.costs)}</td>
             <td
