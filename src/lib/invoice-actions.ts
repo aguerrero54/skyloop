@@ -22,6 +22,8 @@ export type InvoiceInput = {
   invoiceNumber: string;
   clientId: string | null;
   vendorId: string | null;
+  /** Reparte el documento entre varias marcas: cada fila lleva su propio cliente. */
+  multiClient?: boolean;
   sellerId: string | null;
   orderNumber: string | null;
   issueDate: string;
