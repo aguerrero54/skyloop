@@ -10,6 +10,7 @@ import {
   DEFAULT_TERMS,
   KIND_COPY,
   PAYMENT_TERMS,
+  clientInitials,
   computeTotals,
   dueDateFor,
   invoiceKind,
@@ -270,6 +271,16 @@ export function InvoiceForm({
     );
   }
 
+  /** La nomenclatura del número (INV / iniciales del cliente) se ajusta al elegir cliente. */
+  function applyNumberPrefix(nextClientId: string) {
+    const match = invoiceNumber.trim().match(/^([A-Za-z]{1,3})(-P)?-\d+$/);
+    const oldPrefix = match?.[1];
+    if (!oldPrefix) return;
+    const client = data.clients.find((row) => row.id === nextClientId);
+    const prefix = client ? clientInitials(client.name) : "INV";
+    setInvoiceNumber(`${prefix}${invoiceNumber.trim().slice(oldPrefix.length)}`);
+  }
+
   /** Elegir proveedor: si hay servicios pendientes y las filas están vacías, se agregan solos. */
   function applyVendor(id: string) {
     setVendorId(id);
@@ -385,7 +396,10 @@ export function InvoiceForm({
             <EntityPicker
               options={data.clients}
               value={clientId}
-              onChange={setClientId}
+              onChange={(id) => {
+                setClientId(id);
+                applyNumberPrefix(id);
+              }}
               placeholder={copy.entityPlaceholder}
               createLabel="+ Crear nuevo cliente"
               onCreate={() => openForm("client")}
