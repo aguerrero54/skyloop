@@ -18,7 +18,7 @@ export function effectiveAssignments(
   month: string,
 ): EffectiveClientService[] {
   return assignments.map((row) => {
-    const override = overrides.find(
+    const override = (overrides ?? []).find(
       (item) => item.client_service_id === row.id && item.month === month,
     );
     if (!override) return { ...row, monthAdjusted: false };

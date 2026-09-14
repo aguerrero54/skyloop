@@ -190,6 +190,51 @@ export async function deletePayment(paymentId: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+/**
+ * Elimina la factura con sus artículos y pagos. Si es un documento de proveedor
+ * vinculado a servicios pendientes, esos servicios vuelven a "Pendiente" con
+ * monto pagado en 0 (el trigger de recálculo no recorre obligaciones cuyo
+ * artículo ya fue borrado, así que se resetean antes de eliminar).
+ */
+export async function deleteInvoice(invoice: Invoice): Promise<void> {
+  const { data: obligationItems, error: itemsReadError } = await supabase
+    .from("invoice_items")
+    .select("obligation_id")
+    .eq("invoice_id", invoice.id)
+    .not("obligation_id", "is", null);
+  if (itemsReadError) throw new Error(itemsReadError.message);
+
+  const obligationIds = (obligationItems ?? [])
+    .map((row) => row.obligation_id)
+    .filter((id): id is string => Boolean(id));
+
+  const { error: paymentsError } = await supabase
+    .from("invoice_payments")
+    .delete()
+    .eq("invoice_id", invoice.id);
+  if (paymentsError) throw new Error(paymentsError.message);
+
+  const { error: itemsError } = await supabase
+    .from("invoice_items")
+    .delete()
+    .eq("invoice_id", invoice.id);
+  if (itemsError) throw new Error(itemsError.message);
+
+  const { error: invoiceError } = await supabase
+    .from("invoices")
+    .delete()
+    .eq("id", invoice.id);
+  if (invoiceError) throw new Error(invoiceError.message);
+
+  if (obligationIds.length > 0) {
+    const { error: obligationsError } = await supabase
+      .from("provider_obligations")
+      .update({ amount_paid: 0, status: "Pendiente" })
+      .in("id", obligationIds);
+    if (obligationsError) throw new Error(obligationsError.message);
+  }
+}
+
 export async function setInvoiceStatus(
   invoice: Invoice,
   status: InvoiceStatus,
