@@ -159,6 +159,46 @@ function SettingsPage() {
         </div>
       </Panel>
 
+      <Panel title="Logo de la factura" subtitle="Se mostrará en todas las facturas y en el PDF">
+        <div className="grid gap-4">
+          <div className="grid place-items-center rounded-xl border border-dashed border-border bg-surface-raised p-6">
+            {logo ? (
+              <img src={logo} alt="Logo de la empresa" className="max-h-24 w-auto object-contain" />
+            ) : (
+              <p className="text-sm text-muted-foreground">Aún no has cargado un logo</p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="w-fit cursor-pointer rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90">
+              {logoBusy ? "Procesando…" : logo ? "Cambiar logo" : "Cargar logo"}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                disabled={logoBusy}
+                onChange={(event) => {
+                  void onLogoFile(event.target.files?.[0]);
+                  event.target.value = "";
+                }}
+              />
+            </label>
+            {logo && (
+              <button
+                type="button"
+                disabled={logoBusy}
+                onClick={() => void saveLogo(null)}
+                className="rounded-lg border border-destructive/40 px-3 py-2 text-sm font-bold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-60"
+              >
+                Quitar logo
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Formatos PNG, JPG o WEBP hasta 5 MB. Se recomienda fondo transparente.
+          </p>
+        </div>
+      </Panel>
+
       <Panel title="Tu información" subtitle="Cómo funciona este espacio">
         <p className="rounded-xl border border-border bg-surface-raised p-4 text-sm text-muted-foreground">
           Toda la información se guarda en la nube y es compartida por las cuentas del equipo, así
