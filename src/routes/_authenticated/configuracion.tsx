@@ -29,11 +29,77 @@ export const Route = createFileRoute("/_authenticated/configuracion")({
   component: SettingsPage,
 });
 
+const MAX_LOGO_WIDTH = 600;
+
+async function fileToLogoDataUrl(file: File): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
+    reader.readAsDataURL(file);
+  });
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const element = new Image();
+    element.onload = () => resolve(element);
+    element.onerror = () => reject(new Error("Imagen no válida"));
+    element.src = dataUrl;
+  });
+  if (image.width <= MAX_LOGO_WIDTH) return dataUrl;
+  const ratio = MAX_LOGO_WIDTH / image.width;
+  const canvas = document.createElement("canvas");
+  canvas.width = MAX_LOGO_WIDTH;
+  canvas.height = Math.round(image.height * ratio);
+  const context = canvas.getContext("2d");
+  if (!context) return dataUrl;
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/png");
+}
+
 function SettingsPage() {
   const { data, refresh } = useSkyloop();
   const [currency, setCurrency] = useState(data.settings?.currency ?? "DOP");
   const [rate, setRate] = useState(String(num(data.settings?.usd_rate) || 60));
   const [saving, setSaving] = useState(false);
+  const [logoBusy, setLogoBusy] = useState(false);
+  const logo = data.settings?.logo_url ?? null;
+
+  async function saveLogo(value: string | null) {
+    setLogoBusy(true);
+    const { error } = await supabase
+      .from("app_settings")
+      .update({ logo_url: value, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    setLogoBusy(false);
+    if (error) {
+      toast.error("No se pudo guardar el logo", { description: error.message });
+      return;
+    }
+    await refresh();
+    toast.success(value ? "Logo actualizado" : "Logo eliminado");
+  }
+
+  async function onLogoFile(file: File | undefined) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Elige una imagen (PNG o JPG)");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("La imagen no debe pasar de 5 MB");
+      return;
+    }
+    setLogoBusy(true);
+    try {
+      const dataUrl = await fileToLogoDataUrl(file);
+      setLogoBusy(false);
+      await saveLogo(dataUrl);
+    } catch (error) {
+      setLogoBusy(false);
+      toast.error("No se pudo procesar la imagen", {
+        description: error instanceof Error ? error.message : undefined,
+      });
+    }
+  }
 
   const inputClass =
     "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary";
