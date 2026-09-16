@@ -606,13 +606,13 @@ export function InvoiceForm({
             <tbody>
               {items.map((item) => (
                 <tr key={item.key} className="border-t border-border">
-                  <td className="px-3 py-2">
-                    <input
-                      list="skyloop-services"
+                  <td className="min-w-[260px] px-3 py-2">
+                    <textarea
                       value={item.description}
                       onChange={(event) => updateItem(item.key, { description: event.target.value })}
-                      placeholder="Escriba o seleccione un servicio"
-                      className={inputClass}
+                      placeholder="Escriba o haga clic para seleccionar un artículo."
+                      rows={2}
+                      className={`${inputClass} h-auto min-h-[64px] resize-y leading-snug`}
                     />
                   </td>
                   <td className="px-3 py-2">
