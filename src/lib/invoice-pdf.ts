@@ -40,9 +40,11 @@ export type InvoicePdfInput = {
   items: InvoiceItem[];
   client: Client | null;
   vendor?: Provider | null;
+  /** Logo de la empresa en formato data URL (opcional). */
+  logo?: string | null;
 };
 
-export function buildInvoicePdf({ invoice, items, client, vendor }: InvoicePdfInput): jsPDF {
+export function buildInvoicePdf({ invoice, items, client, vendor, logo }: InvoicePdfInput): jsPDF {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const left = 56;
