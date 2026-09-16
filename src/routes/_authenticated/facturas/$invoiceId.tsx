@@ -185,7 +185,9 @@ function InvoiceDetailPage() {
           <button
             type="button"
             className={actionClass}
-            onClick={() => downloadInvoicePdf({ invoice, items, client })}
+            onClick={() =>
+              downloadInvoicePdf({ invoice, items, client, logo: data.settings?.logo_url ?? null })
+            }
           >
             Descargar PDF
           </button>
