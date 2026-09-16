@@ -40,9 +40,11 @@ export type InvoicePdfInput = {
   items: InvoiceItem[];
   client: Client | null;
   vendor?: Provider | null;
+  /** Logo de la empresa en formato data URL (opcional). */
+  logo?: string | null;
 };
 
-export function buildInvoicePdf({ invoice, items, client, vendor }: InvoicePdfInput): jsPDF {
+export function buildInvoicePdf({ invoice, items, client, vendor, logo }: InvoicePdfInput): jsPDF {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const left = 56;
@@ -107,16 +109,33 @@ export function buildInvoicePdf({ invoice, items, client, vendor }: InvoicePdfIn
   doc.text(amount(balance, currency), right, 168, { align: "right" });
 
   // Logo
-  doc.setFontSize(26);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...PURPLE);
-  doc.text("Skyl", left + 20, 150);
-  const skyWidth = doc.getTextWidth("Skyl");
-  doc.setTextColor(...DARK);
-  doc.text("oo", left + 20 + skyWidth, 150);
-  const ooWidth = doc.getTextWidth("oo");
-  doc.setTextColor(...PURPLE);
-  doc.text("p", left + 20 + skyWidth + ooWidth, 150);
+  let logoDrawn = false;
+  if (logo) {
+    try {
+      const props = doc.getImageProperties(logo);
+      const maxWidth = 170;
+      const maxHeight = 70;
+      const ratio = Math.min(maxWidth / props.width, maxHeight / props.height);
+      const width = props.width * ratio;
+      const height = props.height * ratio;
+      doc.addImage(logo, props.fileType, left, 100, width, height);
+      logoDrawn = true;
+    } catch {
+      logoDrawn = false;
+    }
+  }
+  if (!logoDrawn) {
+    doc.setFontSize(26);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...PURPLE);
+    doc.text("Skyl", left + 20, 150);
+    const skyWidth = doc.getTextWidth("Skyl");
+    doc.setTextColor(...DARK);
+    doc.text("oo", left + 20 + skyWidth, 150);
+    const ooWidth = doc.getTextWidth("oo");
+    doc.setTextColor(...PURPLE);
+    doc.text("p", left + 20 + skyWidth + ooWidth, 150);
+  }
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);

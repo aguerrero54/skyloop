@@ -127,6 +127,13 @@ function InvoiceDetailPage() {
             ← Facturas
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-3">
+            {data.settings?.logo_url && (
+              <img
+                src={data.settings.logo_url}
+                alt="Logo de la empresa"
+                className="max-h-10 w-auto object-contain"
+              />
+            )}
             <h3 className="text-2xl font-extrabold text-foreground">{invoice.invoice_number}</h3>
             <InvoiceStatusBadge status={status} />
             <span
@@ -185,7 +192,9 @@ function InvoiceDetailPage() {
           <button
             type="button"
             className={actionClass}
-            onClick={() => downloadInvoicePdf({ invoice, items, client })}
+            onClick={() =>
+              downloadInvoicePdf({ invoice, items, client, logo: data.settings?.logo_url ?? null })
+            }
           >
             Descargar PDF
           </button>
