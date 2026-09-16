@@ -19,6 +19,7 @@ export type Database = {
           agency: string
           currency: string
           id: number
+          logo_url: string | null
           overhead_method: string
           updated_at: string
           usd_rate: number
@@ -27,6 +28,7 @@ export type Database = {
           agency?: string
           currency?: string
           id?: number
+          logo_url?: string | null
           overhead_method?: string
           updated_at?: string
           usd_rate?: number
@@ -35,6 +37,7 @@ export type Database = {
           agency?: string
           currency?: string
           id?: number
+          logo_url?: string | null
           overhead_method?: string
           updated_at?: string
           usd_rate?: number
