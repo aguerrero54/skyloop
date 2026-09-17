@@ -72,10 +72,10 @@ function ClientsPage() {
                 params={{ clientId: client.id }}
                 className="rounded-2xl border border-border bg-card p-5 shadow-panel transition-colors hover:border-primary/50"
               >
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-between">
+                  <h3 className="min-w-0 flex-1 truncate text-base font-bold text-foreground">{client.name}</h3>
                   <StatusBadge status={client.status} />
                 </div>
-                <h3 className="mt-4 text-base font-bold text-foreground">{client.name}</h3>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {client.country || "Sin ubicación"} · {monthLabel(month)}
                 </p>
