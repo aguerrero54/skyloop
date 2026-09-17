@@ -85,7 +85,7 @@ function ClientsPage() {
                     <b className="text-foreground">{money(metrics.revenue)}</b>
                   </div>
                   <div>
-                    <small className="block text-muted-foreground">Costos</small>
+                    <small className="block text-muted-foreground">Gastos</small>
                     <b className="text-foreground">{money(metrics.costs)}</b>
                   </div>
                   <div>
@@ -104,9 +104,19 @@ function ClientsPage() {
                       </b>
                     </div>
                     <div>
-                      <small className="block text-muted-foreground">Ganancia estimada</small>
-                      <b className={est.estimatedProfit >= 0 ? "text-success" : "text-destructive"}>
-                        {money(est.estimatedProfit)}
+                      <small className="block text-muted-foreground">
+                        {est.paymentCurrency === "USD" ? "Pago mensual en pesos" : "Ganancia estimada"}
+                      </small>
+                      <b
+                        className={
+                          est.paymentCurrency === "USD" || est.estimatedProfit >= 0
+                            ? "text-success"
+                            : "text-destructive"
+                        }
+                      >
+                        {money(
+                          est.paymentCurrency === "USD" ? est.payment : est.estimatedProfit,
+                        )}
                       </b>
                     </div>
                   </div>
