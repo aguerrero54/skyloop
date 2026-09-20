@@ -9,7 +9,7 @@ Ejemplo: Juan en Abordo con 5,000 y en De Boca en Boca con 5,000 → **Generado:
 Detalles:
 - Suma el **costo asignado** de todas las asignaciones activas donde ese proveedor aparece, en cualquier marca, usando los valores del **mes seleccionado** arriba (respeta los ajustes por mes).
 - **Pagado** sigue siendo lo que ya le pagaste (gastos registrados con estado Pagado).
-- **Pendiente** pasa a ser Generado − Pagado, es decir: de todo lo que debería ganar este mes, lo que aún no le has pagado. Si lo pagado supera lo asignado, se muestra RD$0 en vez de un negativo.
+- **Pendiente** = pendiente de pago: la suma de los gastos de esa persona que están registrados en el mes seleccionado y todavía no tienen estado "Pagado" (lo que le debes según lo facturado como gasto, no una resta de Generado).
 
 Nada más de la página cambia: el directorio, la selección múltiple y la tabla de servicios pendientes quedan igual.
 
