@@ -20,4 +20,5 @@ El resto de la página no cambia: directorio, selección múltiple y la tabla de
 - Facturas del proveedor en el mes: `invoiceKind(inv) === "vendor" && inv.vendor_id === provider.id && monthOf(inv.issue_date) === month`, excluyendo las anuladas/canceladas.
 - `paid` = suma de `toDop(num(inv.amount_paid), inv.currency, usdRate)`; `pending` = suma de `toDop(invoiceBalance(inv), inv.currency, usdRate)` (`invoiceBalance` ya está en `src/lib/invoices.ts`).
 - `total` (Generado) sigue igual: suma de `num(row.cost)` en `monthClientServices` con `provider_id === provider.id && active`.
+- Pendiente sin factura: para cada asignación activa del proveedor en el mes, si el cliente de esa asignación tiene pagos registrados en el mes (`invoice_payments` de facturas de cliente del mes, o ingresos con estado "Cobrado" y `amount_paid` en sus facturas de cliente), se suma `num(row.cost)` al `pending` del proveedor; al emitirse la factura de proveedor correspondiente ese monto lo cubre el saldo de la factura.
 - Verificación: `bunx tsgo --noEmit` y revisión en la vista previa con un proveedor que tenga factura parcialmente pagada en el mes.
