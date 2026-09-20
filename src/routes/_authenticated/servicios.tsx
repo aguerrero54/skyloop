@@ -144,9 +144,7 @@ function ServicesPage() {
                 selecting ? "cursor-pointer" : ""
               } ${isSelected ? "border-primary ring-2 ring-primary/40" : "border-border"}`}
             >
-              <div
-                className={`flex items-center ${selecting ? "justify-between" : "justify-end"}`}
-              >
+              <div className="flex items-center gap-3">
                 {selecting && (
                   <input
                     type="checkbox"
@@ -157,9 +155,11 @@ function ServicesPage() {
                     className="size-5 cursor-pointer accent-primary"
                   />
                 )}
+                <h3 className="min-w-0 flex-1 truncate text-base font-bold text-foreground">
+                  {service.name}
+                </h3>
                 <StatusBadge status={service.status} />
               </div>
-              <h3 className="mt-4 text-base font-bold text-foreground">{service.name}</h3>
               <p className="mt-1 text-xs text-muted-foreground">{service.category}</p>
               <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
                 <div>
