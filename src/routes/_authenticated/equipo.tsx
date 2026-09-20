@@ -2,8 +2,8 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 
-import { money, num, sumDop } from "@/lib/finance";
-import { obligationBalance } from "@/lib/invoices";
+import { money, monthOf, num, toDop } from "@/lib/finance";
+import { effectiveStatus, invoiceBalance, invoiceKind, obligationBalance } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyRow, Panel, SectionTitle, StatusBadge, TableShell } from "@/components/skyloop/ui";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/equipo")({
 });
 
 function TeamPage() {
-  const { data, monthExpenses, monthClientServices, usdRate, openForm, providerName, refresh } =
+  const { data, month, monthClientServices, usdRate, openForm, providerName, refresh } =
     useSkyloop();
   const [selecting, setSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -140,15 +140,43 @@ function TeamPage() {
           const total = monthClientServices
             .filter((row) => row.provider_id === provider.id && row.active)
             .reduce((sum, row) => sum + num(row.cost), 0);
-          const rows = monthExpenses.filter((row) => row.provider_id === provider.id);
-          const paid = sumDop(
-            rows.filter((row) => row.status === "Pagado"),
-            usdRate,
+          const vendorInvoices = data.invoices.filter(
+            (invoice) =>
+              invoiceKind(invoice) === "vendor" &&
+              invoice.vendor_id === provider.id &&
+              monthOf(invoice.issue_date) === month &&
+              effectiveStatus(invoice) !== "Cancelada",
           );
-          const pending = sumDop(
-            rows.filter((row) => row.status !== "Pagado"),
-            usdRate,
+          const paid = vendorInvoices.reduce(
+            (sum, invoice) => sum + toDop(invoice.amount_paid, invoice.currency, usdRate),
+            0,
           );
+          let pending = vendorInvoices.reduce(
+            (sum, invoice) => sum + toDop(invoiceBalance(invoice), invoice.currency, usdRate),
+            0,
+          );
+          if (vendorInvoices.length === 0) {
+            const clientsPaidInMonth = new Set(
+              data.invoices
+                .filter(
+                  (invoice) =>
+                    invoiceKind(invoice) === "client" &&
+                    effectiveStatus(invoice) !== "Cancelada" &&
+                    num(invoice.amount_paid) > 0 &&
+                    monthOf(invoice.issue_date) === month,
+                )
+                .map((invoice) => invoice.client_id),
+            );
+            pending += monthClientServices
+              .filter(
+                (row) =>
+                  row.provider_id === provider.id &&
+                  row.active &&
+                  row.client_id !== null &&
+                  clientsPaidInMonth.has(row.client_id),
+              )
+              .reduce((sum, row) => sum + num(row.cost), 0);
+          }
           const isSelected = selecting && selectedIds.includes(provider.id);
           return (
             <article
