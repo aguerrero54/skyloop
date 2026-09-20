@@ -30,7 +30,8 @@ export const Route = createFileRoute("/_authenticated/equipo")({
 });
 
 function TeamPage() {
-  const { data, monthExpenses, usdRate, openForm, providerName, refresh } = useSkyloop();
+  const { data, monthExpenses, monthClientServices, usdRate, openForm, providerName, refresh } =
+    useSkyloop();
   const [selecting, setSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
@@ -136,10 +137,16 @@ function TeamPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {data.providers.map((provider) => {
+          const total = monthClientServices
+            .filter((row) => row.provider_id === provider.id && row.active)
+            .reduce((sum, row) => sum + num(row.cost), 0);
           const rows = monthExpenses.filter((row) => row.provider_id === provider.id);
-          const total = sumDop(rows, usdRate);
           const paid = sumDop(
             rows.filter((row) => row.status === "Pagado"),
+            usdRate,
+          );
+          const pending = sumDop(
+            rows.filter((row) => row.status !== "Pagado"),
             usdRate,
           );
           const isSelected = selecting && selectedIds.includes(provider.id);
@@ -179,7 +186,7 @@ function TeamPage() {
                 </div>
                 <div>
                   <small className="block text-muted-foreground">Pendiente</small>
-                  <b className="text-warning">{money(total - paid)}</b>
+                  <b className="text-warning">{money(pending)}</b>
                 </div>
               </div>
             </article>
