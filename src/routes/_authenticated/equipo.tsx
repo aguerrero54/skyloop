@@ -186,7 +186,7 @@ function TeamPage() {
                 </div>
                 <div>
                   <small className="block text-muted-foreground">Pendiente</small>
-                  <b className="text-warning">{money(total - paid)}</b>
+                  <b className="text-warning">{money(pending)}</b>
                 </div>
               </div>
             </article>
