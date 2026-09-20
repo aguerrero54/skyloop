@@ -8,7 +8,7 @@ En las tarjetas de Equipo, los tres números pasan a leerse así, siempre del me
 - **Pagado**: lo que le has pagado según las facturas de proveedor emitidas a su nombre en ese mes (la parte ya cobrada de cada factura).
 - **Pendiente**: lo que queda por pagarle de esas mismas facturas del mes (saldo pendiente).
 
-Así, si no le has facturado nada en el mes, Pagado y Pendiente salen en RD$0 aunque Generado muestre lo asignado; y cuando registras una factura de proveedor y sus pagos, los números se mueven solos.
+Así, si no le has facturado nada en el mes pero el cliente ya te pagó el servicio donde esa persona está asignada, en **Pendiente** verás el monto asignado que le debes, sin necesidad de crear primero su factura. Cuando registras la factura de proveedor y sus pagos, Pendiente pasa a reflejar el saldo de la factura y Pagado lo cobrado.
 
 Las facturas en dólares se convierten a pesos con la tasa de Configuración, para que los tres valores se comparen en la misma moneda.
 
