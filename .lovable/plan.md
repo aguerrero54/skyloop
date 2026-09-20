@@ -15,6 +15,6 @@ Nada más de la página cambia: el directorio, la selección múltiple y la tabl
 
 ## Detalles técnicos
 
-- `src/routes/_authenticated/equipo.tsx`: tomar `monthClientServices` de `useSkyloop()`; `total` = suma de `num(row.cost)` de las filas con `row.provider_id === provider.id && row.active`; `paid` sigue calculándose con `monthExpenses` filtrados por `status === "Pagado"`; pendiente = `Math.max(total - paid, 0)`.
+- `src/routes/_authenticated/equipo.tsx`: tomar `monthClientServices` de `useSkyloop()`; `total` = suma de `num(row.cost)` de las filas con `row.provider_id === provider.id && row.active`; `paid` = suma con `sumDop` de los gastos del mes del proveedor con `status === "Pagado"`; `pending` = suma con `sumDop` de los gastos del mes del proveedor con `status !== "Pagado"`.
 - Se conserva `sumDop`/`usdRate` solo para `paid`; los costos asignados ya están en pesos.
 - Verificación: `bunx tsgo --noEmit` y revisión en la vista previa de un proveedor asignado a dos marcas.
