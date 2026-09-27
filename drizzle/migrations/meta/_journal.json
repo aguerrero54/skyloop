@@ -99,6 +99,13 @@
       "when": 1790537507550,
       "tag": "0013_client_services_month_range",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790538444662,
+      "tag": "0014_client_end_date",
+      "breakpoints": true
     }
   ]
 }
