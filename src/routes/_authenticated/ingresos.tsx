@@ -54,7 +54,11 @@ function IncomesPage() {
           + Nuevo ingreso
         </button>
       </div>
-      <MovementTable rows={rows} clientName={clientName} />
+      <MovementTable
+        rows={rows}
+        clientName={clientName}
+        onStatusChange={(row, status) => changeStatus(row.id, status)}
+      />
     </div>
   );
 }
