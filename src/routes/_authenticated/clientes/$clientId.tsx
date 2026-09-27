@@ -236,7 +236,7 @@ function ClientDetailPage() {
 
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-4">
         <Panel
           title="Servicios y equipo asignado"
           subtitle="Costos recurrentes / de producción"
