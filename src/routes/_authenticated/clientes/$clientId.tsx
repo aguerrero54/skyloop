@@ -205,6 +205,37 @@ function ClientDetailPage() {
         </div>
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
           <div>
+            <small className="text-[10px] tracking-wider text-muted-foreground">
+              PAGO MENSUAL
+            </small>
+            <b className="block text-base text-foreground">
+              {est.payment > 0 ? money(est.paymentOriginal, est.paymentCurrency) : "—"}
+            </b>
+            {est.payment > 0 && est.paymentCurrency === "USD" && (
+              <small className="block text-[11px] text-muted-foreground">
+                ≈ {money(est.payment)} a RD${num(usdRate)}
+              </small>
+            )}
+          </div>
+          <div>
+            <small className="text-[10px] tracking-wider text-muted-foreground">
+              SERVICIOS OFRECIDOS
+            </small>
+            <b className="block text-base text-foreground">
+              {est.payment > 0 ? money(est.serviceCost) : "—"}
+            </b>
+          </div>
+          <div>
+            <small className="text-[10px] tracking-wider text-muted-foreground">
+              GANANCIA ESTIMADA
+            </small>
+            <b
+              className={`block text-base ${est.payment > 0 && est.estimatedProfit < 0 ? "text-destructive" : est.payment > 0 ? "text-success" : "text-foreground"}`}
+            >
+              {est.payment > 0 ? money(est.estimatedProfit) : "—"}
+            </b>
+          </div>
+          <div>
             <small className="text-[10px] tracking-wider text-muted-foreground">FACTURACIÓN</small>
             <b className="block text-base text-foreground">{money(metrics.revenue)}</b>
           </div>
@@ -225,6 +256,7 @@ function ClientDetailPage() {
             <b className="block text-base text-foreground">{metrics.margin.toFixed(1)}%</b>
           </div>
         </div>
+
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
