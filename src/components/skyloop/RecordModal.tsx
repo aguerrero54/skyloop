@@ -158,6 +158,18 @@ export function RecordModal() {
             options: plain(["Activo", "Prospecto", "Pausado", "Finalizado"]),
           },
           {
+            name: "start_date",
+            label: "Fecha de ingreso a la agencia",
+            type: "date",
+            defaultValue: editingClient?.start_date ?? todayISO(),
+          },
+          {
+            name: "end_date",
+            label: "Fecha de finalización (opcional)",
+            type: "date",
+            defaultValue: editingClient?.end_date ?? undefined,
+          },
+          {
             name: "company",
             label: "Empresa",
             type: "text",
@@ -397,6 +409,13 @@ export function RecordModal() {
           due_date: orNull("due_date"),
           direct_cost: Boolean(get("client_id")),
         }));
+      } else if (
+        kind === "client" &&
+        get("start_date") &&
+        get("end_date") &&
+        get("end_date") < get("start_date")
+      ) {
+        error = { message: "La fecha de finalización no puede ser anterior a la de ingreso." } as never;
       } else if (kind === "client" && editingClient) {
         ({ error } = await supabase
           .from("clients")
@@ -413,6 +432,8 @@ export function RecordModal() {
             currency: get("currency"),
             monthly_payment: num(get("monthly_payment")),
             notes: orNull("notes"),
+            start_date: orNull("start_date"),
+            end_date: orNull("end_date"),
           })
           .eq("id", editingClient.id));
       } else if (kind === "client") {
@@ -429,7 +450,8 @@ export function RecordModal() {
           currency: get("currency"),
           monthly_payment: num(get("monthly_payment")),
           notes: orNull("notes"),
-          start_date: todayISO(),
+          start_date: orNull("start_date") ?? todayISO(),
+          end_date: orNull("end_date"),
         }));
       } else if (kind === "provider" && editingProvider) {
         ({ error } = await supabase

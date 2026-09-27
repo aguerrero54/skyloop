@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { clientActiveInMonth } from "@/lib/finance";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   CartesianGrid,
@@ -65,6 +66,7 @@ function DashboardPage() {
   });
 
   const ranking = data.clients
+    .filter((client) => clientActiveInMonth(client, month))
     .map((client) => ({
       client,
       ...clientMetrics(client.id, monthIncomes, monthExpenses, usdRate),
@@ -77,7 +79,7 @@ function DashboardPage() {
     monthExpenses.filter((row) => row.direct_cost),
     usdRate,
   );
-  const activeClients = data.clients.filter((client) => client.status === "Activo").length;
+  const activeClients = data.clients.filter((client) => client.status === "Activo" && clientActiveInMonth(client, month)).length;
 
   const attention = [
     { label: "Cuentas por cobrar", value: money(metrics.receivable), percent: (metrics.receivable / 120000) * 100, to: "/por-cobrar" as const },

@@ -1,13 +1,14 @@
 import { Link } from "@tanstack/react-router";
 
-import { clientMetrics, estimatedMetrics, marginTone, money } from "@/lib/finance";
+import { clientActiveInMonth, clientMetrics, estimatedMetrics, marginTone, money } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { EmptyRow, MarginBadge, TableShell } from "@/components/skyloop/ui";
 
 export function ProfitTable({ limit, showPayment = true }: { limit?: number; showPayment?: boolean }) {
-  const { data, monthIncomes, monthExpenses, monthClientServices, usdRate } = useSkyloop();
+  const { data, month, monthIncomes, monthExpenses, monthClientServices, usdRate } = useSkyloop();
 
   let rows = data.clients
+    .filter((client) => clientActiveInMonth(client, month))
     .map((client) => ({
       client,
       ...clientMetrics(client.id, monthIncomes, monthExpenses, usdRate),

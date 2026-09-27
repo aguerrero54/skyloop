@@ -254,3 +254,13 @@ export function toCSV(rows: Record<string, unknown>[]): string {
     ...rows.map((row) => columns.map((column) => escape(row[column])).join(",")),
   ].join("\n");
 }
+
+/** ¿El cliente estaba en la agencia durante el mes (YYYY-MM)? Fechas nulas = sin límite. */
+export function clientActiveInMonth(
+  client: { start_date?: string | null; end_date?: string | null },
+  month: string,
+) {
+  if (client.start_date && client.start_date.slice(0, 7) > month) return false;
+  if (client.end_date && client.end_date.slice(0, 7) < month) return false;
+  return true;
+}
