@@ -70,7 +70,11 @@ export function RecordModal() {
             type: "select",
             required: true,
             defaultValue: presetClient,
-            options: [{ value: "", label: "Seleccionar…" }, ...clientOptions],
+            locked: Boolean(presetClient),
+            options:
+              presetClient
+                ? lockedClientOptions
+                : [{ value: "", label: "Seleccionar…" }, ...clientOptions],
           },
           { name: "concept", label: "Concepto", type: "text", required: true },
           { name: "amount", label: "Monto", type: "number", required: true },
@@ -117,7 +121,11 @@ export function RecordModal() {
             label: "Cliente relacionado",
             type: "select",
             defaultValue: presetClient,
-            options: [{ value: "", label: "Gasto general" }, ...clientOptions],
+            locked: Boolean(presetClient),
+            options:
+              presetClient
+                ? lockedClientOptions
+                : [{ value: "", label: "Gasto general" }, ...clientOptions],
           },
           {
             name: "provider_id",
@@ -299,7 +307,8 @@ export function RecordModal() {
             type: "select",
             required: true,
             defaultValue: editingAssignment?.client_id ?? presetClient,
-            options: clientOptions,
+            locked: Boolean(presetClient),
+            options: lockedClientOptions,
           },
           {
             name: "service_id",
@@ -583,9 +592,19 @@ export function RecordModal() {
                   name={field.name}
                   required={field.required}
                   defaultValue={field.defaultValue ?? ""}
-                  className={inputClass}
+                  disabled={field.locked}
+                  className={
+                    field.locked
+                      ? `${inputClass} cursor-not-allowed opacity-70`
+                      : inputClass
+                  }
                 >
-                  {(field.options ?? []).map((option) => (
+                  {(field.locked
+                    ? (field.options ?? []).filter(
+                        (option) => option.value === (field.defaultValue ?? ""),
+                      )
+                    : field.options ?? []
+                  ).map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
