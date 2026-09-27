@@ -199,9 +199,9 @@ function ClientDetailPage() {
           <p className="mt-2 text-xs text-muted-foreground">
             Ingreso: {client.start_date ?? "—"} · Finalización: {client.end_date ?? "Activo"}
           </p>
-          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            {client.notes || "Sin notas internas."}
-          </p>
+          {client.notes ? (
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground">{client.notes}</p>
+          ) : null}
         </div>
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
           <div>
