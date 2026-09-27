@@ -351,20 +351,6 @@ function ClientDetailPage() {
           </TableShell>
         </Panel>
 
-        <Panel title="Resumen financiero" subtitle={monthLabel(month)}>
-          <div
-            className={`text-3xl font-extrabold ${metrics.profit >= 0 ? "text-success" : "text-destructive"}`}
-          >
-            {money(metrics.profit)}
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Ganancia bruta después de los gastos asociados a esta marca.
-          </p>
-          <p className="mt-4 rounded-xl border border-border bg-surface-raised p-4 text-xs text-muted-foreground">
-            Un gasto registrado con este cliente se descuenta automáticamente de su rentabilidad.
-            No tienes que duplicarlo en otra tabla.
-          </p>
-        </Panel>
 
         <Panel
           title="Presupuesto mensual"
