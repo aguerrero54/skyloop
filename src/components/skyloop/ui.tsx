@@ -197,7 +197,34 @@ export function MovementTable({
             <td className="px-4 py-3 font-semibold text-foreground">{row.concept}</td>
             <td className="px-4 py-3 text-muted-foreground">{clientName(row.clientId)}</td>
             <td className="px-4 py-3">
-              <StatusBadge status={row.status} />
+              {onStatusChange && !row.id.startsWith("invoice-") ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      title="Cambiar estado"
+                      className="cursor-pointer transition-opacity hover:opacity-80"
+                    >
+                      <StatusBadge status={row.status} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    {(row.kind === "Ingreso" ? INCOME_STATUSES : EXPENSE_STATUSES).map(
+                      (option) => (
+                        <DropdownMenuItem
+                          key={option}
+                          onClick={() => onStatusChange(row, option)}
+                          className={option === row.status ? "font-bold" : ""}
+                        >
+                          {option}
+                        </DropdownMenuItem>
+                      ),
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <StatusBadge status={row.status} />
+              )}
             </td>
             <td
               className={cn(
