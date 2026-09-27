@@ -10,6 +10,7 @@ import {
   monthLabel,
   money,
   num,
+  type Movement,
 } from "@/lib/finance";
 import { invoiceToClientMovement, invoiceTouchesClient } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
