@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { toast } from "sonner";
 
@@ -14,7 +14,7 @@ import {
 } from "@/lib/finance";
 import { invoiceToClientMovement, invoiceTouchesClient } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
-import { EmptyRow, MovementTable, Panel, ProgressBar, TableShell } from "@/components/skyloop/ui";
+import { EmptyRow, MovementTable, Panel, TableShell } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/clientes/$clientId")({
   head: () => ({
@@ -56,8 +56,6 @@ function ClientDetailPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
-  const [editingPayment, setEditingPayment] = useState(false);
-  const [savingPayment, setSavingPayment] = useState(false);
 
   const client = data.clients.find((row) => row.id === clientId);
 
@@ -77,8 +75,7 @@ function ClientDetailPage() {
 
   const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
   const est = estimatedMetrics(client, monthClientServices, usdRate);
-  const committedPct =
-    est.payment > 0 ? Math.min(100, (est.serviceCost / est.payment) * 100) : 0;
+
   const assignments = monthClientServices.filter(
     (row) => row.client_id === client.id && row.active,
   );
@@ -149,26 +146,6 @@ function ClientDetailPage() {
     await refresh();
   }
 
-  async function savePayment(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    setSavingPayment(true);
-    const { error } = await supabase
-      .from("clients")
-      .update({
-        monthly_payment: num(form.get("monthly_payment")),
-        currency: String(form.get("currency") ?? "DOP"),
-      })
-      .eq("id", client!.id);
-    setSavingPayment(false);
-    if (error) {
-      toast.error("No se pudo guardar", { description: error.message });
-      return;
-    }
-    toast.success("Pago mensual actualizado");
-    setEditingPayment(false);
-    await refresh();
-  }
 
   return (
     <div className="grid gap-4">
@@ -383,109 +360,6 @@ function ClientDetailPage() {
           </TableShell>
         </Panel>
 
-
-        <Panel
-          title="Presupuesto mensual"
-          subtitle="Pago cerrado con el cliente"
-          action={
-            <button
-              type="button"
-              onClick={() => setEditingPayment((prev) => !prev)}
-              className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
-            >
-              {editingPayment ? "Cancelar" : "Editar"}
-            </button>
-          }
-        >
-          {editingPayment ? (
-            <form onSubmit={savePayment} className="flex flex-wrap items-end gap-2">
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
-                  Pago mensual
-                </label>
-                <input
-                  type="number"
-                  name="monthly_payment"
-                  step="any"
-                  min="0"
-                  defaultValue={String(num(client!.monthly_payment))}
-                  className="w-40 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
-                  Moneda
-                </label>
-                <select
-                  name="currency"
-                  defaultValue={client!.currency}
-                  className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-                >
-                  <option value="DOP">Pesos (DOP)</option>
-                  <option value="USD">Dólares (USD)</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                disabled={savingPayment}
-                className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
-              >
-                {savingPayment ? "Guardando…" : "Guardar"}
-              </button>
-            </form>
-          ) : est.payment > 0 ? (
-            <>
-              <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
-                <div>
-                  <small className="text-[10px] tracking-wider text-muted-foreground">
-                    PAGO MENSUAL
-                  </small>
-                  <b className="block text-base text-foreground">
-                    {money(est.paymentOriginal, est.paymentCurrency)}
-                  </b>
-                  {est.paymentCurrency === "USD" && (
-                    <small className="block text-[11px] text-muted-foreground">
-                      ≈ {money(est.payment)} a RD${num(usdRate)}
-                    </small>
-                  )}
-                </div>
-                <div>
-                  <small className="text-[10px] tracking-wider text-muted-foreground">
-                    SERVICIOS OFRECIDOS
-                  </small>
-                  <b className="block text-base text-foreground">{money(est.serviceCost)}</b>
-                </div>
-                <div>
-                  <small className="text-[10px] tracking-wider text-muted-foreground">
-                    GANANCIA ESTIMADA
-                  </small>
-                  <b
-                    className={`block text-base ${est.estimatedProfit >= 0 ? "text-success" : "text-destructive"}`}
-                  >
-                    {money(est.estimatedProfit)}
-                  </b>
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="mb-1.5 flex justify-between text-xs">
-                  <span className="text-muted-foreground">Comprometido en servicios</span>
-                  <b className="text-foreground">{committedPct.toFixed(1)}%</b>
-                </div>
-                <ProgressBar percent={committedPct} />
-              </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Ganancia estimada = pago mensual (convertido a pesos) − costo de los servicios
-                ofrecidos, que se pagan en pesos. Margen estimado:{" "}
-                {est.estimatedMargin.toFixed(1)}%.
-              </p>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Este cliente no tiene pago mensual registrado. Pulsa "Editar" para agregarlo y ver
-              la ganancia estimada del trato.
-            </p>
-          )}
-        </Panel>
       </div>
 
       <Panel
