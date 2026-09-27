@@ -56,8 +56,6 @@ function ClientDetailPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
-  const [editingPayment, setEditingPayment] = useState(false);
-  const [savingPayment, setSavingPayment] = useState(false);
 
   const client = data.clients.find((row) => row.id === clientId);
 
@@ -77,8 +75,7 @@ function ClientDetailPage() {
 
   const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
   const est = estimatedMetrics(client, monthClientServices, usdRate);
-  const committedPct =
-    est.payment > 0 ? Math.min(100, (est.serviceCost / est.payment) * 100) : 0;
+
   const assignments = monthClientServices.filter(
     (row) => row.client_id === client.id && row.active,
   );
@@ -149,26 +146,6 @@ function ClientDetailPage() {
     await refresh();
   }
 
-  async function savePayment(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    setSavingPayment(true);
-    const { error } = await supabase
-      .from("clients")
-      .update({
-        monthly_payment: num(form.get("monthly_payment")),
-        currency: String(form.get("currency") ?? "DOP"),
-      })
-      .eq("id", client!.id);
-    setSavingPayment(false);
-    if (error) {
-      toast.error("No se pudo guardar", { description: error.message });
-      return;
-    }
-    toast.success("Pago mensual actualizado");
-    setEditingPayment(false);
-    await refresh();
-  }
 
   return (
     <div className="grid gap-4">
