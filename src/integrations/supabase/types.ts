@@ -98,11 +98,13 @@ export type Database = {
           client_id: string | null
           cost: number
           created_at: string
+          end_month: string | null
           id: string
           monthly_quantity: number
           provider_id: string | null
           sale_price: number
           service_id: string | null
+          start_month: string | null
           user_id: string
         }
         Insert: {
@@ -110,11 +112,13 @@ export type Database = {
           client_id?: string | null
           cost?: number
           created_at?: string
+          end_month?: string | null
           id?: string
           monthly_quantity?: number
           provider_id?: string | null
           sale_price?: number
           service_id?: string | null
+          start_month?: string | null
           user_id?: string
         }
         Update: {
@@ -122,11 +126,13 @@ export type Database = {
           client_id?: string | null
           cost?: number
           created_at?: string
+          end_month?: string | null
           id?: string
           monthly_quantity?: number
           provider_id?: string | null
           sale_price?: number
           service_id?: string | null
+          start_month?: string | null
           user_id?: string
         }
         Relationships: [
