@@ -506,6 +506,7 @@ export function RecordModal() {
           cost: num(get("cost")),
           monthly_quantity: num(get("monthly_quantity")),
           active: true,
+          start_month: month,
         }));
       }
 
