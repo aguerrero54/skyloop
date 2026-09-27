@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
-  clientMetrics,
   estimatedMetrics,
   expenseToMovement,
   incomeToMovement,
@@ -73,7 +72,6 @@ function ClientDetailPage() {
     );
   }
 
-  const metrics = clientMetrics(client.id, monthIncomes, monthExpenses, usdRate);
   const est = estimatedMetrics(client, monthClientServices, usdRate);
 
   const assignments = monthClientServices.filter(
@@ -204,7 +202,7 @@ function ClientDetailPage() {
           </div>
           <div>
             <small className="text-[10px] tracking-wider text-muted-foreground">
-              GANANCIA ESTIMADA
+              GANANCIA REAL
             </small>
             <b
               className={`block text-base ${est.payment > 0 && est.estimatedProfit < 0 ? "text-destructive" : est.payment > 0 ? "text-success" : "text-foreground"}`}
@@ -213,24 +211,12 @@ function ClientDetailPage() {
             </b>
           </div>
           <div>
-            <small className="text-[10px] tracking-wider text-muted-foreground">FACTURACIÓN</small>
-            <b className="block text-base text-foreground">{money(metrics.revenue)}</b>
-          </div>
-          <div>
-            <small className="text-[10px] tracking-wider text-muted-foreground">COSTOS</small>
-            <b className="block text-base text-foreground">{money(metrics.costs)}</b>
-          </div>
-          <div>
-            <small className="text-[10px] tracking-wider text-muted-foreground">GANANCIA</small>
-            <b
-              className={`block text-base ${metrics.profit >= 0 ? "text-success" : "text-destructive"}`}
-            >
-              {money(metrics.profit)}
-            </b>
-          </div>
-          <div>
             <small className="text-[10px] tracking-wider text-muted-foreground">MARGEN</small>
-            <b className="block text-base text-foreground">{metrics.margin.toFixed(1)}%</b>
+            <b className="block text-base text-foreground">
+              {est.payment > 0
+                ? `${((est.estimatedProfit / est.payment) * 100).toFixed(1)}%`
+                : "—"}
+            </b>
           </div>
         </div>
 
