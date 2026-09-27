@@ -196,6 +196,9 @@ function ClientDetailPage() {
               Editar
             </button>
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Ingreso: {client.start_date ?? "—"} · Finalización: {client.end_date ?? "Activo"}
+          </p>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             {client.notes || "Sin notas internas."}
           </p>
