@@ -28,8 +28,18 @@ export const Route = createFileRoute("/_authenticated/gastos")({
 });
 
 function ExpensesPage() {
-  const { monthExpenses, month, clientName, openForm } = useSkyloop();
+  const { monthExpenses, month, clientName, openForm, refresh } = useSkyloop();
   const rows = monthExpenses.map(expenseToMovement);
+
+  async function changeStatus(id: string, status: string) {
+    const { error } = await supabase.from("expenses").update({ status }).eq("id", id);
+    if (error) {
+      toast.error("No se pudo actualizar el estado");
+      return;
+    }
+    toast.success(`Estado actualizado a ${status}`);
+    await refresh();
+  }
 
   return (
     <div className="grid gap-4">
