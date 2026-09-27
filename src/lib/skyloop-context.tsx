@@ -181,7 +181,10 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
     data.history.forEach((row) => set.add(row.month));
     data.incomes.forEach((row) => set.add(monthOf(row.invoice_date)));
     data.expenses.forEach((row) => set.add(monthOf(row.expense_date)));
-    set.add(new Date().toISOString().slice(0, 7));
+    const now = new Date();
+    set.add(now.toISOString().slice(0, 7));
+    const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    set.add(next.toISOString().slice(0, 7));
     return [...set].filter(Boolean).sort().reverse();
   }, [data.history, data.incomes, data.expenses]);
 
