@@ -1,3 +1,4 @@
+import { clientActiveInMonth } from "@/lib/finance";
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
@@ -31,6 +32,7 @@ function ClientsPage() {
   const [search, setSearch] = useState("");
 
   const clients = data.clients.filter((client) =>
+    clientActiveInMonth(client, month) &&
     client.name.toLowerCase().includes(search.toLowerCase()),
   );
 

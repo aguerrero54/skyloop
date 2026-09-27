@@ -168,6 +168,7 @@ export type Database = {
           created_at: string
           currency: string
           email: string | null
+          end_date: string | null
           id: string
           monthly_payment: number
           name: string
@@ -186,6 +187,7 @@ export type Database = {
           created_at?: string
           currency?: string
           email?: string | null
+          end_date?: string | null
           id?: string
           monthly_payment?: number
           name: string
@@ -204,6 +206,7 @@ export type Database = {
           created_at?: string
           currency?: string
           email?: string | null
+          end_date?: string | null
           id?: string
           monthly_payment?: number
           name?: string
