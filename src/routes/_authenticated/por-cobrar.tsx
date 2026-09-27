@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 
+import { supabase } from "@/integrations/supabase/client";
 import { incomeToMovement, money, sumDop } from "@/lib/finance";
 import {
   effectiveStatus,
@@ -32,11 +34,21 @@ export const Route = createFileRoute("/_authenticated/por-cobrar")({
 });
 
 function ReceivablesPage() {
-  const { data, usdRate, clientName } = useSkyloop();
+  const { data, usdRate, clientName, refresh } = useSkyloop();
   const ledger = invoiceLedger(data.invoices, usdRate);
   const pending = data.incomes
     .filter((row) => row.status !== "Cobrado")
     .sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""));
+
+  async function changeStatus(id: string, status: string) {
+    const { error } = await supabase.from("incomes").update({ status }).eq("id", id);
+    if (error) {
+      toast.error("No se pudo actualizar el estado");
+      return;
+    }
+    toast.success(`Estado actualizado a ${status}`);
+    await refresh();
+  }
 
   return (
     <div className="grid gap-4">
@@ -60,7 +72,11 @@ function ReceivablesPage() {
           icon="✓"
         />
       </div>
-      <MovementTable rows={pending.map(incomeToMovement)} clientName={clientName} />
+      <MovementTable
+        rows={pending.map(incomeToMovement)}
+        clientName={clientName}
+        onStatusChange={(row, status) => changeStatus(row.id, status)}
+      />
 
       <Panel
         title="Facturas de clientes pendientes de cobro"

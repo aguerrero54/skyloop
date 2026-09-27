@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 
+import { supabase } from "@/integrations/supabase/client";
 import { expenseToMovement, money, sumDop } from "@/lib/finance";
 import {
   effectiveStatus,
@@ -33,11 +35,21 @@ export const Route = createFileRoute("/_authenticated/por-pagar")({
 });
 
 function PayablesPage() {
-  const { data, usdRate, clientName, providerName } = useSkyloop();
+  const { data, usdRate, clientName, providerName, refresh } = useSkyloop();
   const ledger = invoiceLedger(data.invoices, usdRate);
   const pending = data.expenses
     .filter((row) => row.status !== "Pagado")
     .sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""));
+
+  async function changeStatus(id: string, status: string) {
+    const { error } = await supabase.from("expenses").update({ status }).eq("id", id);
+    if (error) {
+      toast.error("No se pudo actualizar el estado");
+      return;
+    }
+    toast.success(`Estado actualizado a ${status}`);
+    await refresh();
+  }
 
   const byProvider = data.providers
     .map((provider) => ({
@@ -76,7 +88,11 @@ function PayablesPage() {
           />
         ))}
       </div>
-      <MovementTable rows={pending.map(expenseToMovement)} clientName={clientName} />
+      <MovementTable
+        rows={pending.map(expenseToMovement)}
+        clientName={clientName}
+        onStatusChange={(row, status) => changeStatus(row.id, status)}
+      />
 
       <Panel
         title="Documentos de proveedores pendientes de pago"

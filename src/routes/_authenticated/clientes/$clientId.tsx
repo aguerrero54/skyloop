@@ -10,6 +10,7 @@ import {
   monthLabel,
   money,
   num,
+  type Movement,
 } from "@/lib/finance";
 import { invoiceToClientMovement, invoiceTouchesClient } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
@@ -93,6 +94,17 @@ function ClientDetailPage() {
       invoiceToClientMovement(invoice, invoiceItemsOf(invoice.id), client.id),
     ),
   ].sort((a, b) => b.date.localeCompare(a.date));
+
+  async function changeMovementStatus(row: Movement, status: string) {
+    const table = row.kind === "Ingreso" ? "incomes" : "expenses";
+    const { error } = await supabase.from(table).update({ status }).eq("id", row.id);
+    if (error) {
+      toast.error("No se pudo actualizar el estado");
+      return;
+    }
+    toast.success(`Estado actualizado a ${status}`);
+    await refresh();
+  }
 
   const selectedAssignment =
     selectedIds.length === 1
@@ -370,7 +382,11 @@ function ClientDetailPage() {
           </div>
         }
       >
-        <MovementTable rows={movements} clientName={clientName} />
+        <MovementTable
+          rows={movements}
+          clientName={clientName}
+          onStatusChange={changeMovementStatus}
+        />
       </Panel>
     </div>
   );
