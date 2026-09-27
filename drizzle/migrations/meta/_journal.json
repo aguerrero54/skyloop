@@ -92,6 +92,13 @@
       "when": 1789558779162,
       "tag": "0012_app_settings_logo",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790537507550,
+      "tag": "0013_client_services_month_range",
+      "breakpoints": true
     }
   ]
 }

@@ -17,7 +17,12 @@ export function effectiveAssignments(
   overrides: ClientServiceMonth[],
   month: string,
 ): EffectiveClientService[] {
-  return assignments.map((row) => {
+  return assignments
+    .filter(
+      (row) =>
+        (!row.start_month || row.start_month <= month) && (!row.end_month || row.end_month >= month),
+    )
+    .map((row) => {
     const override = (overrides ?? []).find(
       (item) => item.client_service_id === row.id && item.month === month,
     );

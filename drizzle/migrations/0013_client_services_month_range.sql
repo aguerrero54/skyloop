@@ -1,0 +1,1 @@
+ALTER TABLE public.client_services ADD COLUMN IF NOT EXISTS start_month text, ADD COLUMN IF NOT EXISTS end_month text;

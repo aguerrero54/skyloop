@@ -117,17 +117,28 @@ function ClientDetailPage() {
 
   async function deleteAssignment() {
     if (selectedIds.length === 0) return;
+    const plural = selectedIds.length > 1;
     const confirmed = window.confirm(
-      selectedIds.length === 1
-        ? "¿Eliminar la asignación seleccionada? Esta acción no se puede deshacer."
-        : `¿Eliminar las ${selectedIds.length} asignaciones seleccionadas? Esta acción no se puede deshacer.`,
+      `¿Quitar ${plural ? `las ${selectedIds.length} asignaciones seleccionadas` : "la asignación seleccionada"} desde ${monthLabel(month)} en adelante? Los meses anteriores no cambian.`,
     );
     if (!confirmed) return;
+    const removeAll = window.confirm(
+      "¿Prefieres borrarla de TODOS los meses (también los pasados)?\n\nAceptar = borrar de todos los meses\nCancelar = solo desde este mes",
+    );
     setDeleting(true);
-    const { error } = await supabase
-      .from("client_services")
-      .delete()
-      .in("id", selectedIds);
+    let error;
+    if (removeAll) {
+      await supabase.from("client_service_months").delete().in("client_service_id", selectedIds);
+      ({ error } = await supabase.from("client_services").delete().in("id", selectedIds));
+    } else {
+      const [y, m] = month.split("-").map(Number);
+      const prev = new Date(y ?? 2026, (m ?? 1) - 2, 1);
+      const prevMonth = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
+      ({ error } = await supabase
+        .from("client_services")
+        .update({ end_month: prevMonth })
+        .in("id", selectedIds));
+    }
     setDeleting(false);
     if (error) {
       toast.error("No se pudo eliminar", { description: error.message });
