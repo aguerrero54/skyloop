@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
-  clientMetrics,
   estimatedMetrics,
   expenseToMovement,
   incomeToMovement,
