@@ -16,6 +16,7 @@ type Field = {
   defaultValue?: string | undefined;
   full?: boolean;
   integer?: boolean;
+  locked?: boolean;
 };
 
 const titles: Record<FormKind, string> = {
@@ -43,6 +44,12 @@ export function RecordModal() {
   const editingClient = kind === "client" ? formState.client : undefined;
 
   const clientOptions = data.clients.map((client) => ({ value: client.id, label: client.name }));
+  // Abierto desde la ficha de un cliente: ese cliente es la única opción y no se puede cambiar.
+  const presetClientName =
+    data.clients.find((client) => client.id === presetClient)?.name ?? "";
+  const lockedClientOptions = presetClient
+    ? [{ value: presetClient, label: presetClientName }]
+    : clientOptions;
   const providerOptions = data.providers.map((provider) => ({
     value: provider.id,
     label: provider.name,
