@@ -610,28 +610,32 @@ export function RecordModal() {
                 {field.label}
               </label>
               {field.type === "select" ? (
-                <select
-                  name={field.name}
-                  required={field.required}
-                  defaultValue={field.defaultValue ?? ""}
-                  disabled={field.locked}
-                  className={
-                    field.locked
-                      ? `${inputClass} cursor-not-allowed opacity-70`
-                      : inputClass
-                  }
-                >
-                  {(field.locked
-                    ? (field.options ?? []).filter(
-                        (option) => option.value === (field.defaultValue ?? ""),
-                      )
-                    : field.options ?? []
-                  ).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <>
+                  {/* Un campo deshabilitado no se envía: el valor fijo viaja en un input oculto. */}
+                  {field.locked && (
+                    <input type="hidden" name={field.name} value={field.defaultValue ?? ""} />
+                  )}
+                  <select
+                    name={field.locked ? undefined : field.name}
+                    required={field.required}
+                    defaultValue={field.defaultValue ?? ""}
+                    disabled={field.locked}
+                    className={
+                      field.locked ? `${inputClass} cursor-not-allowed opacity-70` : inputClass
+                    }
+                  >
+                    {(field.locked
+                      ? (field.options ?? []).filter(
+                          (option) => option.value === (field.defaultValue ?? ""),
+                        )
+                      : field.options ?? []
+                    ).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </>
               ) : field.type === "textarea" ? (
                 <textarea name={field.name} rows={3} className={inputClass} />
               ) : (
