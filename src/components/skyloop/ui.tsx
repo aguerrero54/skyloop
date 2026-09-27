@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { money, statusTone, type Movement } from "@/lib/finance";
 
@@ -155,12 +161,18 @@ export function ProgressBar({ percent }: { percent: number }) {
   );
 }
 
+const INCOME_STATUSES = ["Pendiente", "Cobrado", "Parcial", "Vencido"];
+const EXPENSE_STATUSES = ["Pendiente", "Pagado", "Parcial", "Vencido"];
+
 export function MovementTable({
   rows,
   clientName,
+  onStatusChange,
 }: {
   rows: Movement[];
   clientName: (id: string | null) => string;
+  /** Al pasarla, el estado de cada movimiento se puede cambiar al hacer clic. */
+  onStatusChange?: (row: Movement, status: string) => void;
 }) {
   return (
     <TableShell
