@@ -88,7 +88,11 @@ function PayablesPage() {
           />
         ))}
       </div>
-      <MovementTable rows={pending.map(expenseToMovement)} clientName={clientName} />
+      <MovementTable
+        rows={pending.map(expenseToMovement)}
+        clientName={clientName}
+        onStatusChange={(row, status) => changeStatus(row.id, status)}
+      />
 
       <Panel
         title="Documentos de proveedores pendientes de pago"

@@ -72,7 +72,11 @@ function ReceivablesPage() {
           icon="✓"
         />
       </div>
-      <MovementTable rows={pending.map(incomeToMovement)} clientName={clientName} />
+      <MovementTable
+        rows={pending.map(incomeToMovement)}
+        clientName={clientName}
+        onStatusChange={(row, status) => changeStatus(row.id, status)}
+      />
 
       <Panel
         title="Facturas de clientes pendientes de cobro"
