@@ -382,7 +382,11 @@ function ClientDetailPage() {
           </div>
         }
       >
-        <MovementTable rows={movements} clientName={clientName} />
+        <MovementTable
+          rows={movements}
+          clientName={clientName}
+          onStatusChange={changeMovementStatus}
+        />
       </Panel>
     </div>
   );
