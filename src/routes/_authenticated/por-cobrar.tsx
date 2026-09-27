@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 
+import { supabase } from "@/integrations/supabase/client";
 import { incomeToMovement, money, sumDop } from "@/lib/finance";
 import {
   effectiveStatus,
