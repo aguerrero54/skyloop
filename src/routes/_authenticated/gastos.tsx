@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 
+import { supabase } from "@/integrations/supabase/client";
 import { expenseToMovement, monthLabel } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { MovementTable } from "@/components/skyloop/ui";
