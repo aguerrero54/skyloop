@@ -132,7 +132,7 @@ function ClientDetailPage() {
       ({ error } = await supabase.from("client_services").delete().in("id", selectedIds));
     } else {
       const [y, m] = month.split("-").map(Number);
-      const prev = new Date(y, m - 2, 1);
+      const prev = new Date(y ?? 2026, (m ?? 1) - 2, 1);
       const prevMonth = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
       ({ error } = await supabase
         .from("client_services")
