@@ -4,15 +4,13 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
-  clientActiveInMonth,
-  estimatedMetrics,
-  fixedCostsForMonth,
   monthLabel,
   money,
   num,
   type FixedCost,
 } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
+import { useAgencyNet } from "@/lib/agency";
 import { EmptyRow, KpiCard, Panel, TableShell } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/gastos-fijos")({
@@ -37,14 +35,6 @@ export const Route = createFileRoute("/_authenticated/gastos-fijos")({
 
 const CATEGORIES = ["Plataformas", "Oficina", "Servicios profesionales", "Otros"];
 
-export function useAgencyNet() {
-  const { data, month, monthClientServices, usdRate } = useSkyloop();
-  const clientProfit = data.clients
-    .filter((c) => clientActiveInMonth(c, month))
-    .reduce((t, c) => t + estimatedMetrics(c, monthClientServices, usdRate).estimatedProfit, 0);
-  const fixed = fixedCostsForMonth(data.fixedCosts, data.fixedCostMonths, month, usdRate);
-  return { clientProfit, fixed, net: clientProfit - fixed.total };
-}
 
 const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground";

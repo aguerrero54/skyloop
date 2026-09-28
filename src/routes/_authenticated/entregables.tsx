@@ -3,8 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { clientActiveInMonth, monthLabel, num } from "@/lib/finance";
+import { clientActiveInMonth, monthLabel } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
+import { useDeliverables } from "@/lib/agency";
 import { Panel, ProgressBar } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/entregables")({
@@ -27,19 +28,6 @@ export const Route = createFileRoute("/_authenticated/entregables")({
   component: DeliverablesPage,
 });
 
-export function useDeliverables(clientId?: string) {
-  const { data, month, monthClientServices } = useSkyloop();
-  const rows = monthClientServices
-    .filter((a) => a.active && num(a.monthly_quantity) > 0 && (!clientId || a.client_id === clientId))
-    .map((a) => {
-      const qty = Math.max(1, Math.round(num(a.monthly_quantity)));
-      const record = data.deliverables.find((d) => d.client_service_id === a.id && d.month === month);
-      return { assignment: a, qty, done: Math.min(record?.delivered_count ?? 0, qty) };
-    });
-  const total = rows.reduce((t, r) => t + r.qty, 0);
-  const done = rows.reduce((t, r) => t + r.done, 0);
-  return { rows, total, done, percent: total ? (done / total) * 100 : 0 };
-}
 
 function DeliverablesPage() {
   const { data, month, clientName, serviceName, providerName, refresh } = useSkyloop();

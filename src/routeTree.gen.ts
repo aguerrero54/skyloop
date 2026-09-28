@@ -14,8 +14,10 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedEntregablesRouteImport } from './routes/_authenticated/entregables'
 import { Route as AuthenticatedEquipoRouteImport } from './routes/_authenticated/equipo'
 import { Route as AuthenticatedGastosRouteImport } from './routes/_authenticated/gastos'
+import { Route as AuthenticatedGastosFijosRouteImport } from './routes/_authenticated/gastos-fijos'
 import { Route as AuthenticatedIngresosRouteImport } from './routes/_authenticated/ingresos'
 import { Route as AuthenticatedPorCobrarRouteImport } from './routes/_authenticated/por-cobrar'
 import { Route as AuthenticatedPorPagarRouteImport } from './routes/_authenticated/por-pagar'
@@ -53,6 +55,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEntregablesRoute =
+  AuthenticatedEntregablesRouteImport.update({
+    id: '/entregables',
+    path: '/entregables',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEquipoRoute = AuthenticatedEquipoRouteImport.update({
   id: '/equipo',
   path: '/equipo',
@@ -63,6 +71,12 @@ const AuthenticatedGastosRoute = AuthenticatedGastosRouteImport.update({
   path: '/gastos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGastosFijosRoute =
+  AuthenticatedGastosFijosRouteImport.update({
+    id: '/gastos-fijos',
+    path: '/gastos-fijos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedIngresosRoute = AuthenticatedIngresosRouteImport.update({
   id: '/ingresos',
   path: '/ingresos',
@@ -130,8 +144,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/entregables': typeof AuthenticatedEntregablesRoute
   '/equipo': typeof AuthenticatedEquipoRoute
   '/gastos': typeof AuthenticatedGastosRoute
+  '/gastos-fijos': typeof AuthenticatedGastosFijosRoute
   '/ingresos': typeof AuthenticatedIngresosRoute
   '/por-cobrar': typeof AuthenticatedPorCobrarRoute
   '/por-pagar': typeof AuthenticatedPorPagarRoute
@@ -149,8 +165,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/entregables': typeof AuthenticatedEntregablesRoute
   '/equipo': typeof AuthenticatedEquipoRoute
   '/gastos': typeof AuthenticatedGastosRoute
+  '/gastos-fijos': typeof AuthenticatedGastosFijosRoute
   '/ingresos': typeof AuthenticatedIngresosRoute
   '/por-cobrar': typeof AuthenticatedPorCobrarRoute
   '/por-pagar': typeof AuthenticatedPorPagarRoute
@@ -170,8 +188,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/entregables': typeof AuthenticatedEntregablesRoute
   '/_authenticated/equipo': typeof AuthenticatedEquipoRoute
   '/_authenticated/gastos': typeof AuthenticatedGastosRoute
+  '/_authenticated/gastos-fijos': typeof AuthenticatedGastosFijosRoute
   '/_authenticated/ingresos': typeof AuthenticatedIngresosRoute
   '/_authenticated/por-cobrar': typeof AuthenticatedPorCobrarRoute
   '/_authenticated/por-pagar': typeof AuthenticatedPorPagarRoute
@@ -191,8 +211,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/configuracion'
     | '/dashboard'
+    | '/entregables'
     | '/equipo'
     | '/gastos'
+    | '/gastos-fijos'
     | '/ingresos'
     | '/por-cobrar'
     | '/por-pagar'
@@ -210,8 +232,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/configuracion'
     | '/dashboard'
+    | '/entregables'
     | '/equipo'
     | '/gastos'
+    | '/gastos-fijos'
     | '/ingresos'
     | '/por-cobrar'
     | '/por-pagar'
@@ -230,8 +254,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/configuracion'
     | '/_authenticated/dashboard'
+    | '/_authenticated/entregables'
     | '/_authenticated/equipo'
     | '/_authenticated/gastos'
+    | '/_authenticated/gastos-fijos'
     | '/_authenticated/ingresos'
     | '/_authenticated/por-cobrar'
     | '/_authenticated/por-pagar'
@@ -288,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/entregables': {
+      id: '/_authenticated/entregables'
+      path: '/entregables'
+      fullPath: '/entregables'
+      preLoaderRoute: typeof AuthenticatedEntregablesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/equipo': {
       id: '/_authenticated/equipo'
       path: '/equipo'
@@ -300,6 +333,13 @@ declare module '@tanstack/react-router' {
       path: '/gastos'
       fullPath: '/gastos'
       preLoaderRoute: typeof AuthenticatedGastosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gastos-fijos': {
+      id: '/_authenticated/gastos-fijos'
+      path: '/gastos-fijos'
+      fullPath: '/gastos-fijos'
+      preLoaderRoute: typeof AuthenticatedGastosFijosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/ingresos': {
@@ -385,8 +425,10 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEntregablesRoute: typeof AuthenticatedEntregablesRoute
   AuthenticatedEquipoRoute: typeof AuthenticatedEquipoRoute
   AuthenticatedGastosRoute: typeof AuthenticatedGastosRoute
+  AuthenticatedGastosFijosRoute: typeof AuthenticatedGastosFijosRoute
   AuthenticatedIngresosRoute: typeof AuthenticatedIngresosRoute
   AuthenticatedPorCobrarRoute: typeof AuthenticatedPorCobrarRoute
   AuthenticatedPorPagarRoute: typeof AuthenticatedPorPagarRoute
@@ -403,8 +445,10 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEntregablesRoute: AuthenticatedEntregablesRoute,
   AuthenticatedEquipoRoute: AuthenticatedEquipoRoute,
   AuthenticatedGastosRoute: AuthenticatedGastosRoute,
+  AuthenticatedGastosFijosRoute: AuthenticatedGastosFijosRoute,
   AuthenticatedIngresosRoute: AuthenticatedIngresosRoute,
   AuthenticatedPorCobrarRoute: AuthenticatedPorCobrarRoute,
   AuthenticatedPorPagarRoute: AuthenticatedPorPagarRoute,
