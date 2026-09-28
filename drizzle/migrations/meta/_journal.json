@@ -106,6 +106,13 @@
       "when": 1790538444662,
       "tag": "0014_client_end_date",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790608489872,
+      "tag": "0015_fixed_costs_and_deliverables",
+      "breakpoints": true
     }
   ]
 }

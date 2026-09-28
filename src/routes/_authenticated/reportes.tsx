@@ -5,6 +5,7 @@ import { downloadFile, monthMetrics, money, toCSV } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { KpiCard, Panel, SectionTitle } from "@/components/skyloop/ui";
 import { ProfitTable } from "@/components/skyloop/ProfitTable";
+import { useAgencyNet } from "@/lib/agency";
 
 export const Route = createFileRoute("/_authenticated/reportes")({
   head: () => ({
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/_authenticated/reportes")({
 function ReportsPage() {
   const { data, monthIncomes, monthExpenses, usdRate } = useSkyloop();
   const metrics = monthMetrics(monthIncomes, monthExpenses, usdRate);
+  const agency = useAgencyNet();
 
   function exportCSV(kind: "incomes" | "expenses") {
     const rows = kind === "incomes" ? data.incomes : data.expenses;
@@ -69,6 +71,12 @@ function ReportsPage() {
           footnote="Cobrado − pagado"
           icon="≈"
         />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <KpiCard label="Ganancia de clientes" value={money(agency.clientProfit)} footnote="Pagos mensuales − servicios" icon="↗" />
+        <KpiCard label="Gastos fijos" value={money(agency.fixed.total)} footnote="Plataformas, oficina, etc." icon="▦" />
+        <KpiCard label="Ganancia neta de la agencia" value={money(agency.net)} footnote="Después de gastos fijos" icon="△" />
       </div>
 
       <div>

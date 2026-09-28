@@ -264,3 +264,30 @@ export function clientActiveInMonth(
   if (client.end_date && client.end_date.slice(0, 7) < month) return false;
   return true;
 }
+
+export type FixedCost = Tables<"agency_fixed_costs">;
+export type FixedCostMonth = Tables<"agency_fixed_cost_months">;
+export type Deliverable = Tables<"client_deliverables">;
+
+export function fixedCostActiveInMonth(row: FixedCost, month: string): boolean {
+  if (row.start_month && row.start_month > month) return false;
+  if (row.end_month && row.end_month < month) return false;
+  return true;
+}
+
+/** Gastos fijos activos del mes con su monto efectivo (ajuste mensual si existe) en pesos. */
+export function fixedCostsForMonth(
+  costs: FixedCost[],
+  overrides: FixedCostMonth[],
+  month: string,
+  usdRate: number,
+) {
+  const rows = costs
+    .filter((row) => fixedCostActiveInMonth(row, month))
+    .map((row) => {
+      const override = overrides.find((o) => o.fixed_cost_id === row.id && o.month === month);
+      const amount = override ? num(override.amount) : num(row.amount);
+      return { ...row, amount, adjusted: Boolean(override), dop: toDop(amount, row.currency, usdRate) };
+    });
+  return { rows, total: rows.reduce((t, r) => t + r.dop, 0) };
+}
