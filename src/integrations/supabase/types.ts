@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      agency_fixed_cost_months: {
+        Row: {
+          amount: number
+          created_at: string
+          fixed_cost_id: string
+          id: string
+          month: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          fixed_cost_id: string
+          id?: string
+          month: string
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fixed_cost_id?: string
+          id?: string
+          month?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_fixed_cost_months_fixed_cost_id_fkey"
+            columns: ["fixed_cost_id"]
+            isOneToOne: false
+            referencedRelation: "agency_fixed_costs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agency_fixed_costs: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          currency: string
+          end_month: string | null
+          id: string
+          name: string
+          notes: string | null
+          start_month: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          end_month?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          start_month?: string | null
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          end_month?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          start_month?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           agency: string
@@ -43,6 +117,44 @@ export type Database = {
           usd_rate?: number
         }
         Relationships: []
+      }
+      client_deliverables: {
+        Row: {
+          client_service_id: string
+          delivered_count: number
+          id: string
+          month: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_service_id: string
+          delivered_count?: number
+          id?: string
+          month: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          client_service_id?: string
+          delivered_count?: number
+          id?: string
+          month?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_deliverables_client_service_id_fkey"
+            columns: ["client_service_id"]
+            isOneToOne: false
+            referencedRelation: "client_services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       client_service_months: {
         Row: {
