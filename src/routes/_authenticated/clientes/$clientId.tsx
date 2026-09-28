@@ -14,7 +14,8 @@ import {
 } from "@/lib/finance";
 import { invoiceToClientMovement, invoiceTouchesClient } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
-import { EmptyRow, MovementTable, Panel, TableShell } from "@/components/skyloop/ui";
+import { useDeliverables } from "@/lib/agency";
+import { EmptyRow, MovementTable, Panel, ProgressBar, TableShell } from "@/components/skyloop/ui";
 
 export const Route = createFileRoute("/_authenticated/clientes/$clientId")({
   head: () => ({
@@ -58,6 +59,7 @@ function ClientDetailPage() {
   const [deleting, setDeleting] = useState(false);
 
   const client = data.clients.find((row) => row.id === clientId);
+  const deliverables = useDeliverables(clientId);
 
   if (!client) {
     return (
@@ -237,7 +239,11 @@ function ClientDetailPage() {
       <div className="grid gap-4">
         <Panel
           title="Servicios y equipo asignado"
-          subtitle="Costos recurrentes / de producción"
+          subtitle={
+            deliverables.total
+              ? `Entregables del mes: ${deliverables.done}/${deliverables.total} (${deliverables.percent.toFixed(0)}%)`
+              : "Costos recurrentes / de producción"
+          }
           action={
             <div className="flex gap-2">
               <button
