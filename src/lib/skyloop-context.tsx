@@ -10,6 +10,9 @@ import {
   type Client,
   type ClientService,
   type ClientServiceMonth,
+  type Deliverable,
+  type FixedCost,
+  type FixedCostMonth,
   type EffectiveClientService,
   type Expense,
   type Income,
@@ -47,6 +50,9 @@ export type SkyloopData = {
   invoiceItems: InvoiceItem[];
   invoicePayments: InvoicePayment[];
   providerObligations: ProviderObligation[];
+  fixedCosts: FixedCost[];
+  fixedCostMonths: FixedCostMonth[];
+  deliverables: Deliverable[];
 };
 
 const emptyData: SkyloopData = {
@@ -63,6 +69,9 @@ const emptyData: SkyloopData = {
   invoiceItems: [],
   invoicePayments: [],
   providerObligations: [],
+  fixedCosts: [],
+  fixedCostMonths: [],
+  deliverables: [],
 };
 
 async function fetchAll(): Promise<SkyloopData> {
@@ -80,6 +89,9 @@ async function fetchAll(): Promise<SkyloopData> {
     invoiceItems,
     invoicePayments,
     providerObligations,
+    fixedCosts,
+    fixedCostMonths,
+    deliverables,
   ] = await Promise.all([
     supabase.from("clients").select("*").order("name"),
     supabase.from("services").select("*").order("name"),
@@ -94,6 +106,9 @@ async function fetchAll(): Promise<SkyloopData> {
     supabase.from("invoice_items").select("*").order("position"),
     supabase.from("invoice_payments").select("*").order("payment_date"),
     supabase.from("provider_obligations").select("*").order("created_at"),
+    supabase.from("agency_fixed_costs").select("*").order("name"),
+    supabase.from("agency_fixed_cost_months").select("*"),
+    supabase.from("client_deliverables").select("*"),
   ]);
 
   const failed = [
@@ -110,6 +125,9 @@ async function fetchAll(): Promise<SkyloopData> {
     invoiceItems,
     invoicePayments,
     providerObligations,
+    fixedCosts,
+    fixedCostMonths,
+    deliverables,
   ].find((result) => result.error);
   if (failed?.error) throw failed.error;
 
@@ -127,6 +145,9 @@ async function fetchAll(): Promise<SkyloopData> {
     invoiceItems: invoiceItems.data ?? [],
     invoicePayments: invoicePayments.data ?? [],
     providerObligations: providerObligations.data ?? [],
+    fixedCosts: fixedCosts.data ?? [],
+    fixedCostMonths: fixedCostMonths.data ?? [],
+    deliverables: deliverables.data ?? [],
   };
 }
 
