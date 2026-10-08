@@ -51,6 +51,7 @@ function PublicTasksPage() {
   const router = useRouter();
   const mark = useServerFn(markTaskDelivered);
   const [month, setMonth] = useState<string>(ALL);
+  const [tab, setTab] = useState<"pending" | "done">("pending");
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
