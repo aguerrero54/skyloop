@@ -45,6 +45,19 @@ function PublicTasksPage() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
+  // Esta ruta es pública y no pasa por el ThemeProvider: fuerza el tema oscuro de Skyloop.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("dark");
+    root.dataset["mode"] = "dark";
+    root.style.colorScheme = "dark";
+    return () => {
+      root.classList.remove("dark");
+      delete root.dataset["mode"];
+      root.style.colorScheme = "";
+    };
+  }, []);
+
   if (!data) return <Message text="Este enlace no es válido o fue desactivado." />;
 
   async function toggle(id: string, delivered: boolean) {
