@@ -148,40 +148,35 @@ function PublicTasksPage() {
               <Wallet className="size-6" />
             </span>
             <div>
-              <p className="text-sm text-muted-foreground">A cobrar este mes</p>
+              <p className="text-sm text-muted-foreground">A cobrar en {monthLabel}</p>
               <p className="text-2xl font-bold text-foreground">{collectLabel}</p>
               <p className="text-xs text-muted-foreground">Por trabajos entregados</p>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-6 border-b border-border">
-          {(
-            [
-              { key: "pending", label: `Pendientes (${pending.length})` },
-              { key: "done", label: `Entregadas (${done.length})` },
-            ] as const
-          ).map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setTab(item.key)}
-              className={
-                "-mb-px border-b-2 px-1 pb-3 text-sm font-bold transition-colors " +
-                (tab === item.key
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground")
-              }
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">MES</p>
+            <p className="text-sm text-muted-foreground">Filtra tus tareas por mes: pasadas, actuales y futuras.</p>
+          </div>
+          <select
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground"
+          >
+            {monthOptions.map((m) => (
+              <option key={m} value={m}>
+                {formatMonth(m)}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid gap-4">
           {list.length === 0 && (
             <p className="py-10 text-center text-sm text-muted-foreground">
-              {tab === "pending" ? "No tienes tareas pendientes. ¡Bien hecho!" : "Aún no has entregado tareas."}
+              {"No tienes tareas en este mes."}
             </p>
           )}
 
