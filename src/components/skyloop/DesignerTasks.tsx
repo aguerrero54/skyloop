@@ -6,28 +6,39 @@ import { money, monthLabel, num, toDop, todayISO } from "@/lib/finance";
 import { saveInvoice } from "@/lib/invoice-actions";
 import { DEFAULT_NOTES } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
+import { useDeliverables } from "@/lib/agency";
 import { Panel, StatusBadge } from "@/components/skyloop/ui";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground";
 
 export function DesignerTasks() {
-  const { data, month, clientName, refresh, usdRate } = useSkyloop();
+  const { data, month, clientName, refresh, usdRate, monthClientServices } = useSkyloop();
+  const { rows: deliverableRows } = useDeliverables();
   const [saving, setSaving] = useState(false);
+  const [providerSel, setProviderSel] = useState("");
+  const [clientSel, setClientSel] = useState("");
+  const [serviceSel, setServiceSel] = useState("");
   const tasks = data.designerTasks.filter((t) => t.month === month);
   const providers = data.providers.filter((p) => tasks.some((t) => t.provider_id === p.id));
+  const serviceOptions = monthClientServices.filter(
+    (a) => a.active && providerSel && clientSel && a.provider_id === providerSel && a.client_id === clientSel,
+  );
+  const serviceName = (id: string | null) => data.services.find((s) => s.id === id)?.name ?? "Servicio";
+  const selectedRow = deliverableRows.find((r) => r.assignment.id === serviceSel);
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const f = new FormData(form);
-    const provider_id = String(f.get("provider_id") || "");
+    const provider_id = providerSel;
     const description = String(f.get("description") || "").trim();
     if (!provider_id || !description) return void toast.error("Elige diseñador y escribe la tarea");
     setSaving(true);
     const { error } = await supabase.from("designer_tasks").insert({
       provider_id,
       description,
-      client_id: String(f.get("client_id") || "") || null,
+      client_id: clientSel || null,
+      client_service_id: serviceSel || null,
       amount: num(f.get("amount")),
       currency: String(f.get("currency")),
       due_date: String(f.get("due_date") || "") || null,
@@ -37,6 +48,7 @@ export function DesignerTasks() {
     if (error) return void toast.error("No se pudo crear", { description: error.message });
     toast.success("Tarea creada");
     form.reset();
+    setServiceSel("");
     await refresh();
   }
 
@@ -117,29 +129,46 @@ export function DesignerTasks() {
   return (
     <div className="grid gap-4">
       <Panel title="Nueva tarea" subtitle={`Se agrega a ${monthLabel(month)}`}>
-        <form onSubmit={create} className="grid gap-2 md:grid-cols-[1fr_1fr_2fr_auto_auto_auto_auto]">
-          <select name="provider_id" className={inputClass} defaultValue="">
-            <option value="">Diseñador…</option>
-            {data.providers.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-          <select name="client_id" className={inputClass} defaultValue="">
-            <option value="">Sin cliente</option>
-            {data.clients.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-          <input name="description" placeholder="Ej. 3 artes para Instagram" className={inputClass} />
-          <input name="amount" type="number" step="any" min="0" placeholder="Precio" className={`${inputClass} w-28`} />
-          <select name="currency" className={inputClass}>
-            <option value="DOP">DOP</option>
-            <option value="USD">USD</option>
-          </select>
-          <input name="due_date" type="date" className={inputClass} />
-          <button disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
-            + Agregar
-          </button>
+        <form onSubmit={create} className="grid gap-3">
+          <div className="grid gap-2 md:grid-cols-3">
+            <select value={providerSel} onChange={(e) => { setProviderSel(e.target.value); setServiceSel(""); }} className={inputClass}>
+              <option value="">Diseñador…</option>
+              {data.providers.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <select value={clientSel} onChange={(e) => { setClientSel(e.target.value); setServiceSel(""); }} className={inputClass}>
+              <option value="">Sin marca / cliente</option>
+              {data.clients.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <select value={serviceSel} onChange={(e) => setServiceSel(e.target.value)} className={inputClass} disabled={!serviceOptions.length}>
+              <option value="">{serviceOptions.length ? "Servicio…" : "Sin servicio asignado"}</option>
+              {serviceOptions.map((a) => (
+                <option key={a.id} value={a.id}>{serviceName(a.service_id)}</option>
+              ))}
+            </select>
+          </div>
+          <p className="-mt-1 text-xs text-muted-foreground">Solo aparecen los servicios asignados a este diseñador y marca.</p>
+          {serviceSel && (
+            <div className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
+              Al entregarla se marcará 1 casilla en Entregables · {clientName(clientSel)} · {serviceName(serviceOptions.find((a) => a.id === serviceSel)?.service_id ?? null)}
+              {selectedRow && ` · ${selectedRow.done} de ${selectedRow.qty}`}
+            </div>
+          )}
+          <div className="grid gap-2 md:grid-cols-[2fr_auto_auto_auto_auto]">
+            <input name="description" placeholder="Ej. 3 artes para Instagram" className={inputClass} />
+            <input name="amount" type="number" step="any" min="0" placeholder="Precio" className={`${inputClass} w-28`} />
+            <select name="currency" className={inputClass}>
+              <option value="DOP">DOP</option>
+              <option value="USD">USD</option>
+            </select>
+            <input name="due_date" type="date" className={inputClass} />
+            <button disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
+              + Agregar
+            </button>
+          </div>
         </form>
       </Panel>
 
