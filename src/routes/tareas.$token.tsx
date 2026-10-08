@@ -43,12 +43,14 @@ function formatMonth(value: string): string {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+const ALL = "all";
+
 function PublicTasksPage() {
   const data = Route.useLoaderData();
   const { token } = Route.useParams();
   const router = useRouter();
   const mark = useServerFn(markTaskDelivered);
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState<string>(ALL);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -90,7 +92,7 @@ function PublicTasksPage() {
   const monthOptions = [
     ...new Set([...data.tasks.map((t) => t.month ?? currentMonth), currentMonth, nextMonth]),
   ].sort();
-  const list = data.tasks.filter((t) => (t.month ?? currentMonth) === month);
+  const list = month === ALL ? [...data.tasks].sort((a, b) => (b.month ?? currentMonth).localeCompare(a.month ?? currentMonth)) : data.tasks.filter((t) => (t.month ?? currentMonth) === month);
   const pending = list.filter((t) => t.status === "Pendiente");
   const done = list.filter((t) => t.status !== "Pendiente");
   const toCollect = list.filter((t) => t.status === "Entregada");
@@ -99,7 +101,7 @@ function PublicTasksPage() {
   const collectLabel =
     usd > 0 ? (dop > 0 ? `${money(dop)} · US$${usd.toLocaleString("en-US")}` : `US$${usd.toLocaleString("en-US")}`) : money(dop);
 
-  const monthLabel = formatMonth(month);
+  const monthLabel = month === ALL ? "total" : formatMonth(month);
 
 
   return (
@@ -158,13 +160,14 @@ function PublicTasksPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">MES</p>
-            <p className="text-sm text-muted-foreground">Filtra tus tareas por mes: pasadas, actuales y futuras.</p>
+            <p className="text-sm text-muted-foreground">Filtra por mes lo que tuviste, tienes y tendrás, o elige Todo para ver el total.</p>
           </div>
           <select
             value={month}
             onChange={(e) => setMonth(e.target.value)}
             className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground"
           >
+            <option value={ALL}>Todo</option>
             {monthOptions.map((m) => (
               <option key={m} value={m}>
                 {formatMonth(m)}
@@ -176,7 +179,7 @@ function PublicTasksPage() {
         <div className="grid gap-4">
           {list.length === 0 && (
             <p className="py-10 text-center text-sm text-muted-foreground">
-              {"No tienes tareas en este mes."}
+              {month === ALL ? "Todavía no tienes tareas." : "No tienes tareas en este mes."}
             </p>
           )}
 
@@ -192,6 +195,11 @@ function PublicTasksPage() {
                       {t.clientName && (
                         <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-primary">
                           {t.clientName}
+                        </span>
+                      )}
+                      {month === ALL && (
+                        <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
+                          {formatMonth(t.month ?? currentMonth)}
                         </span>
                       )}
                       {dueToday && (
