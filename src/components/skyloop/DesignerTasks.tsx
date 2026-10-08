@@ -11,6 +11,8 @@ import { Panel, StatusBadge } from "@/components/skyloop/ui";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground";
 
+type Task = (ReturnType<typeof useSkyloop>["data"]["designerTasks"])[number];
+
 export function DesignerTasks() {
   const { data, month, clientName, refresh, usdRate, monthClientServices } = useSkyloop();
   const { rows: deliverableRows } = useDeliverables();
@@ -19,6 +21,7 @@ export function DesignerTasks() {
   const [clientSel, setClientSel] = useState("");
   const [serviceSel, setServiceSel] = useState("");
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Task | null>(null);
   const tasks = data.designerTasks.filter((t) => t.month === month);
   const providers = data.providers.filter((p) => tasks.some((t) => t.provider_id === p.id));
   const serviceOptions = monthClientServices.filter(
@@ -27,7 +30,23 @@ export function DesignerTasks() {
   const serviceName = (id: string | null) => data.services.find((s) => s.id === id)?.name ?? "Servicio";
   const selectedRow = deliverableRows.find((r) => r.assignment.id === serviceSel);
 
-  async function create(event: FormEvent<HTMLFormElement>) {
+  function openCreate() {
+    setEditing(null);
+    setProviderSel("");
+    setClientSel("");
+    setServiceSel("");
+    setOpen(true);
+  }
+
+  function openEdit(t: Task) {
+    setEditing(t);
+    setProviderSel(t.provider_id);
+    setClientSel(t.client_id ?? "");
+    setServiceSel(t.client_service_id ?? "");
+    setOpen(true);
+  }
+
+  async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const f = new FormData(form);
@@ -35,7 +54,7 @@ export function DesignerTasks() {
     const description = String(f.get("description") || "").trim();
     if (!provider_id || !description) return void toast.error("Elige diseñador y escribe la tarea");
     setSaving(true);
-    const { error } = await supabase.from("designer_tasks").insert({
+    const payload = {
       provider_id,
       description,
       client_id: clientSel || null,
@@ -43,13 +62,35 @@ export function DesignerTasks() {
       amount: num(f.get("amount")),
       currency: String(f.get("currency")),
       due_date: String(f.get("due_date") || "") || null,
-      month,
-    });
+    };
+    const { error } = editing
+      ? await supabase.from("designer_tasks").update(payload).eq("id", editing.id)
+      : await supabase.from("designer_tasks").insert({ ...payload, month });
     setSaving(false);
-    if (error) return void toast.error("No se pudo crear", { description: error.message });
-    toast.success("Tarea creada");
+    if (error) return void toast.error(editing ? "No se pudo guardar" : "No se pudo crear", { description: error.message });
+    // Si una tarea entregada cambia de servicio, mueve la casilla en Entregables.
+    if (editing?.status === "Entregada" && editing.client_service_id !== (serviceSel || null)) {
+      const userId = data.userId;
+      const move = async (csId: string, delta: number) => {
+        const { data: rec } = await supabase
+          .from("client_deliverables")
+          .select("delivered_count")
+          .eq("client_service_id", csId)
+          .eq("month", editing!.month)
+          .maybeSingle();
+        const count = Math.max(0, (rec?.delivered_count ?? 0) + delta);
+        await supabase.from("client_deliverables").upsert(
+          { client_service_id: csId, month: editing!.month, user_id: userId, delivered_count: count, updated_at: new Date().toISOString() },
+          { onConflict: "client_service_id,month" },
+        );
+      };
+      if (editing.client_service_id) await move(editing.client_service_id, -1);
+      if (serviceSel) await move(serviceSel, 1);
+    }
+    toast.success(editing ? "Tarea actualizada" : "Tarea creada");
     form.reset();
     setServiceSel("");
+    setEditing(null);
     setOpen(false);
     await refresh();
   }
