@@ -51,6 +51,7 @@ function PublicTasksPage() {
   const router = useRouter();
   const mark = useServerFn(markTaskDelivered);
   const [month, setMonth] = useState<string>(ALL);
+  const [tab, setTab] = useState<"pending" | "done">("pending");
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -102,6 +103,7 @@ function PublicTasksPage() {
     usd > 0 ? (dop > 0 ? `${money(dop)} · US$${usd.toLocaleString("en-US")}` : `US$${usd.toLocaleString("en-US")}`) : money(dop);
 
   const monthLabel = month === ALL ? "total" : formatMonth(month);
+  const shown = tab === "pending" ? pending : done;
 
 
   return (
@@ -166,14 +168,55 @@ function PublicTasksPage() {
           </div>
         </div>
 
+        <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-card p-1.5">
+          {(
+            [
+              { key: "pending", label: "Pendientes", count: pending.length, icon: ListTodo },
+              { key: "done", label: "Entregadas", count: done.length, icon: CheckCircle2 },
+            ] as const
+          ).map((t) => {
+            const Icon = t.icon;
+            const active = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={
+                  active
+                    ? "flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                    : "flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                }
+              >
+                <Icon className="size-4" />
+                {t.label}
+                <span
+                  className={
+                    active
+                      ? "rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs font-extrabold"
+                      : "rounded-full bg-muted px-2 py-0.5 text-xs font-extrabold text-muted-foreground"
+                  }
+                >
+                  {t.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="grid gap-4">
-          {list.length === 0 && (
+          {shown.length === 0 && (
             <p className="py-10 text-center text-sm text-muted-foreground">
-              {month === ALL ? "Todavía no tienes tareas." : "No tienes tareas en este mes."}
+              {tab === "pending"
+                ? month === ALL
+                  ? "No tienes tareas pendientes."
+                  : "No tienes tareas pendientes en este mes."
+                : month === ALL
+                  ? "Todavía no has entregado tareas."
+                  : "Todavía no has entregado tareas en este mes."}
             </p>
           )}
 
-          {list.map((t) => {
+          {shown.map((t) => {
             const overdue = t.status === "Pendiente" && t.due_date && t.due_date < today;
             const dueToday = t.status === "Pendiente" && t.due_date === today;
             return (
