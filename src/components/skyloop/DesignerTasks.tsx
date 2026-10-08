@@ -11,6 +11,8 @@ import { Panel, StatusBadge } from "@/components/skyloop/ui";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground";
 
+type Task = (ReturnType<typeof useSkyloop>["data"]["designerTasks"])[number];
+
 export function DesignerTasks() {
   const { data, month, clientName, refresh, usdRate, monthClientServices } = useSkyloop();
   const { rows: deliverableRows } = useDeliverables();
@@ -19,6 +21,7 @@ export function DesignerTasks() {
   const [clientSel, setClientSel] = useState("");
   const [serviceSel, setServiceSel] = useState("");
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Task | null>(null);
   const tasks = data.designerTasks.filter((t) => t.month === month);
   const providers = data.providers.filter((p) => tasks.some((t) => t.provider_id === p.id));
   const serviceOptions = monthClientServices.filter(
@@ -27,7 +30,23 @@ export function DesignerTasks() {
   const serviceName = (id: string | null) => data.services.find((s) => s.id === id)?.name ?? "Servicio";
   const selectedRow = deliverableRows.find((r) => r.assignment.id === serviceSel);
 
-  async function create(event: FormEvent<HTMLFormElement>) {
+  function openCreate() {
+    setEditing(null);
+    setProviderSel("");
+    setClientSel("");
+    setServiceSel("");
+    setOpen(true);
+  }
+
+  function openEdit(t: Task) {
+    setEditing(t);
+    setProviderSel(t.provider_id);
+    setClientSel(t.client_id ?? "");
+    setServiceSel(t.client_service_id ?? "");
+    setOpen(true);
+  }
+
+  async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const f = new FormData(form);
@@ -35,7 +54,7 @@ export function DesignerTasks() {
     const description = String(f.get("description") || "").trim();
     if (!provider_id || !description) return void toast.error("Elige diseñador y escribe la tarea");
     setSaving(true);
-    const { error } = await supabase.from("designer_tasks").insert({
+    const payload = {
       provider_id,
       description,
       client_id: clientSel || null,
@@ -43,13 +62,37 @@ export function DesignerTasks() {
       amount: num(f.get("amount")),
       currency: String(f.get("currency")),
       due_date: String(f.get("due_date") || "") || null,
-      month,
-    });
+    };
+    const { error } = editing
+      ? await supabase.from("designer_tasks").update(payload).eq("id", editing.id)
+      : await supabase.from("designer_tasks").insert({ ...payload, month });
     setSaving(false);
-    if (error) return void toast.error("No se pudo crear", { description: error.message });
-    toast.success("Tarea creada");
+    if (error) return void toast.error(editing ? "No se pudo guardar" : "No se pudo crear", { description: error.message });
+    // Si una tarea entregada cambia de servicio, mueve la casilla en Entregables.
+    if (editing?.status === "Entregada" && editing.client_service_id !== (serviceSel || null)) {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData.user?.id;
+      if (!userId) return void toast.error("No se pudo actualizar la casilla en Entregables");
+      const move = async (csId: string, delta: number) => {
+        const { data: rec } = await supabase
+          .from("client_deliverables")
+          .select("delivered_count")
+          .eq("client_service_id", csId)
+          .eq("month", editing!.month)
+          .maybeSingle();
+        const count = Math.max(0, (rec?.delivered_count ?? 0) + delta);
+        await supabase.from("client_deliverables").upsert(
+          { client_service_id: csId, month: editing!.month, user_id: userId, delivered_count: count, updated_at: new Date().toISOString() },
+          { onConflict: "client_service_id,month" },
+        );
+      };
+      if (editing.client_service_id) await move(editing.client_service_id, -1);
+      if (serviceSel) await move(serviceSel, 1);
+    }
+    toast.success(editing ? "Tarea actualizada" : "Tarea creada");
     form.reset();
     setServiceSel("");
+    setEditing(null);
     setOpen(false);
     await refresh();
   }
@@ -132,24 +175,28 @@ export function DesignerTasks() {
     <div className="grid gap-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">Tareas de {monthLabel(month)}</p>
-        <button onClick={() => setOpen(true)} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90">
+        <button onClick={openCreate} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90">
           + Nueva tarea
         </button>
       </div>
 
       {open && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-background/70 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <form onSubmit={create} onClick={(e) => e.stopPropagation()} className="grid w-full max-w-xl gap-4 rounded-2xl border border-border bg-card p-6 shadow-2xl">
+          <form key={editing?.id ?? "new"} onSubmit={save} onClick={(e) => e.stopPropagation()} className="grid w-full max-w-xl gap-4 rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-foreground">Crear una tarea</h2>
-                <p className="text-xs text-muted-foreground">Se agrega a {monthLabel(month)}. Al entregarla se marca sola en Entregables.</p>
+                <h2 className="text-lg font-bold text-foreground">{editing ? "Editar tarea" : "Crear una tarea"}</h2>
+                <p className="text-xs text-muted-foreground">
+                  {editing
+                    ? "Cambia lo que necesites. Si estaba entregada y cambias el servicio, la casilla se mueve en Entregables."
+                    : `Se agrega a ${monthLabel(month)}. Al entregarla se marca sola en Entregables.`}
+                </p>
               </div>
               <button type="button" onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-muted-foreground hover:bg-secondary" aria-label="Cerrar">✕</button>
             </div>
             <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
               Tarea
-              <input name="description" placeholder="Ej. 3 artes para Instagram" className={inputClass} />
+              <input name="description" defaultValue={editing?.description ?? ""} placeholder="Ej. 3 artes para Instagram" className={inputClass} />
             </label>
             <div className="grid gap-3 md:grid-cols-2">
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
@@ -190,18 +237,18 @@ export function DesignerTasks() {
             <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr]">
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Precio
-                <input name="amount" type="number" step="any" min="0" placeholder="0" className={inputClass} />
+                <input name="amount" type="number" step="any" min="0" placeholder="0" defaultValue={editing ? String(editing.amount) : ""} className={inputClass} />
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Moneda
-                <select name="currency" className={inputClass}>
+                <select name="currency" defaultValue={editing?.currency ?? "DOP"} className={inputClass}>
                   <option value="DOP">DOP</option>
                   <option value="USD">USD</option>
                 </select>
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Fecha límite
-                <input name="due_date" type="date" className={inputClass} />
+                <input name="due_date" type="date" defaultValue={editing?.due_date ?? ""} className={inputClass} />
               </label>
             </div>
             <div className="flex justify-end gap-2 pt-2">
@@ -209,7 +256,7 @@ export function DesignerTasks() {
                 Cancelar
               </button>
               <button disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
-                Crear tarea
+                {editing ? "Guardar cambios" : "Crear tarea"}
               </button>
             </div>
           </form>
@@ -269,7 +316,10 @@ export function DesignerTasks() {
                       <td className="px-4 py-3 text-right">{money(t.amount, t.currency)}</td>
                       <td className="px-4 py-3 text-right">
                         {t.status !== "Facturada" && (
-                          <button onClick={() => remove(t.id)} className="text-xs text-destructive">Eliminar</button>
+                          <span className="flex justify-end gap-3">
+                            <button onClick={() => openEdit(t)} className="text-xs font-bold text-primary">Editar</button>
+                            <button onClick={() => remove(t.id)} className="text-xs text-destructive">Eliminar</button>
+                          </span>
                         )}
                       </td>
                     </tr>
