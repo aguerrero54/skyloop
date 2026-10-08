@@ -7,6 +7,7 @@ import { clientActiveInMonth, monthLabel } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { useDeliverables } from "@/lib/agency";
 import { Panel, ProgressBar } from "@/components/skyloop/ui";
+import { DesignerTasks } from "@/components/skyloop/DesignerTasks";
 
 export const Route = createFileRoute("/_authenticated/entregables")({
   head: () => ({
@@ -30,6 +31,26 @@ export const Route = createFileRoute("/_authenticated/entregables")({
 
 
 function DeliverablesPage() {
+  const [tab, setTab] = useState<"entregables" | "tareas">("entregables");
+  return (
+    <div className="grid gap-4">
+      <div className="flex w-fit gap-1 rounded-xl border border-border bg-card p-1">
+        {(["entregables", "tareas"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`rounded-lg px-4 py-1.5 text-sm font-bold ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            {t === "entregables" ? "Entregables" : "Tareas"}
+          </button>
+        ))}
+      </div>
+      {tab === "entregables" ? <DeliverablesView /> : <DesignerTasks />}
+    </div>
+  );
+}
+
+function DeliverablesView() {
   const { data, month, clientName, serviceName, providerName, refresh } = useSkyloop();
   const [clientFilter, setClientFilter] = useState("");
   const { rows, total, done, percent } = useDeliverables(clientFilter || undefined);
