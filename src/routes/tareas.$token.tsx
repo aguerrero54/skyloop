@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Calendar, CheckCircle2, ListTodo, Wallet } from "lucide-react";
+import { Calendar, CheckCircle2, ListTodo, MessageSquare, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
-import { getPublicTasks, markTaskDelivered } from "@/lib/designer-tasks.functions";
+import { addTaskComment, getPublicTasks, getTaskComments, markTaskDelivered } from "@/lib/designer-tasks.functions";
 import { money, num } from "@/lib/finance";
 import { BrandMark } from "@/components/skyloop/AppShell";
 
@@ -45,6 +45,29 @@ function formatMonth(value: string): string {
 
 const ALL = "all";
 
+function Linkified({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+  return (
+    <>
+      {parts.map((p, i) =>
+        /^https?:\/\//.test(p) ? (
+          <a key={i} href={p} target="_blank" rel="noreferrer" className="break-all text-primary underline">
+            {p}
+          </a>
+        ) : (
+          <span key={i}>{p}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+function formatTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("es-DO", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+}
+
 function PublicTasksPage() {
   const data = Route.useLoaderData();
   const { token } = Route.useParams();
@@ -54,6 +77,37 @@ function PublicTasksPage() {
   const [tab, setTab] = useState<"pending" | "done">("pending");
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  type TaskItem = NonNullable<typeof data>["tasks"][number];
+  type CommentItem = { id: string; author: string; body: string; created_at: string };
+  const [selected, setSelected] = useState<TaskItem | null>(null);
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const fetchComments = useServerFn(getTaskComments);
+  const sendComment = useServerFn(addTaskComment);
+
+  async function openTask(t: TaskItem) {
+    setSelected(t);
+    setDraft("");
+    setComments([]);
+    const list = await fetchComments({ data: { token, taskId: t.id } }).catch(() => null);
+    setComments(list ?? []);
+  }
+
+  async function send() {
+    if (!selected || !draft.trim()) return;
+    setSending(true);
+    try {
+      await sendComment({ data: { token, taskId: selected.id, body: draft.trim() } });
+      setDraft("");
+      const list = await fetchComments({ data: { token, taskId: selected.id } }).catch(() => null);
+      setComments(list ?? []);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSending(false);
+    }
+  }
 
   // Esta ruta es pública y no pasa por el ThemeProvider: fuerza el tema oscuro de Skyloop.
   useEffect(() => {
@@ -223,7 +277,9 @@ function PublicTasksPage() {
               <div key={t.id} className="grid gap-3 rounded-2xl border border-border bg-card p-5 shadow-panel">
                 <div className="flex items-start justify-between gap-3">
                   <div className="grid gap-2">
-                    <p className="text-lg font-bold text-foreground">{t.description}</p>
+                    <button onClick={() => openTask(t)} className="text-left text-lg font-bold text-foreground transition-colors hover:text-primary">
+                      {t.description}
+                    </button>
                     <div className="flex flex-wrap items-center gap-2">
                       {t.clientName && (
                         <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-primary">
@@ -287,6 +343,92 @@ function PublicTasksPage() {
           })}
         </div>
       </div>
+
+      {selected && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/70 p-4 backdrop-blur-sm" onClick={() => setSelected(null)}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="grid max-h-[90vh] w-full max-w-4xl gap-5 overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl md:grid-cols-2"
+          >
+            <div className="grid content-start gap-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="grid gap-2">
+                  <h2 className="text-xl font-bold text-foreground">{selected.description}</h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {selected.clientName && (
+                      <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-primary">{selected.clientName}</span>
+                    )}
+                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
+                      {formatMonth(selected.month ?? currentMonth)}
+                    </span>
+                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">{selected.status}</span>
+                  </div>
+                </div>
+                <button onClick={() => setSelected(null)} className="rounded-lg px-2 py-1 text-muted-foreground hover:bg-muted" aria-label="Cerrar">
+                  ✕
+                </button>
+              </div>
+              <b className="text-lg text-foreground">{money(selected.amount, selected.currency)}</b>
+              <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Calendar className="size-3.5" />
+                {selected.due_date ? `Entrega: ${formatDue(selected.due_date)}` : "Sin fecha límite"}
+              </p>
+              <div className="grid gap-2">
+                <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">DESCRIPCIÓN</p>
+                {selected.details ? (
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                    <Linkified text={selected.details} />
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Sin descripción detallada.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid content-start gap-3 border-t border-border pt-4 md:border-l md:border-t-0 md:pl-5 md:pt-0">
+              <p className="flex items-center gap-2 text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
+                <MessageSquare className="size-3.5" />
+                COMENTARIOS Y ACTIVIDAD
+              </p>
+              <div className="grid max-h-72 gap-3 overflow-y-auto pr-1">
+                {selected.delivered_at && (
+                  <div className="grid gap-0.5 rounded-lg bg-muted/50 p-3">
+                    <p className="text-xs font-bold text-success">Marcada como entregada · {formatTime(selected.delivered_at)}</p>
+                    {selected.delivery_note && <p className="text-sm text-foreground">{selected.delivery_note}</p>}
+                  </div>
+                )}
+                {comments.map((c) => (
+                  <div key={c.id} className="grid gap-0.5 rounded-lg bg-muted/50 p-3">
+                    <p className="text-xs font-bold text-foreground">
+                      {c.author} <span className="font-normal text-muted-foreground">· {formatTime(c.created_at)}</span>
+                    </p>
+                    <p className="whitespace-pre-wrap text-sm text-foreground">
+                      <Linkified text={c.body} />
+                    </p>
+                  </div>
+                ))}
+                {!selected.delivered_at && comments.length === 0 && (
+                  <p className="py-4 text-center text-xs text-muted-foreground">Todavía no hay comentarios ni actividad.</p>
+                )}
+              </div>
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="Escribe un comentario o pega un enlace…"
+                rows={3}
+                className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+              />
+              <button
+                disabled={sending || !draft.trim()}
+                onClick={send}
+                className="rounded-lg bg-primary py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+              >
+                Comentar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

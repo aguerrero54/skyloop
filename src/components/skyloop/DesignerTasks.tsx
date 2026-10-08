@@ -57,6 +57,7 @@ export function DesignerTasks() {
     const payload = {
       provider_id,
       description,
+      details: String(f.get("details") || "").trim() || null,
       client_id: clientSel || null,
       client_service_id: serviceSel || null,
       amount: num(f.get("amount")),
@@ -197,6 +198,16 @@ export function DesignerTasks() {
             <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
               Tarea
               <input name="description" defaultValue={editing?.description ?? ""} placeholder="Ej. 3 artes para Instagram" className={inputClass} />
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+              Descripción detallada (opcional)
+              <textarea
+                name="details"
+                rows={3}
+                defaultValue={editing?.details ?? ""}
+                placeholder="Instrucciones, texto del post, enlaces de referencia…"
+                className={inputClass}
+              />
             </label>
             <div className="grid gap-3 md:grid-cols-2">
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">

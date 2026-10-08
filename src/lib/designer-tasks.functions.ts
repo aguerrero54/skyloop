@@ -24,7 +24,7 @@ export const getPublicTasks = createServerFn({ method: "GET" })
       admin.from("providers").select("name").eq("id", providerId).eq("user_id", userId).maybeSingle(),
       admin
         .from("designer_tasks")
-        .select("id, description, amount, currency, due_date, month, status, delivered_at, delivery_note, client_id")
+        .select("id, description, details, amount, currency, due_date, month, status, delivered_at, delivery_note, client_id")
         .eq("provider_id", providerId)
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
@@ -96,5 +96,62 @@ export const markTaskDelivered = createServerFn({ method: "POST" })
         { onConflict: "client_service_id,month" },
       );
     }
+    return { ok: true };
+  });
+
+export const getTaskComments = createServerFn({ method: "GET" })
+  .inputValidator((data) => z.object({ token: tokenSchema, taskId: z.string().uuid() }).parse(data))
+  .handler(async ({ data }) => {
+    const link = await resolveLink(data.token);
+    if (!link) return null;
+    const { admin, providerId, userId } = link;
+    const { data: task } = await admin
+      .from("designer_tasks")
+      .select("id")
+      .eq("id", data.taskId)
+      .eq("provider_id", providerId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!task) return null;
+    const { data: comments } = await admin
+      .from("designer_task_comments")
+      .select("id, author, body, created_at")
+      .eq("task_id", data.taskId)
+      .order("created_at", { ascending: true });
+    return comments ?? [];
+  });
+
+export const addTaskComment = createServerFn({ method: "POST" })
+  .inputValidator((data) =>
+    z
+      .object({
+        token: tokenSchema,
+        taskId: z.string().uuid(),
+        body: z.string().trim().min(1).max(2000),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data }) => {
+    const link = await resolveLink(data.token);
+    if (!link) throw new Error("Enlace no válido");
+    const { admin, providerId, userId } = link;
+    const [{ data: task }, { data: provider }] = await Promise.all([
+      admin
+        .from("designer_tasks")
+        .select("id")
+        .eq("id", data.taskId)
+        .eq("provider_id", providerId)
+        .eq("user_id", userId)
+        .maybeSingle(),
+      admin.from("providers").select("name").eq("id", providerId).eq("user_id", userId).maybeSingle(),
+    ]);
+    if (!task) throw new Error("Tarea no encontrada");
+    const { error } = await admin.from("designer_task_comments").insert({
+      task_id: data.taskId,
+      user_id: userId,
+      author: provider?.name ?? "Diseñador",
+      body: data.body,
+    });
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
