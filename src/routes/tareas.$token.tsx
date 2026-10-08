@@ -103,6 +103,7 @@ function PublicTasksPage() {
     usd > 0 ? (dop > 0 ? `${money(dop)} · US$${usd.toLocaleString("en-US")}` : `US$${usd.toLocaleString("en-US")}`) : money(dop);
 
   const monthLabel = month === ALL ? "total" : formatMonth(month);
+  const shown = tab === "pending" ? pending : done;
 
 
   return (
