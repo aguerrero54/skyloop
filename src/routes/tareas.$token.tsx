@@ -81,9 +81,19 @@ function PublicTasksPage() {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  const pending = data.tasks.filter((t) => t.status === "Pendiente");
-  const done = data.tasks.filter((t) => t.status !== "Pendiente");
-  const toCollect = data.tasks.filter((t) => t.status === "Entregada");
+  const currentMonth = today.slice(0, 7);
+  const nextMonth = (() => {
+    const d = new Date();
+    d.setUTCMonth(d.getUTCMonth() + 1);
+    return d.toISOString().slice(0, 7);
+  })();
+  const monthOptions = [
+    ...new Set([...data.tasks.map((t) => t.month ?? currentMonth), currentMonth, nextMonth]),
+  ].sort();
+  const list = data.tasks.filter((t) => (t.month ?? currentMonth) === month);
+  const pending = list.filter((t) => t.status === "Pendiente");
+  const done = list.filter((t) => t.status !== "Pendiente");
+  const toCollect = list.filter((t) => t.status === "Entregada");
   const dop = toCollect.filter((t) => t.currency !== "USD").reduce((s, t) => s + num(t.amount), 0);
   const usd = toCollect.filter((t) => t.currency === "USD").reduce((s, t) => s + num(t.amount), 0);
   const collectLabel =
