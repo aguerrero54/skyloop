@@ -168,6 +168,7 @@ function PublicTasksPage() {
             className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground"
           >
             <option value={ALL}>Todo</option>
+            <option value={ALL}>Todo</option>
             {monthOptions.map((m) => (
               <option key={m} value={m}>
                 {formatMonth(m)}
