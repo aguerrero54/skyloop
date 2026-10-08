@@ -197,6 +197,11 @@ function PublicTasksPage() {
                           {t.clientName}
                         </span>
                       )}
+                      {month === ALL && (
+                        <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
+                          {formatMonth(t.month ?? currentMonth)}
+                        </span>
+                      )}
                       {dueToday && (
                         <span className="flex items-center gap-1.5 rounded-full bg-destructive/20 px-3 py-1 text-xs font-bold text-destructive">
                           Vence hoy
