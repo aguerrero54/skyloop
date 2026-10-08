@@ -331,6 +331,41 @@ export type Database = {
         }
         Relationships: []
       }
+      designer_task_comments: {
+        Row: {
+          author: string
+          body: string
+          created_at: string
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          author?: string
+          body: string
+          created_at?: string
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          author?: string
+          body?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "designer_task_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "designer_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       designer_tasks: {
         Row: {
           amount: number
@@ -341,6 +376,7 @@ export type Database = {
           delivered_at: string | null
           delivery_note: string | null
           description: string
+          details: string | null
           due_date: string | null
           id: string
           invoice_id: string | null
@@ -358,6 +394,7 @@ export type Database = {
           delivered_at?: string | null
           delivery_note?: string | null
           description: string
+          details?: string | null
           due_date?: string | null
           id?: string
           invoice_id?: string | null
@@ -375,6 +412,7 @@ export type Database = {
           delivered_at?: string | null
           delivery_note?: string | null
           description?: string
+          details?: string | null
           due_date?: string | null
           id?: string
           invoice_id?: string | null
