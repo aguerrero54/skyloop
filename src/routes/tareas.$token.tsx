@@ -99,7 +99,8 @@ function PublicTasksPage() {
   const collectLabel =
     usd > 0 ? (dop > 0 ? `${money(dop)} · US$${usd.toLocaleString("en-US")}` : `US$${usd.toLocaleString("en-US")}`) : money(dop);
 
-  const list = tab === "pending" ? pending : done;
+  const monthLabel = formatMonth(month);
+
 
   return (
     <div className="min-h-screen bg-background">
