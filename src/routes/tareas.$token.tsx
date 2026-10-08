@@ -119,9 +119,18 @@ function PublicTasksPage() {
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">SKYLOOP · TAREAS</p>
             <h1 className="mt-1 text-3xl font-bold text-foreground lg:text-4xl">Hola, {data.providerName}</h1>
           </div>
-          <p className="max-w-xs text-right text-sm text-muted-foreground">
-            Organiza tu trabajo, cumple tus entregas y sigue creciendo.
-          </p>
+          <select
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground"
+          >
+            <option value={ALL}>Todo</option>
+            {monthOptions.map((m) => (
+              <option key={m} value={m}>
+                {formatMonth(m)}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
