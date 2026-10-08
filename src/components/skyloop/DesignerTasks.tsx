@@ -70,7 +70,9 @@ export function DesignerTasks() {
     if (error) return void toast.error(editing ? "No se pudo guardar" : "No se pudo crear", { description: error.message });
     // Si una tarea entregada cambia de servicio, mueve la casilla en Entregables.
     if (editing?.status === "Entregada" && editing.client_service_id !== (serviceSel || null)) {
-      const userId = data.userId;
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData.user?.id;
+      if (!userId) return void toast.error("No se pudo actualizar la casilla en Entregables");
       const move = async (csId: string, delta: number) => {
         const { data: rec } = await supabase
           .from("client_deliverables")
