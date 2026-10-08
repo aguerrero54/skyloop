@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import {
   effectiveAssignments,
   monthOf,
@@ -53,6 +54,8 @@ export type SkyloopData = {
   fixedCosts: FixedCost[];
   fixedCostMonths: FixedCostMonth[];
   deliverables: Deliverable[];
+  designerTasks: Tables<"designer_tasks">[];
+  taskLinks: Tables<"provider_task_links">[];
 };
 
 const emptyData: SkyloopData = {
@@ -72,6 +75,8 @@ const emptyData: SkyloopData = {
   fixedCosts: [],
   fixedCostMonths: [],
   deliverables: [],
+  designerTasks: [],
+  taskLinks: [],
 };
 
 async function fetchAll(): Promise<SkyloopData> {
@@ -92,6 +97,8 @@ async function fetchAll(): Promise<SkyloopData> {
     fixedCosts,
     fixedCostMonths,
     deliverables,
+    designerTasks,
+    taskLinks,
   ] = await Promise.all([
     supabase.from("clients").select("*").order("name"),
     supabase.from("services").select("*").order("name"),
@@ -109,6 +116,8 @@ async function fetchAll(): Promise<SkyloopData> {
     supabase.from("agency_fixed_costs").select("*").order("name"),
     supabase.from("agency_fixed_cost_months").select("*"),
     supabase.from("client_deliverables").select("*"),
+    supabase.from("designer_tasks").select("*").order("created_at", { ascending: false }),
+    supabase.from("provider_task_links").select("*"),
   ]);
 
   const failed = [
@@ -128,6 +137,8 @@ async function fetchAll(): Promise<SkyloopData> {
     fixedCosts,
     fixedCostMonths,
     deliverables,
+    designerTasks,
+    taskLinks,
   ].find((result) => result.error);
   if (failed?.error) throw failed.error;
 
@@ -148,6 +159,8 @@ async function fetchAll(): Promise<SkyloopData> {
     fixedCosts: fixedCosts.data ?? [],
     fixedCostMonths: fixedCostMonths.data ?? [],
     deliverables: deliverables.data ?? [],
+    designerTasks: designerTasks.data ?? [],
+    taskLinks: taskLinks.data ?? [],
   };
 }
 

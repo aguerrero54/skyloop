@@ -331,6 +331,79 @@ export type Database = {
         }
         Relationships: []
       }
+      designer_tasks: {
+        Row: {
+          amount: number
+          client_id: string | null
+          created_at: string
+          currency: string
+          delivered_at: string | null
+          delivery_note: string | null
+          description: string
+          due_date: string | null
+          id: string
+          invoice_id: string | null
+          month: string
+          provider_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          delivered_at?: string | null
+          delivery_note?: string | null
+          description: string
+          due_date?: string | null
+          id?: string
+          invoice_id?: string | null
+          month?: string
+          provider_id: string
+          status?: string
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          delivered_at?: string | null
+          delivery_note?: string | null
+          description?: string
+          due_date?: string | null
+          id?: string
+          invoice_id?: string | null
+          month?: string
+          provider_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "designer_tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "designer_tasks_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "designer_tasks_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
@@ -803,6 +876,41 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_task_links: {
+        Row: {
+          created_at: string
+          id: string
+          provider_id: string
+          revoked: boolean
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          provider_id: string
+          revoked?: boolean
+          token?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          provider_id?: string
+          revoked?: boolean
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_task_links_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
         ]

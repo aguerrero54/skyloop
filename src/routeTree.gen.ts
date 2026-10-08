@@ -23,6 +23,7 @@ import { Route as AuthenticatedPorCobrarRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPorPagarRouteImport } from './routes/_authenticated/por-pagar'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
 import { Route as AuthenticatedServiciosRouteImport } from './routes/_authenticated/servicios'
+import { Route as TareasTokenRouteImport } from './routes/tareas.$token'
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes/index'
 import { Route as AuthenticatedClientesClientIdRouteImport } from './routes/_authenticated/clientes/$clientId'
 import { Route as AuthenticatedFacturasIndexRouteImport } from './routes/_authenticated/facturas/index'
@@ -102,6 +103,11 @@ const AuthenticatedServiciosRoute = AuthenticatedServiciosRouteImport.update({
   path: '/servicios',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const TareasTokenRoute = TareasTokenRouteImport.update({
+  id: '/tareas/$token',
+  path: '/tareas/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedClientesIndexRoute =
   AuthenticatedClientesIndexRouteImport.update({
     id: '/clientes/',
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/por-pagar': typeof AuthenticatedPorPagarRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/servicios': typeof AuthenticatedServiciosRoute
+  '/tareas/$token': typeof TareasTokenRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
   '/facturas/$invoiceId': typeof AuthenticatedFacturasInvoiceIdRoute
   '/facturas/nueva': typeof AuthenticatedFacturasNuevaRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/por-pagar': typeof AuthenticatedPorPagarRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/servicios': typeof AuthenticatedServiciosRoute
+  '/tareas/$token': typeof TareasTokenRoute
   '/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
   '/facturas/$invoiceId': typeof AuthenticatedFacturasInvoiceIdRoute
   '/facturas/nueva': typeof AuthenticatedFacturasNuevaRoute
@@ -197,6 +205,7 @@ export interface FileRoutesById {
   '/_authenticated/por-pagar': typeof AuthenticatedPorPagarRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
   '/_authenticated/servicios': typeof AuthenticatedServiciosRoute
+  '/tareas/$token': typeof TareasTokenRoute
   '/_authenticated/clientes/$clientId': typeof AuthenticatedClientesClientIdRoute
   '/_authenticated/facturas/$invoiceId': typeof AuthenticatedFacturasInvoiceIdRoute
   '/_authenticated/facturas/nueva': typeof AuthenticatedFacturasNuevaRoute
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
     | '/por-pagar'
     | '/reportes'
     | '/servicios'
+    | '/tareas/$token'
     | '/clientes/$clientId'
     | '/facturas/$invoiceId'
     | '/facturas/nueva'
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/por-pagar'
     | '/reportes'
     | '/servicios'
+    | '/tareas/$token'
     | '/clientes/$clientId'
     | '/facturas/$invoiceId'
     | '/facturas/nueva'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/_authenticated/por-pagar'
     | '/_authenticated/reportes'
     | '/_authenticated/servicios'
+    | '/tareas/$token'
     | '/_authenticated/clientes/$clientId'
     | '/_authenticated/facturas/$invoiceId'
     | '/_authenticated/facturas/nueva'
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  TareasTokenRoute: typeof TareasTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -377,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedServiciosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/tareas/$token': {
+      id: '/tareas/$token'
+      path: '/tareas/$token'
+      fullPath: '/tareas/$token'
+      preLoaderRoute: typeof TareasTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/clientes/': {
       id: '/_authenticated/clientes/'
       path: '/clientes'
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  TareasTokenRoute: TareasTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
