@@ -36,12 +36,19 @@ function formatDue(value: string): string {
   return date.toLocaleDateString("es-DO", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function formatMonth(value: string): string {
+  const date = new Date(`${value}-01T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  const label = date.toLocaleDateString("es-DO", { month: "long", year: "numeric" });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 function PublicTasksPage() {
   const data = Route.useLoaderData();
   const { token } = Route.useParams();
   const router = useRouter();
   const mark = useServerFn(markTaskDelivered);
-  const [tab, setTab] = useState<"pending" | "done">("pending");
+  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
