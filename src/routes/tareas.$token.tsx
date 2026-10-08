@@ -160,7 +160,7 @@ function PublicTasksPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">MES</p>
-            <p className="text-sm text-muted-foreground">Filtra tus tareas por mes: pasadas, actuales y futuras.</p>
+            <p className="text-sm text-muted-foreground">Filtra por mes lo que tuviste, tienes y tendrás, o elige Todo para ver el total.</p>
           </div>
           <select
             value={month}
@@ -178,7 +178,7 @@ function PublicTasksPage() {
         <div className="grid gap-4">
           {list.length === 0 && (
             <p className="py-10 text-center text-sm text-muted-foreground">
-              {"No tienes tareas en este mes."}
+              {month === ALL ? "Todavía no tienes tareas." : "No tienes tareas en este mes."}
             </p>
           )}
 
