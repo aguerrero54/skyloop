@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { Calendar, CheckCircle2, ListTodo, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
 import { getPublicTasks, markTaskDelivered } from "@/lib/designer-tasks.functions";
-import { money } from "@/lib/finance";
+import { money, num } from "@/lib/finance";
+import { BrandMark } from "@/components/skyloop/AppShell";
 
 export const Route = createFileRoute("/tareas/$token")({
   head: () => ({
@@ -28,11 +30,18 @@ function Message({ text }: { text: string }) {
   return <div className="grid min-h-screen place-items-center bg-background text-sm text-muted-foreground">{text}</div>;
 }
 
+function formatDue(value: string): string {
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("es-DO", { day: "numeric", month: "short", year: "numeric" });
+}
+
 function PublicTasksPage() {
   const data = Route.useLoaderData();
   const { token } = Route.useParams();
   const router = useRouter();
   const mark = useServerFn(markTaskDelivered);
+  const [tab, setTab] = useState<"pending" | "done">("pending");
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -51,62 +60,165 @@ function PublicTasksPage() {
     }
   }
 
+  const today = new Date().toISOString().slice(0, 10);
   const pending = data.tasks.filter((t) => t.status === "Pendiente");
   const done = data.tasks.filter((t) => t.status !== "Pendiente");
+  const toCollect = data.tasks.filter((t) => t.status === "Entregada");
+  const dop = toCollect.filter((t) => t.currency !== "USD").reduce((s, t) => s + num(t.amount), 0);
+  const usd = toCollect.filter((t) => t.currency === "USD").reduce((s, t) => s + num(t.amount), 0);
+  const collectLabel =
+    usd > 0 ? (dop > 0 ? `${money(dop)} · US$${usd.toLocaleString("en-US")}` : `US$${usd.toLocaleString("en-US")}`) : money(dop);
+
+  const list = tab === "pending" ? pending : done;
 
   return (
-    <div className="min-h-screen bg-background px-5 py-8">
-      <div className="mx-auto grid max-w-2xl gap-5">
-        <div>
-          <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">SKYLOOP · TAREAS</p>
-          <h1 className="mt-1 text-2xl font-bold text-foreground">Hola, {data.providerName}</h1>
-          <p className="text-sm text-muted-foreground">{pending.length} pendientes · {done.length} entregadas</p>
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-background/90 px-5 py-3 backdrop-blur-lg lg:px-10">
+        <div className="mx-auto flex max-w-5xl items-center gap-3">
+          <BrandMark />
+          <strong className="text-lg text-foreground">Skyloop</strong>
+        </div>
+      </header>
+
+      <div className="mx-auto grid max-w-5xl gap-6 px-5 py-8 lg:px-10">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">SKYLOOP · TAREAS</p>
+            <h1 className="mt-1 text-3xl font-bold text-foreground lg:text-4xl">Hola, {data.providerName}</h1>
+          </div>
+          <p className="max-w-xs text-right text-sm text-muted-foreground">
+            Organiza tu trabajo, cumple tus entregas y sigue creciendo.
+          </p>
         </div>
 
-        {data.tasks.length === 0 && <p className="text-sm text-muted-foreground">No tienes tareas asignadas.</p>}
-
-        {[...pending, ...done].map((t) => (
-          <div key={t.id} className="grid gap-3 rounded-2xl border border-border bg-card p-5 shadow-panel">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-semibold text-foreground">{t.description}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t.clientName ?? "Sin cliente"} · {t.due_date ? `Entrega: ${t.due_date}` : "Sin fecha límite"}
-                </p>
-              </div>
-              <b className="whitespace-nowrap text-foreground">{money(t.amount, t.currency)}</b>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-panel">
+            <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+              <ListTodo className="size-6" />
+            </span>
+            <div>
+              <p className="text-sm text-muted-foreground">Pendientes</p>
+              <p className="text-2xl font-bold text-foreground">{pending.length}</p>
+              <p className="text-xs text-muted-foreground">Tareas por entregar</p>
             </div>
-            {t.status === "Pendiente" ? (
-              <>
-                <input
-                  placeholder="Nota o enlace al trabajo (opcional)"
-                  value={notes[t.id] ?? ""}
-                  onChange={(e) => setNotes({ ...notes, [t.id]: e.target.value })}
-                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                />
-                <button
-                  disabled={busy === t.id}
-                  onClick={() => toggle(t.id, true)}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60"
-                >
-                  Marcar como entregada
-                </button>
-              </>
-            ) : (
-              <div className="flex items-center justify-between gap-2 text-xs">
-                <span className="font-bold text-success">
-                  {t.status}
-                  {t.delivery_note ? ` · ${t.delivery_note}` : ""}
-                </span>
-                {t.status === "Entregada" && (
-                  <button disabled={busy === t.id} onClick={() => toggle(t.id, false)} className="text-muted-foreground underline">
-                    Deshacer
-                  </button>
+          </div>
+          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-panel">
+            <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
+              <CheckCircle2 className="size-6" />
+            </span>
+            <div>
+              <p className="text-sm text-muted-foreground">Entregadas</p>
+              <p className="text-2xl font-bold text-foreground">{done.length}</p>
+              <p className="text-xs text-muted-foreground">Tareas completadas</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-panel">
+            <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+              <Wallet className="size-6" />
+            </span>
+            <div>
+              <p className="text-sm text-muted-foreground">A cobrar este mes</p>
+              <p className="text-2xl font-bold text-foreground">{collectLabel}</p>
+              <p className="text-xs text-muted-foreground">Por trabajos entregados</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-6 border-b border-border">
+          {(
+            [
+              { key: "pending", label: `Pendientes (${pending.length})` },
+              { key: "done", label: `Entregadas (${done.length})` },
+            ] as const
+          ).map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => setTab(item.key)}
+              className={
+                "-mb-px border-b-2 px-1 pb-3 text-sm font-bold transition-colors " +
+                (tab === item.key
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground")
+              }
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid gap-4">
+          {list.length === 0 && (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              {tab === "pending" ? "No tienes tareas pendientes. ¡Bien hecho!" : "Aún no has entregado tareas."}
+            </p>
+          )}
+
+          {list.map((t) => {
+            const overdue = t.status === "Pendiente" && t.due_date && t.due_date < today;
+            const dueToday = t.status === "Pendiente" && t.due_date === today;
+            return (
+              <div key={t.id} className="grid gap-3 rounded-2xl border border-border bg-card p-5 shadow-panel">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="grid gap-2">
+                    <p className="text-lg font-bold text-foreground">{t.description}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {t.clientName && (
+                        <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold text-primary">
+                          {t.clientName}
+                        </span>
+                      )}
+                      {dueToday && (
+                        <span className="flex items-center gap-1.5 rounded-full bg-destructive/20 px-3 py-1 text-xs font-bold text-destructive">
+                          Vence hoy
+                        </span>
+                      )}
+                      {overdue && (
+                        <span className="flex items-center gap-1.5 rounded-full bg-destructive/20 px-3 py-1 text-xs font-bold text-destructive">
+                          Vencida
+                        </span>
+                      )}
+                    </div>
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Calendar className="size-3.5" />
+                      {t.due_date ? `Entrega: ${formatDue(t.due_date)}` : "Sin fecha límite"}
+                    </p>
+                  </div>
+                  <b className="whitespace-nowrap text-lg text-foreground">{money(t.amount, t.currency)}</b>
+                </div>
+                {t.status === "Pendiente" ? (
+                  <>
+                    <input
+                      placeholder="Nota o enlace al trabajo (opcional)"
+                      value={notes[t.id] ?? ""}
+                      onChange={(e) => setNotes({ ...notes, [t.id]: e.target.value })}
+                      className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+                    />
+                    <button
+                      disabled={busy === t.id}
+                      onClick={() => toggle(t.id, true)}
+                      className="rounded-lg bg-primary py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+                    >
+                      Marcar como entregada
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="font-bold text-success">
+                      {t.status}
+                      {t.delivery_note ? ` · ${t.delivery_note}` : ""}
+                    </span>
+                    {t.status === "Entregada" && (
+                      <button disabled={busy === t.id} onClick={() => toggle(t.id, false)} className="text-muted-foreground underline">
+                        Deshacer
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
