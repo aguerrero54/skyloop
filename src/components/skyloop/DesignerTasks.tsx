@@ -237,18 +237,18 @@ export function DesignerTasks() {
             <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr]">
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Precio
-                <input name="amount" type="number" step="any" min="0" placeholder="0" className={inputClass} />
+                <input name="amount" type="number" step="any" min="0" placeholder="0" defaultValue={editing ? String(editing.amount) : ""} className={inputClass} />
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Moneda
-                <select name="currency" className={inputClass}>
+                <select name="currency" defaultValue={editing?.currency ?? "DOP"} className={inputClass}>
                   <option value="DOP">DOP</option>
                   <option value="USD">USD</option>
                 </select>
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Fecha límite
-                <input name="due_date" type="date" className={inputClass} />
+                <input name="due_date" type="date" defaultValue={editing?.due_date ?? ""} className={inputClass} />
               </label>
             </div>
             <div className="flex justify-end gap-2 pt-2">
@@ -256,7 +256,7 @@ export function DesignerTasks() {
                 Cancelar
               </button>
               <button disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
-                Crear tarea
+                {editing ? "Guardar cambios" : "Crear tarea"}
               </button>
             </div>
           </form>
@@ -316,7 +316,10 @@ export function DesignerTasks() {
                       <td className="px-4 py-3 text-right">{money(t.amount, t.currency)}</td>
                       <td className="px-4 py-3 text-right">
                         {t.status !== "Facturada" && (
-                          <button onClick={() => remove(t.id)} className="text-xs text-destructive">Eliminar</button>
+                          <span className="flex justify-end gap-3">
+                            <button onClick={() => openEdit(t)} className="text-xs font-bold text-primary">Editar</button>
+                            <button onClick={() => remove(t.id)} className="text-xs text-destructive">Eliminar</button>
+                          </span>
                         )}
                       </td>
                     </tr>
