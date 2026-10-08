@@ -50,7 +50,7 @@ function PublicTasksPage() {
   const { token } = Route.useParams();
   const router = useRouter();
   const mark = useServerFn(markTaskDelivered);
-  const [month, setMonth] = useState("all");
+  const [month, setMonth] = useState<string>(ALL);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -92,7 +92,7 @@ function PublicTasksPage() {
   const monthOptions = [
     ...new Set([...data.tasks.map((t) => t.month ?? currentMonth), currentMonth, nextMonth]),
   ].sort();
-  const list = month === "all" ? data.tasks : data.tasks.filter((t) => (t.month ?? currentMonth) === month);
+  const list = month === ALL ? [...data.tasks].sort((a, b) => (b.month ?? currentMonth).localeCompare(a.month ?? currentMonth)) : data.tasks.filter((t) => (t.month ?? currentMonth) === month);
   const pending = list.filter((t) => t.status === "Pendiente");
   const done = list.filter((t) => t.status !== "Pendiente");
   const toCollect = list.filter((t) => t.status === "Entregada");
@@ -101,7 +101,7 @@ function PublicTasksPage() {
   const collectLabel =
     usd > 0 ? (dop > 0 ? `${money(dop)} · US$${usd.toLocaleString("en-US")}` : `US$${usd.toLocaleString("en-US")}`) : money(dop);
 
-  const monthLabel = month === "all" ? "total" : formatMonth(month);
+  const monthLabel = month === ALL ? "total" : formatMonth(month);
 
 
   return (
@@ -167,6 +167,7 @@ function PublicTasksPage() {
             onChange={(e) => setMonth(e.target.value)}
             className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground"
           >
+            <option value={ALL}>Todo</option>
             {monthOptions.map((m) => (
               <option key={m} value={m}>
                 {formatMonth(m)}
