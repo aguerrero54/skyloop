@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PortalPruebaRouteImport } from './routes/portal-prueba'
 import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEntregablesRouteImport } from './routes/_authenticated/entregables'
@@ -43,6 +44,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalPruebaRoute = PortalPruebaRouteImport.update({
+  id: '/portal-prueba',
+  path: '/portal-prueba',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedConfiguracionRoute =
@@ -148,6 +154,7 @@ const AuthenticatedFacturasEditarInvoiceIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/portal-prueba': typeof PortalPruebaRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/entregables': typeof AuthenticatedEntregablesRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/portal-prueba': typeof PortalPruebaRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/entregables': typeof AuthenticatedEntregablesRoute
@@ -194,6 +202,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/portal-prueba': typeof PortalPruebaRoute
   '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/entregables': typeof AuthenticatedEntregablesRoute
@@ -218,6 +227,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/portal-prueba'
     | '/configuracion'
     | '/dashboard'
     | '/entregables'
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/portal-prueba'
     | '/configuracion'
     | '/dashboard'
     | '/entregables'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/portal-prueba'
     | '/_authenticated/configuracion'
     | '/_authenticated/dashboard'
     | '/_authenticated/entregables'
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PortalPruebaRoute: typeof PortalPruebaRoute
   TareasTokenRoute: typeof TareasTokenRoute
 }
 
@@ -311,6 +324,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal-prueba': {
+      id: '/portal-prueba'
+      path: '/portal-prueba'
+      fullPath: '/portal-prueba'
+      preLoaderRoute: typeof PortalPruebaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/configuracion': {
@@ -490,6 +510,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  PortalPruebaRoute: PortalPruebaRoute,
   TareasTokenRoute: TareasTokenRoute,
 }
 export const routeTree = rootRouteImport
