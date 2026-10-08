@@ -24,7 +24,7 @@ export const getPublicTasks = createServerFn({ method: "GET" })
       admin.from("providers").select("name").eq("id", providerId).eq("user_id", userId).maybeSingle(),
       admin
         .from("designer_tasks")
-        .select("id, description, amount, currency, due_date, month, status, delivered_at, delivery_note, client_id")
+        .select("id, description, details, amount, currency, due_date, month, status, delivered_at, delivery_note, client_id")
         .eq("provider_id", providerId)
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
