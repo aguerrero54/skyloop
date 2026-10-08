@@ -36,12 +36,19 @@ function formatDue(value: string): string {
   return date.toLocaleDateString("es-DO", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function formatMonth(value: string): string {
+  const date = new Date(`${value}-01T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  const label = date.toLocaleDateString("es-DO", { month: "long", year: "numeric" });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 function PublicTasksPage() {
   const data = Route.useLoaderData();
   const { token } = Route.useParams();
   const router = useRouter();
   const mark = useServerFn(markTaskDelivered);
-  const [tab, setTab] = useState<"pending" | "done">("pending");
+  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -74,15 +81,26 @@ function PublicTasksPage() {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  const pending = data.tasks.filter((t) => t.status === "Pendiente");
-  const done = data.tasks.filter((t) => t.status !== "Pendiente");
-  const toCollect = data.tasks.filter((t) => t.status === "Entregada");
+  const currentMonth = today.slice(0, 7);
+  const nextMonth = (() => {
+    const d = new Date();
+    d.setUTCMonth(d.getUTCMonth() + 1);
+    return d.toISOString().slice(0, 7);
+  })();
+  const monthOptions = [
+    ...new Set([...data.tasks.map((t) => t.month ?? currentMonth), currentMonth, nextMonth]),
+  ].sort();
+  const list = data.tasks.filter((t) => (t.month ?? currentMonth) === month);
+  const pending = list.filter((t) => t.status === "Pendiente");
+  const done = list.filter((t) => t.status !== "Pendiente");
+  const toCollect = list.filter((t) => t.status === "Entregada");
   const dop = toCollect.filter((t) => t.currency !== "USD").reduce((s, t) => s + num(t.amount), 0);
   const usd = toCollect.filter((t) => t.currency === "USD").reduce((s, t) => s + num(t.amount), 0);
   const collectLabel =
     usd > 0 ? (dop > 0 ? `${money(dop)} · US$${usd.toLocaleString("en-US")}` : `US$${usd.toLocaleString("en-US")}`) : money(dop);
 
-  const list = tab === "pending" ? pending : done;
+  const monthLabel = formatMonth(month);
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,40 +148,35 @@ function PublicTasksPage() {
               <Wallet className="size-6" />
             </span>
             <div>
-              <p className="text-sm text-muted-foreground">A cobrar este mes</p>
+              <p className="text-sm text-muted-foreground">A cobrar en {monthLabel}</p>
               <p className="text-2xl font-bold text-foreground">{collectLabel}</p>
               <p className="text-xs text-muted-foreground">Por trabajos entregados</p>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-6 border-b border-border">
-          {(
-            [
-              { key: "pending", label: `Pendientes (${pending.length})` },
-              { key: "done", label: `Entregadas (${done.length})` },
-            ] as const
-          ).map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setTab(item.key)}
-              className={
-                "-mb-px border-b-2 px-1 pb-3 text-sm font-bold transition-colors " +
-                (tab === item.key
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground")
-              }
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">MES</p>
+            <p className="text-sm text-muted-foreground">Filtra tus tareas por mes: pasadas, actuales y futuras.</p>
+          </div>
+          <select
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground"
+          >
+            {monthOptions.map((m) => (
+              <option key={m} value={m}>
+                {formatMonth(m)}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid gap-4">
           {list.length === 0 && (
             <p className="py-10 text-center text-sm text-muted-foreground">
-              {tab === "pending" ? "No tienes tareas pendientes. ¡Bien hecho!" : "Aún no has entregado tareas."}
+              {"No tienes tareas en este mes."}
             </p>
           )}
 
