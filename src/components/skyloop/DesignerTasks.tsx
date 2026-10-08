@@ -18,6 +18,7 @@ export function DesignerTasks() {
   const [providerSel, setProviderSel] = useState("");
   const [clientSel, setClientSel] = useState("");
   const [serviceSel, setServiceSel] = useState("");
+  const [open, setOpen] = useState(false);
   const tasks = data.designerTasks.filter((t) => t.month === month);
   const providers = data.providers.filter((p) => tasks.some((t) => t.provider_id === p.id));
   const serviceOptions = monthClientServices.filter(
@@ -49,6 +50,7 @@ export function DesignerTasks() {
     toast.success("Tarea creada");
     form.reset();
     setServiceSel("");
+    setOpen(false);
     await refresh();
   }
 
@@ -128,49 +130,91 @@ export function DesignerTasks() {
 
   return (
     <div className="grid gap-4">
-      <Panel title="Nueva tarea" subtitle={`Se agrega a ${monthLabel(month)}`}>
-        <form onSubmit={create} className="grid gap-3">
-          <div className="grid gap-2 md:grid-cols-3">
-            <select value={providerSel} onChange={(e) => { setProviderSel(e.target.value); setServiceSel(""); }} className={inputClass}>
-              <option value="">Diseñador…</option>
-              {data.providers.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-            <select value={clientSel} onChange={(e) => { setClientSel(e.target.value); setServiceSel(""); }} className={inputClass}>
-              <option value="">Sin marca / cliente</option>
-              {data.clients.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <select value={serviceSel} onChange={(e) => setServiceSel(e.target.value)} className={inputClass} disabled={!serviceOptions.length}>
-              <option value="">{serviceOptions.length ? "Servicio…" : "Sin servicio asignado"}</option>
-              {serviceOptions.map((a) => (
-                <option key={a.id} value={a.id}>{serviceName(a.service_id)}</option>
-              ))}
-            </select>
-          </div>
-          <p className="-mt-1 text-xs text-muted-foreground">Solo aparecen los servicios asignados a este diseñador y marca.</p>
-          {serviceSel && (
-            <div className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
-              Al entregarla se marcará 1 casilla en Entregables · {clientName(clientSel)} · {serviceName(serviceOptions.find((a) => a.id === serviceSel)?.service_id ?? null)}
-              {selectedRow && ` · ${selectedRow.done} de ${selectedRow.qty}`}
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">Tareas de {monthLabel(month)}</p>
+        <button onClick={() => setOpen(true)} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90">
+          + Nueva tarea
+        </button>
+      </div>
+
+      {open && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/70 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
+          <form onSubmit={create} onClick={(e) => e.stopPropagation()} className="grid w-full max-w-xl gap-4 rounded-2xl border border-border bg-card p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Crear una tarea</h2>
+                <p className="text-xs text-muted-foreground">Se agrega a {monthLabel(month)}. Al entregarla se marca sola en Entregables.</p>
+              </div>
+              <button type="button" onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-muted-foreground hover:bg-secondary" aria-label="Cerrar">✕</button>
             </div>
-          )}
-          <div className="grid gap-2 md:grid-cols-[2fr_auto_auto_auto_auto]">
-            <input name="description" placeholder="Ej. 3 artes para Instagram" className={inputClass} />
-            <input name="amount" type="number" step="any" min="0" placeholder="Precio" className={`${inputClass} w-28`} />
-            <select name="currency" className={inputClass}>
-              <option value="DOP">DOP</option>
-              <option value="USD">USD</option>
-            </select>
-            <input name="due_date" type="date" className={inputClass} />
-            <button disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
-              + Agregar
-            </button>
-          </div>
-        </form>
-      </Panel>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+              Tarea
+              <input name="description" placeholder="Ej. 3 artes para Instagram" className={inputClass} />
+            </label>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+                Diseñador
+                <select value={providerSel} onChange={(e) => { setProviderSel(e.target.value); setServiceSel(""); }} className={inputClass}>
+                  <option value="">Elegir…</option>
+                  {data.providers.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+                Marca
+                <select value={clientSel} onChange={(e) => { setClientSel(e.target.value); setServiceSel(""); }} className={inputClass}>
+                  <option value="">Sin marca / cliente</option>
+                  {data.clients.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+              Servicio
+              <select value={serviceSel} onChange={(e) => setServiceSel(e.target.value)} className={inputClass} disabled={!serviceOptions.length}>
+                <option value="">{serviceOptions.length ? "Elegir servicio…" : "Sin servicio asignado"}</option>
+                {serviceOptions.map((a) => (
+                  <option key={a.id} value={a.id}>{serviceName(a.service_id)}</option>
+                ))}
+              </select>
+              <span className="font-normal">Solo aparecen los servicios asignados a este diseñador y marca.</span>
+            </label>
+            {serviceSel && (
+              <div className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
+                Al entregarla se marcará 1 casilla en Entregables · {clientName(clientSel)} · {serviceName(serviceOptions.find((a) => a.id === serviceSel)?.service_id ?? null)}
+                {selectedRow && ` · ${selectedRow.done} de ${selectedRow.qty}`}
+              </div>
+            )}
+            <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr]">
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+                Precio
+                <input name="amount" type="number" step="any" min="0" placeholder="0" className={inputClass} />
+              </label>
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+                Moneda
+                <select name="currency" className={inputClass}>
+                  <option value="DOP">DOP</option>
+                  <option value="USD">USD</option>
+                </select>
+              </label>
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+                Fecha límite
+                <input name="due_date" type="date" className={inputClass} />
+              </label>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-border px-4 py-2 text-sm font-bold text-foreground hover:bg-secondary">
+                Cancelar
+              </button>
+              <button disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-60">
+                Crear tarea
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {providers.length === 0 && (
         <p className="py-6 text-center text-sm text-muted-foreground">No hay tareas en este mes.</p>
