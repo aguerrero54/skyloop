@@ -43,12 +43,14 @@ function formatMonth(value: string): string {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+const ALL = "all";
+
 function PublicTasksPage() {
   const data = Route.useLoaderData();
   const { token } = Route.useParams();
   const router = useRouter();
   const mark = useServerFn(markTaskDelivered);
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(ALL);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -90,7 +92,7 @@ function PublicTasksPage() {
   const monthOptions = [
     ...new Set([...data.tasks.map((t) => t.month ?? currentMonth), currentMonth, nextMonth]),
   ].sort();
-  const list = data.tasks.filter((t) => (t.month ?? currentMonth) === month);
+  const list = month === ALL ? data.tasks : data.tasks.filter((t) => (t.month ?? currentMonth) === month);
   const pending = list.filter((t) => t.status === "Pendiente");
   const done = list.filter((t) => t.status !== "Pendiente");
   const toCollect = list.filter((t) => t.status === "Entregada");
@@ -99,7 +101,7 @@ function PublicTasksPage() {
   const collectLabel =
     usd > 0 ? (dop > 0 ? `${money(dop)} · US$${usd.toLocaleString("en-US")}` : `US$${usd.toLocaleString("en-US")}`) : money(dop);
 
-  const monthLabel = formatMonth(month);
+  const monthLabel = month === ALL ? "total" : formatMonth(month);
 
 
   return (
