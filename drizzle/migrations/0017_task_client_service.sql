@@ -1,0 +1,1 @@
+ALTER TABLE public.designer_tasks ADD COLUMN client_service_id uuid REFERENCES public.client_services(id) ON DELETE SET NULL;
