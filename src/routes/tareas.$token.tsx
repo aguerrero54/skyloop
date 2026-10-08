@@ -207,8 +207,12 @@ function PublicTasksPage() {
           {shown.length === 0 && (
             <p className="py-10 text-center text-sm text-muted-foreground">
               {tab === "pending"
-                ? "No tienes tareas pendientes en este mes."
-                : "Todavía no has entregado tareas en este mes."}
+                ? month === ALL
+                  ? "No tienes tareas pendientes."
+                  : "No tienes tareas pendientes en este mes."
+                : month === ALL
+                  ? "Todavía no has entregado tareas."
+                  : "Todavía no has entregado tareas en este mes."}
             </p>
           )}
 
