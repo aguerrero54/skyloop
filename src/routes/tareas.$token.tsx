@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Calendar, CheckCircle2, ListTodo, Wallet } from "lucide-react";
+import { Calendar, CheckCircle2, ListTodo, MessageSquare, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
-import { getPublicTasks, markTaskDelivered } from "@/lib/designer-tasks.functions";
+import { addTaskComment, getPublicTasks, getTaskComments, markTaskDelivered } from "@/lib/designer-tasks.functions";
 import { money, num } from "@/lib/finance";
 import { BrandMark } from "@/components/skyloop/AppShell";
 
