@@ -120,6 +120,13 @@
       "when": 1791499928287,
       "tag": "0016_designer_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791502261808,
+      "tag": "0017_task_client_service",
+      "breakpoints": true
     }
   ]
 }

@@ -60,13 +60,14 @@ export const markTaskDelivered = createServerFn({ method: "POST" })
     const { admin, providerId, userId } = link;
     const { data: task } = await admin
       .from("designer_tasks")
-      .select("status")
+      .select("status, client_service_id, month")
       .eq("id", data.taskId)
       .eq("provider_id", providerId)
       .eq("user_id", userId)
       .maybeSingle();
     if (!task) throw new Error("Tarea no encontrada");
     if (task.status === "Facturada") throw new Error("Esta tarea ya fue facturada");
+    const wasDelivered = task.status === "Entregada";
     const { error } = await admin
       .from("designer_tasks")
       .update(
@@ -76,5 +77,24 @@ export const markTaskDelivered = createServerFn({ method: "POST" })
       )
       .eq("id", data.taskId);
     if (error) throw new Error(error.message);
+    if (task.client_service_id && wasDelivered !== data.delivered) {
+      const { data: rec } = await admin
+        .from("client_deliverables")
+        .select("delivered_count")
+        .eq("client_service_id", task.client_service_id)
+        .eq("month", task.month)
+        .maybeSingle();
+      const count = Math.max(0, (rec?.delivered_count ?? 0) + (data.delivered ? 1 : -1));
+      await admin.from("client_deliverables").upsert(
+        {
+          client_service_id: task.client_service_id,
+          month: task.month,
+          user_id: userId,
+          delivered_count: count,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "client_service_id,month" },
+      );
+    }
     return { ok: true };
   });

@@ -335,6 +335,7 @@ export type Database = {
         Row: {
           amount: number
           client_id: string | null
+          client_service_id: string | null
           created_at: string
           currency: string
           delivered_at: string | null
@@ -351,6 +352,7 @@ export type Database = {
         Insert: {
           amount?: number
           client_id?: string | null
+          client_service_id?: string | null
           created_at?: string
           currency?: string
           delivered_at?: string | null
@@ -367,6 +369,7 @@ export type Database = {
         Update: {
           amount?: number
           client_id?: string | null
+          client_service_id?: string | null
           created_at?: string
           currency?: string
           delivered_at?: string | null
@@ -386,6 +389,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "designer_tasks_client_service_id_fkey"
+            columns: ["client_service_id"]
+            isOneToOne: false
+            referencedRelation: "client_services"
             referencedColumns: ["id"]
           },
           {
