@@ -54,6 +54,9 @@ export function DesignerTasks() {
     const description = String(f.get("description") || "").trim();
     if (!provider_id || !description) return void toast.error("Elige diseñador y escribe la tarea");
     setSaving(true);
+    const due_date = String(f.get("due_date") || "") || null;
+    // El mes de la tarea sale de su fecha límite; sin fecha, se queda el mes actual/anterior.
+    const taskMonth = due_date ? due_date.slice(0, 7) : (editing?.month ?? month);
     const payload = {
       provider_id,
       description,
@@ -62,11 +65,12 @@ export function DesignerTasks() {
       client_service_id: serviceSel || null,
       amount: num(f.get("amount")),
       currency: String(f.get("currency")),
-      due_date: String(f.get("due_date") || "") || null,
+      due_date,
+      month: taskMonth,
     };
     const { error } = editing
       ? await supabase.from("designer_tasks").update(payload).eq("id", editing.id)
-      : await supabase.from("designer_tasks").insert({ ...payload, month });
+      : await supabase.from("designer_tasks").insert(payload);
     setSaving(false);
     if (error) return void toast.error(editing ? "No se pudo guardar" : "No se pudo crear", { description: error.message });
     // Si una tarea entregada cambia de servicio, mueve la casilla en Entregables.
@@ -191,7 +195,7 @@ export function DesignerTasks() {
                 <p className="text-xs text-muted-foreground">
                   {editing
                     ? "Cambia lo que necesites. Si estaba entregada y cambias el servicio, la casilla se mueve en Entregables."
-                    : `Se agrega a ${monthLabel(month)}. Al entregarla se marca sola en Entregables.`}
+                    : "Se agrega al mes de su fecha límite. Al entregarla se marca sola en Entregables."}
                 </p>
               </div>
               <button type="button" onClick={() => setOpen(false)} className="rounded-lg px-2 py-1 text-muted-foreground hover:bg-secondary" aria-label="Cerrar">✕</button>
