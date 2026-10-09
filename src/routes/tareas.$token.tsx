@@ -68,6 +68,82 @@ function formatTime(value: string): string {
   return date.toLocaleString("es-DO", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 }
 
+function InlineThread({ token, taskId, details }: { token: string; taskId: string; details: string | null }) {
+  const fetchComments = useServerFn(getTaskComments);
+  const sendComment = useServerFn(addTaskComment);
+  const [comments, setComments] = useState<{ id: string; author: string; body: string; created_at: string }[]>([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+
+  async function load() {
+    const list = await fetchComments({ data: { token, taskId } }).catch(() => null);
+    setComments(list ?? []);
+  }
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskId]);
+
+  async function send() {
+    if (!draft.trim()) return;
+    setSending(true);
+    try {
+      await sendComment({ data: { token, taskId, body: draft.trim() } });
+      setDraft("");
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="grid gap-3">
+      {details && (
+        <div className="grid gap-1.5 rounded-lg bg-muted/40 p-3">
+          <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">DESCRIPCIÓN</p>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+            <Linkified text={details} />
+          </p>
+        </div>
+      )}
+      <div className="grid gap-2">
+        <p className="flex items-center gap-2 text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
+          <MessageSquare className="size-3.5" />
+          COMENTARIOS Y ACTIVIDAD
+        </p>
+        {comments.map((c) => (
+          <div key={c.id} className="grid gap-0.5 rounded-lg bg-muted/40 p-2.5">
+            <p className="text-xs font-bold text-foreground">
+              {c.author} <span className="font-normal text-muted-foreground">· {formatTime(c.created_at)}</span>
+            </p>
+            <p className="whitespace-pre-wrap text-sm text-foreground">
+              <Linkified text={c.body} />
+            </p>
+          </div>
+        ))}
+        <div className="flex gap-2">
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && void send()}
+            placeholder="Escribe un comentario o pega un enlace…"
+            className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+          />
+          <button
+            disabled={sending || !draft.trim()}
+            onClick={send}
+            className="rounded-lg border border-border px-3 text-sm font-bold text-foreground hover:bg-muted disabled:opacity-50"
+          >
+            Comentar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PublicTasksPage() {
   const data = Route.useLoaderData();
   const { token } = Route.useParams();
@@ -311,12 +387,7 @@ function PublicTasksPage() {
                 </div>
                 {t.status === "Pendiente" ? (
                   <>
-                    <input
-                      placeholder="Nota o enlace al trabajo (opcional)"
-                      value={notes[t.id] ?? ""}
-                      onChange={(e) => setNotes({ ...notes, [t.id]: e.target.value })}
-                      className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
-                    />
+                    <InlineThread token={token} taskId={t.id} details={t.details ?? null} />
                     <button
                       disabled={busy === t.id}
                       onClick={() => toggle(t.id, true)}
