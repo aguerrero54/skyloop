@@ -127,6 +127,13 @@
       "when": 1791502261808,
       "tag": "0017_task_client_service",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791552155848,
+      "tag": "0018_invoice_attachments_owner_scope",
+      "breakpoints": true
     }
   ]
 }
