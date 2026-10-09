@@ -59,6 +59,9 @@ function SettingsPage() {
   const { data, refresh } = useSkyloop();
   const [currency, setCurrency] = useState(data.settings?.currency ?? "DOP");
   const [rate, setRate] = useState(String(num(data.settings?.usd_rate) || 60));
+  const [publicUrl, setPublicUrl] = useState(
+    data.settings?.public_url ?? "https://clauds-doc-finder.lovable.app",
+  );
   const [saving, setSaving] = useState(false);
   const [logoBusy, setLogoBusy] = useState(false);
   const logo = data.settings?.logo_url ?? null;
@@ -108,7 +111,12 @@ function SettingsPage() {
     setSaving(true);
     const { error } = await supabase
       .from("app_settings")
-      .update({ currency, usd_rate: num(rate) || 60, updated_at: new Date().toISOString() })
+      .update({
+        currency,
+        usd_rate: num(rate) || 60,
+        public_url: publicUrl.trim().replace(/\/+$/, "") || null,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", 1);
     setSaving(false);
     if (error) {
@@ -147,6 +155,22 @@ function SettingsPage() {
               onChange={(event) => setRate(event.target.value)}
               className={inputClass}
             />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+              URL pública de la app
+            </label>
+            <input
+              type="url"
+              value={publicUrl}
+              onChange={(event) => setPublicUrl(event.target.value)}
+              placeholder="https://clauds-doc-finder.lovable.app"
+              className={inputClass}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Se usa para generar los enlaces de tareas de los diseñadores. Debe ser la dirección
+              publicada, no la de la vista previa.
+            </p>
           </div>
           <button
             type="button"
