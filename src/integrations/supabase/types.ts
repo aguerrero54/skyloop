@@ -95,6 +95,7 @@ export type Database = {
           id: number
           logo_url: string | null
           overhead_method: string
+          public_url: string | null
           updated_at: string
           usd_rate: number
         }
@@ -104,6 +105,7 @@ export type Database = {
           id?: number
           logo_url?: string | null
           overhead_method?: string
+          public_url?: string | null
           updated_at?: string
           usd_rate?: number
         }
@@ -113,6 +115,7 @@ export type Database = {
           id?: number
           logo_url?: string | null
           overhead_method?: string
+          public_url?: string | null
           updated_at?: string
           usd_rate?: number
         }
