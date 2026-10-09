@@ -102,7 +102,7 @@ function InlineThread({ token, taskId, details }: { token: string; taskId: strin
     <div className="grid gap-3">
       {details && (
         <div className="grid gap-1.5 rounded-lg bg-muted/40 p-3">
-          <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">DESCRIPCIÓN</p>
+          <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">DESCRIPCIÓN DE LA TAREA</p>
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
             <Linkified text={details} />
           </p>
