@@ -59,6 +59,9 @@ function SettingsPage() {
   const { data, refresh } = useSkyloop();
   const [currency, setCurrency] = useState(data.settings?.currency ?? "DOP");
   const [rate, setRate] = useState(String(num(data.settings?.usd_rate) || 60));
+  const [publicUrl, setPublicUrl] = useState(
+    data.settings?.public_url ?? "https://clauds-doc-finder.lovable.app",
+  );
   const [saving, setSaving] = useState(false);
   const [logoBusy, setLogoBusy] = useState(false);
   const logo = data.settings?.logo_url ?? null;

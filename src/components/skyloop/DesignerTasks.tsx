@@ -107,7 +107,8 @@ export function DesignerTasks() {
       link = res.data;
       await refresh();
     }
-    await navigator.clipboard.writeText(`${window.location.origin}/tareas/${link.token}`);
+    const base = (data.settings?.public_url || "https://clauds-doc-finder.lovable.app").replace(/\/+$/, "");
+    await navigator.clipboard.writeText(`${base}/tareas/${link.token}`);
     toast.success("Enlace copiado");
   }
 
