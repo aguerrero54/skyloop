@@ -60,7 +60,7 @@ function SettingsPage() {
   const [currency, setCurrency] = useState(data.settings?.currency ?? "DOP");
   const [rate, setRate] = useState(String(num(data.settings?.usd_rate) || 60));
   const [publicUrl, setPublicUrl] = useState(
-    data.settings?.public_url ?? "https://clauds-doc-finder.lovable.app",
+    data.settings?.public_url ?? "https://skyloop.lovable.app",
   );
   const [saving, setSaving] = useState(false);
   const [logoBusy, setLogoBusy] = useState(false);
@@ -164,7 +164,7 @@ function SettingsPage() {
               type="url"
               value={publicUrl}
               onChange={(event) => setPublicUrl(event.target.value)}
-              placeholder="https://clauds-doc-finder.lovable.app"
+              placeholder="https://skyloop.lovable.app"
               className={inputClass}
             />
             <p className="mt-1 text-xs text-muted-foreground">
