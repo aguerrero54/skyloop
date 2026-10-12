@@ -111,7 +111,7 @@ export function DesignerTasks() {
       link = res.data;
       await refresh();
     }
-    const base = (data.settings?.public_url || "https://clauds-doc-finder.lovable.app").replace(/\/+$/, "");
+    const base = (data.settings?.public_url || "https://skyloop.lovable.app").replace(/\/+$/, "");
     await navigator.clipboard.writeText(`${base}/tareas/${link.token}`);
     toast.success("Enlace copiado");
   }
