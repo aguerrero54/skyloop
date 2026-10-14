@@ -293,13 +293,13 @@ export function RecordModal() {
           },
           {
             name: "suggested_price",
-            label: "Precio sugerido",
+            label: "Precio de Venta",
             type: "number",
             defaultValue: editingService ? String(num(editingService.suggested_price)) : undefined,
           },
           {
             name: "estimated_cost",
-            label: "Costo estimado",
+            label: "Costo Real",
             type: "number",
             defaultValue: editingService ? String(num(editingService.estimated_cost)) : undefined,
           },
