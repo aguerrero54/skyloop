@@ -43,6 +43,8 @@ function ClientDetailPage() {
   const {
     data,
     month,
+    months,
+    setMonth,
     monthIncomes,
     monthExpenses,
     monthClientServices,
@@ -74,6 +76,21 @@ function ClientDetailPage() {
       </div>
     );
   }
+
+  const clientMonths = (() => {
+    const now = new Date();
+    const last = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const startStr = (client.start_date ?? "").slice(0, 7) || months[months.length - 1] || "";
+    const [sy, sm] = startStr.split("-").map(Number);
+    const list: string[] = [];
+    if (!sy || !sm) return months;
+    let d = new Date(sy, sm - 1, 1);
+    while (d <= last && list.length < 240) {
+      list.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+      d = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    }
+    return list.reverse();
+  })();
 
   const est = estimatedMetrics(client, monthClientServices, usdRate);
 
@@ -161,12 +178,29 @@ function ClientDetailPage() {
 
   return (
     <div className="grid gap-4">
-      <Link
-        to="/clientes"
-        className="w-fit rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
-      >
-        ← Volver a clientes
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Link
+          to="/clientes"
+          className="w-fit rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
+        >
+          ← Volver a clientes
+        </Link>
+        <select
+          value={month}
+          onChange={(event) => setMonth(event.target.value)}
+          className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+          aria-label="Mes"
+        >
+          {!clientMonths.includes(month) && (
+            <option value={month}>{monthLabel(month)}</option>
+          )}
+          {clientMonths.map((item) => (
+            <option key={item} value={item}>
+              {monthLabel(item)}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="grid gap-5 rounded-2xl border border-border bg-card p-6 shadow-panel xl:grid-cols-[1fr_auto]">
         <div>

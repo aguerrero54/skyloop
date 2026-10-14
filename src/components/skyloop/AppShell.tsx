@@ -151,18 +151,20 @@ function TopBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <select
-          value={month}
-          onChange={(event) => setMonth(event.target.value)}
-          className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-          aria-label="Mes"
-        >
-          {months.map((item) => (
-            <option key={item} value={item}>
-              {monthLabel(item)}
-            </option>
-          ))}
-        </select>
+        {!/^\/clientes\/[^/]+/.test(pathname) && (
+          <select
+            value={month}
+            onChange={(event) => setMonth(event.target.value)}
+            className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            aria-label="Mes"
+          >
+            {months.map((item) => (
+              <option key={item} value={item}>
+                {monthLabel(item)}
+              </option>
+            ))}
+          </select>
+        )}
 
         {isDashboard && (
           <button
