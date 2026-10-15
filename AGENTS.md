@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep task-history month range logic in `src/lib/task-months.ts`, consumed by the Entregables page, so task dates do not change financial month options elsewhere.
