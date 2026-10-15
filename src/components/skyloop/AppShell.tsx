@@ -151,7 +151,7 @@ function TopBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {!/^\/clientes\/[^/]+/.test(pathname) && (
+        {!/^\/clientes\/[^/]+/.test(pathname) && pathname !== "/entregables" && (
           <select
             value={month}
             onChange={(event) => setMonth(event.target.value)}

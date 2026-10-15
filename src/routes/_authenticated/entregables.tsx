@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 
@@ -8,6 +8,8 @@ import { useSkyloop } from "@/lib/skyloop-context";
 import { useDeliverables } from "@/lib/agency";
 import { Panel, ProgressBar } from "@/components/skyloop/ui";
 import { DesignerTasks } from "@/components/skyloop/DesignerTasks";
+import { Button } from "@/components/ui/button";
+import { taskMonths } from "@/lib/task-months";
 
 export const Route = createFileRoute("/_authenticated/entregables")({
   head: () => ({
@@ -32,18 +34,39 @@ export const Route = createFileRoute("/_authenticated/entregables")({
 
 function DeliverablesPage() {
   const [tab, setTab] = useState<"entregables" | "tareas">("entregables");
+  const { data, month, months, setMonth } = useSkyloop();
+  const historyMonths = useMemo(() => taskMonths(data.designerTasks), [data.designerTasks]);
+  const availableMonths = tab === "tareas" ? historyMonths : months;
+  const selectedMonth = availableMonths.includes(month) ? month : (availableMonths[0] ?? "");
+
+  useEffect(() => {
+    if (selectedMonth && selectedMonth !== month) setMonth(selectedMonth);
+  }, [month, selectedMonth, setMonth]);
+
   return (
     <div className="grid gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex w-fit gap-1 rounded-xl border border-border bg-card p-1">
         {(["entregables", "tareas"] as const).map((t) => (
-          <button
+          <Button
             key={t}
+            variant="ghost"
+            aria-pressed={tab === t}
             onClick={() => setTab(t)}
             className={`rounded-lg px-4 py-1.5 text-sm font-bold ${tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
             {t === "entregables" ? "Entregables" : "Tareas"}
-          </button>
+          </Button>
         ))}
+      </div>
+      <select
+        value={selectedMonth}
+        onChange={(event) => setMonth(event.target.value)}
+        aria-label="Mes"
+        className="ml-auto rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+      >
+        {availableMonths.map((item) => <option key={item} value={item}>{monthLabel(item)}</option>)}
+      </select>
       </div>
       {tab === "entregables" ? <DeliverablesView /> : <DesignerTasks />}
     </div>
