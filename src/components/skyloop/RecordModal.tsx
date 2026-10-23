@@ -173,6 +173,7 @@ export function RecordModal() {
           {
             name: "sub_brands",
             label: "Marcas asociadas (separadas por coma)",
+            type: "text",
             defaultValue: (editingClient?.sub_brands ?? []).join(", ") || undefined,
           },
           {

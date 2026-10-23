@@ -234,7 +234,7 @@ export function DesignerTasks() {
                   value={brandSel ? `${clientSel}::${brandSel}` : clientSel}
                   onChange={(e) => {
                     const [cid, brand = ""] = e.target.value.split("::");
-                    setClientSel(cid);
+                    setClientSel(cid ?? "");
                     setBrandSel(brand);
                     setServiceSel("");
                   }}
