@@ -214,6 +214,7 @@ export type Database = {
           cost: number
           created_at: string
           end_month: string | null
+          extra_provider_ids: string[]
           id: string
           monthly_quantity: number
           provider_id: string | null
@@ -228,6 +229,7 @@ export type Database = {
           cost?: number
           created_at?: string
           end_month?: string | null
+          extra_provider_ids?: string[]
           id?: string
           monthly_quantity?: number
           provider_id?: string | null
@@ -242,6 +244,7 @@ export type Database = {
           cost?: number
           created_at?: string
           end_month?: string | null
+          extra_provider_ids?: string[]
           id?: string
           monthly_quantity?: number
           provider_id?: string | null
