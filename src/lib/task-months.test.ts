@@ -18,5 +18,5 @@ describe("task month history", () => {
 });
 test("extends past next month to the latest task month", () => {
   const months = taskMonths([{ month: "2026-12", created_at: "2026-10-05T00:00:00Z" }], new Date(2026, 9, 23));
-  assert.deepEqual(months, ["2026-12", "2026-11", "2026-10"]);
+  deepStrictEqual(months, ["2026-12", "2026-11", "2026-10"]);
 });
