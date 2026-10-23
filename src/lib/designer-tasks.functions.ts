@@ -24,7 +24,7 @@ export const getPublicTasks = createServerFn({ method: "GET" })
       admin.from("providers").select("name").eq("id", providerId).eq("user_id", userId).maybeSingle(),
       admin
         .from("designer_tasks")
-        .select("id, description, details, amount, currency, due_date, month, status, delivered_at, delivery_note, client_id")
+        .select("id, description, details, amount, currency, due_date, month, status, delivered_at, delivery_note, client_id, brand_label")
         .eq("provider_id", providerId)
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
@@ -36,9 +36,9 @@ export const getPublicTasks = createServerFn({ method: "GET" })
     const names = new Map((clients ?? []).map((c) => [c.id, c.name]));
     return {
       providerName: provider?.name ?? "Diseñador",
-      tasks: (tasks ?? []).map(({ client_id, ...t }) => ({
+      tasks: (tasks ?? []).map(({ client_id, brand_label, ...t }) => ({
         ...t,
-        clientName: client_id ? (names.get(client_id) ?? null) : null,
+        clientName: brand_label || (client_id ? (names.get(client_id) ?? null) : null),
       })),
     };
   });

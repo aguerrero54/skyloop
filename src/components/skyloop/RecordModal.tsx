@@ -171,6 +171,12 @@ export function RecordModal() {
             defaultValue: editingClient?.end_date ?? undefined,
           },
           {
+            name: "sub_brands",
+            label: "Marcas asociadas (separadas por coma)",
+            type: "text",
+            defaultValue: (editingClient?.sub_brands ?? []).join(", ") || undefined,
+          },
+          {
             name: "company",
             label: "Empresa",
             type: "text",
@@ -446,6 +452,7 @@ export function RecordModal() {
             notes: orNull("notes"),
             start_date: orNull("start_date"),
             end_date: orNull("end_date"),
+            sub_brands: subBrands(get("sub_brands")),
           })
           .eq("id", editingClient.id));
       } else if (kind === "client") {
@@ -464,6 +471,7 @@ export function RecordModal() {
           notes: orNull("notes"),
           start_date: orNull("start_date") ?? todayISO(),
           end_date: orNull("end_date"),
+          sub_brands: subBrands(get("sub_brands")),
         }));
       } else if (kind === "provider" && editingProvider) {
         ({ error } = await supabase
@@ -721,4 +729,8 @@ export function RecordModal() {
       </div>
     </div>
   );
+}
+
+function subBrands(value: string): string[] {
+  return (value ?? "").split(",").map((b) => b.trim()).filter(Boolean);
 }

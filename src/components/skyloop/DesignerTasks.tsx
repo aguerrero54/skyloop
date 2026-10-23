@@ -20,6 +20,7 @@ export function DesignerTasks() {
   const [providerSel, setProviderSel] = useState("");
   const [clientSel, setClientSel] = useState("");
   const [serviceSel, setServiceSel] = useState("");
+  const [brandSel, setBrandSel] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
   const tasks = data.designerTasks.filter((t) => t.month === month);
@@ -34,6 +35,7 @@ export function DesignerTasks() {
     setEditing(null);
     setProviderSel("");
     setClientSel("");
+    setBrandSel("");
     setServiceSel("");
     setOpen(true);
   }
@@ -42,6 +44,7 @@ export function DesignerTasks() {
     setEditing(t);
     setProviderSel(t.provider_id);
     setClientSel(t.client_id ?? "");
+    setBrandSel(t.brand_label ?? "");
     setServiceSel(t.client_service_id ?? "");
     setOpen(true);
   }
@@ -63,6 +66,7 @@ export function DesignerTasks() {
       details: String(f.get("details") || "").trim() || null,
       client_id: clientSel || null,
       client_service_id: serviceSel || null,
+      brand_label: brandSel || null,
       amount: num(f.get("amount")),
       currency: String(f.get("currency")),
       due_date,
@@ -226,11 +230,23 @@ export function DesignerTasks() {
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Marca
-                <select value={clientSel} onChange={(e) => { setClientSel(e.target.value); setServiceSel(""); }} className={inputClass}>
+                <select
+                  value={brandSel ? `${clientSel}::${brandSel}` : clientSel}
+                  onChange={(e) => {
+                    const [cid, brand = ""] = e.target.value.split("::");
+                    setClientSel(cid ?? "");
+                    setBrandSel(brand);
+                    setServiceSel("");
+                  }}
+                  className={inputClass}
+                >
                   <option value="">Sin marca / cliente</option>
-                  {data.clients.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
+                  {data.clients.flatMap((c) => [
+                    <option key={c.id} value={c.id}>{c.name}</option>,
+                    ...(c.sub_brands ?? []).map((b) => (
+                      <option key={`${c.id}::${b}`} value={`${c.id}::${b}`}>{b} (de {c.name})</option>
+                    )),
+                  ])}
                 </select>
               </label>
             </div>
@@ -246,7 +262,7 @@ export function DesignerTasks() {
             </label>
             {serviceSel && (
               <div className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
-                Al entregarla se marcará 1 casilla en Entregables · {clientName(clientSel)} · {serviceName(serviceOptions.find((a) => a.id === serviceSel)?.service_id ?? null)}
+                Al entregarla se marcará 1 casilla en Entregables · {clientName(clientSel)}{brandSel && ` (el diseñador verá: ${brandSel})`} · {serviceName(serviceOptions.find((a) => a.id === serviceSel)?.service_id ?? null)}
                 {selectedRow && ` · ${selectedRow.done} de ${selectedRow.qty}`}
               </div>
             )}
@@ -326,7 +342,7 @@ export function DesignerTasks() {
                         {t.description}
                         {t.delivery_note && <span className="block text-xs text-muted-foreground">{t.delivery_note}</span>}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{clientName(t.client_id)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{t.brand_label ? `${t.brand_label} · ${clientName(t.client_id)}` : clientName(t.client_id)}</td>
                       <td className="px-4 py-3 text-muted-foreground">{t.due_date ?? "—"}</td>
                       <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
                       <td className="px-4 py-3 text-right">{money(t.amount, t.currency)}</td>
