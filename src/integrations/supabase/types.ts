@@ -294,6 +294,7 @@ export type Database = {
           phone: string | null
           start_date: string | null
           status: string
+          sub_brands: string[]
           tax_id: string | null
           user_id: string
         }
@@ -313,6 +314,7 @@ export type Database = {
           phone?: string | null
           start_date?: string | null
           status?: string
+          sub_brands?: string[]
           tax_id?: string | null
           user_id?: string
         }
@@ -332,6 +334,7 @@ export type Database = {
           phone?: string | null
           start_date?: string | null
           status?: string
+          sub_brands?: string[]
           tax_id?: string | null
           user_id?: string
         }
@@ -375,6 +378,7 @@ export type Database = {
       designer_tasks: {
         Row: {
           amount: number
+          brand_label: string | null
           client_id: string | null
           client_service_id: string | null
           created_at: string
@@ -393,6 +397,7 @@ export type Database = {
         }
         Insert: {
           amount?: number
+          brand_label?: string | null
           client_id?: string | null
           client_service_id?: string | null
           created_at?: string
@@ -411,6 +416,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          brand_label?: string | null
           client_id?: string | null
           client_service_id?: string | null
           created_at?: string
