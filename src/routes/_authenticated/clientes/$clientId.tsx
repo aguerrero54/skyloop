@@ -11,6 +11,7 @@ import {
   money,
   num,
   type Movement,
+  assignmentProviders,
 } from "@/lib/finance";
 import { invoiceToClientMovement, invoiceTouchesClient } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";

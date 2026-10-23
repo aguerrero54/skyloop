@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { money, monthLabel, num, toDop, todayISO } from "@/lib/finance";
+import { assignmentProviders, money, monthLabel, num, toDop, todayISO } from "@/lib/finance";
 import { saveInvoice } from "@/lib/invoice-actions";
 import { DEFAULT_NOTES } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";

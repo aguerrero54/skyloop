@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 
-import { money, monthOf, num, toDop } from "@/lib/finance";
+import { assignmentProviders, money, monthOf, num, providerShare, toDop } from "@/lib/finance";
 import { effectiveStatus, invoiceBalance, invoiceKind, obligationBalance } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { supabase } from "@/integrations/supabase/client";

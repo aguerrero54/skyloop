@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { clientActiveInMonth, monthLabel } from "@/lib/finance";
+import { assignmentProviders, clientActiveInMonth, monthLabel } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { useDeliverables } from "@/lib/agency";
 import { Panel, ProgressBar } from "@/components/skyloop/ui";
