@@ -1,3 +1,4 @@
+import { taskMonths } from "@/lib/task-months";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -223,7 +224,9 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
   }, [data.history, data.incomes, data.expenses]);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const month = selectedMonth && months.includes(selectedMonth) ? selectedMonth : (months[0] ?? "");
+  // Task-history months (src/lib/task-months.ts) are also valid selections, without adding them to financial month options.
+  const validTaskMonths = useMemo(() => taskMonths(data.designerTasks ?? []), [data.designerTasks]);
+  const month = selectedMonth && (months.includes(selectedMonth) || validTaskMonths.includes(selectedMonth)) ? selectedMonth : (months[0] ?? "");
 
   const [formState, setFormState] = useState<FormState | null>(null);
 
