@@ -389,7 +389,7 @@ function ClientDetailPage() {
                     {num(row.monthly_quantity) || "—"}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {providerName(row.provider_id)}
+                    {assignmentProviders(row).map(providerName).join(", ") || "—"}
                   </td>
                   <td className="px-4 py-3 text-right">{money(row.cost)}</td>
                 </tr>

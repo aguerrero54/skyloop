@@ -138,8 +138,8 @@ function TeamPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {data.providers.map((provider) => {
           const total = monthClientServices
-            .filter((row) => row.provider_id === provider.id && row.active)
-            .reduce((sum, row) => sum + num(row.cost), 0);
+            .filter((row) => assignmentProviders(row).includes(provider.id) && row.active)
+            .reduce((sum, row) => sum + providerShare(row, provider.id), 0);
           const vendorInvoices = data.invoices.filter(
             (invoice) =>
               invoiceKind(invoice) === "vendor" &&
@@ -170,12 +170,12 @@ function TeamPage() {
             pending += monthClientServices
               .filter(
                 (row) =>
-                  row.provider_id === provider.id &&
+                  assignmentProviders(row).includes(provider.id) &&
                   row.active &&
                   row.client_id !== null &&
                   clientsPaidInMonth.has(row.client_id),
               )
-              .reduce((sum, row) => sum + num(row.cost), 0);
+              .reduce((sum, row) => sum + providerShare(row, provider.id), 0);
           }
           const isSelected = selecting && selectedIds.includes(provider.id);
           return (
@@ -253,7 +253,7 @@ function TeamPage() {
             obligations.map((row) => (
               <tr key={row.id} className="border-t border-border">
                 <td className="px-4 py-3 font-semibold text-foreground">
-                  {providerName(row.provider_id)}
+                  {assignmentProviders(row).map(providerName).join(", ") || "—"}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{row.description}</td>
                 <td className="px-4 py-3 text-right text-foreground">

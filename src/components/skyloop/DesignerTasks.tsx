@@ -25,7 +25,7 @@ export function DesignerTasks() {
   const tasks = data.designerTasks.filter((t) => t.month === month);
   const providers = data.providers.filter((p) => tasks.some((t) => t.provider_id === p.id));
   const serviceOptions = monthClientServices.filter(
-    (a) => a.active && providerSel && clientSel && a.provider_id === providerSel && a.client_id === clientSel,
+    (a) => a.active && providerSel && clientSel && assignmentProviders(a).includes(providerSel) && a.client_id === clientSel,
   );
   const serviceName = (id: string | null) => data.services.find((s) => s.id === id)?.name ?? "Servicio";
   const selectedRow = deliverableRows.find((r) => r.assignment.id === serviceSel);

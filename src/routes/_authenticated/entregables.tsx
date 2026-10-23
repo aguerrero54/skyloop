@@ -145,7 +145,7 @@ function DeliverablesView() {
                     {clientRows.map(({ assignment, qty, done: d }) => (
                       <tr key={assignment.id} className="border-t border-border">
                         <td className="px-4 py-3 text-foreground">{serviceName(assignment.service_id)}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{providerName(assignment.provider_id)}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{assignmentProviders(assignment).map(providerName).join(", ") || "—"}</td>
                         <td className="px-4 py-3 text-right">{qty}</td>
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-1.5">

@@ -36,6 +36,16 @@ export function effectiveAssignments(
     };
   });
 }
+/** Todos los proveedores de una asignación (principal + adicionales). */
+export function assignmentProviders(row: { provider_id: string | null; extra_provider_ids?: string[] | null }): string[] {
+  return [...new Set([row.provider_id, ...(row.extra_provider_ids ?? [])].filter((id): id is string => Boolean(id)))];
+}
+
+/** Costo que corresponde a un proveedor: el costo se reparte en partes iguales. */
+export function providerShare(row: { cost: number | string; provider_id: string | null; extra_provider_ids?: string[] | null }, providerId: string): number {
+  const ids = assignmentProviders(row);
+  return ids.includes(providerId) ? num(row.cost) / ids.length : 0;
+}
 export type Income = Tables<"incomes">;
 export type Expense = Tables<"expenses">;
 export type MonthlyHistory = Tables<"monthly_history">;
