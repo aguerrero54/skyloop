@@ -1,0 +1,1 @@
+UPDATE public.clients SET sub_brands = ARRAY['Sky Europa'] WHERE id = 'b97c64b5-8126-49c2-9b6d-97306a37b626' AND sub_brands = '{}';
