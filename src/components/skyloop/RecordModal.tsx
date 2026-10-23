@@ -10,7 +10,8 @@ type Option = { value: string; label: string };
 type Field = {
   name: string;
   label: string;
-  type: "text" | "number" | "date" | "email" | "select" | "textarea";
+  type: "text" | "number" | "date" | "email" | "select" | "textarea" | "checks";
+  defaultValues?: string[];
   options?: Option[];
   required?: boolean;
   defaultValue?: string | undefined;
@@ -338,6 +339,14 @@ export function RecordModal() {
             options: [{ value: "", label: "Sin proveedor" }, ...providerOptions],
           },
           {
+            name: "extra_provider_ids",
+            label: "Otros diseñadores en este servicio (comparten la cantidad y el costo se divide en partes iguales)",
+            type: "checks",
+            full: true,
+            defaultValues: editingAssignment?.extra_provider_ids ?? [],
+            options: providerOptions,
+          },
+          {
             name: "monthly_quantity",
             label: "Cantidad ofrecida por mes",
             type: "number",
@@ -381,6 +390,9 @@ export function RecordModal() {
     const form = new FormData(event.currentTarget);
     const get = (key: string) => String(form.get(key) ?? "").trim();
     const orNull = (key: string) => get(key) || null;
+    const extraProviders = [...new Set(form.getAll("extra_provider_ids").map(String))].filter(
+      (id) => id && id !== get("provider_id"),
+    );
     setSaving(true);
 
     try {
@@ -513,6 +525,7 @@ export function RecordModal() {
               provider_id: orNull("provider_id"),
               cost: num(get("cost")),
               monthly_quantity: num(get("monthly_quantity")),
+              extra_provider_ids: extraProviders,
             })
             .eq("id", editingAssignment.id));
           if (!error) {
@@ -525,6 +538,10 @@ export function RecordModal() {
           }
         } else {
           // Ajuste solo para el mes seleccionado: no toca el valor habitual ni otros meses.
+          await supabase
+            .from("client_services")
+            .update({ extra_provider_ids: extraProviders })
+            .eq("id", editingAssignment.id);
           ({ error } = await supabase.from("client_service_months").upsert(
             {
               client_service_id: editingAssignment.id,
@@ -545,6 +562,7 @@ export function RecordModal() {
           monthly_quantity: num(get("monthly_quantity")),
           active: true,
           start_month: month,
+          extra_provider_ids: extraProviders,
         }));
       }
 
@@ -636,6 +654,21 @@ export function RecordModal() {
                     ))}
                   </select>
                 </>
+              ) : field.type === "checks" ? (
+                <div className="flex flex-wrap gap-2">
+                  {(field.options ?? []).map((option) => (
+                    <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs text-foreground">
+                      <input
+                        type="checkbox"
+                        name={field.name}
+                        value={option.value}
+                        defaultChecked={field.defaultValues?.includes(option.value)}
+                        className="size-4 accent-primary"
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
               ) : field.type === "textarea" ? (
                 <textarea name={field.name} rows={3} className={inputClass} />
               ) : (

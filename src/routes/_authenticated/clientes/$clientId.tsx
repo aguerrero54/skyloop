@@ -11,6 +11,7 @@ import {
   money,
   num,
   type Movement,
+  assignmentProviders,
 } from "@/lib/finance";
 import { invoiceToClientMovement, invoiceTouchesClient } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
@@ -389,7 +390,7 @@ function ClientDetailPage() {
                     {num(row.monthly_quantity) || "—"}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {providerName(row.provider_id)}
+                    {assignmentProviders(row).map(providerName).join(", ") || "—"}
                   </td>
                   <td className="px-4 py-3 text-right">{money(row.cost)}</td>
                 </tr>

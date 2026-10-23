@@ -1,0 +1,1 @@
+ALTER TABLE public.client_services ADD COLUMN IF NOT EXISTS extra_provider_ids uuid[] NOT NULL DEFAULT '{}';

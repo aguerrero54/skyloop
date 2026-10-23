@@ -134,6 +134,13 @@
       "when": 1791552155848,
       "tag": "0018_invoice_attachments_owner_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792727699682,
+      "tag": "0019_client_services_extra_providers",
+      "breakpoints": true
     }
   ]
 }
