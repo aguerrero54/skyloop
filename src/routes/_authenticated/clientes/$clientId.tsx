@@ -340,7 +340,7 @@ function ClientDetailPage() {
                 <th className="px-4 py-3 font-semibold">Servicio</th>
                 <th className="px-4 py-3 text-right font-semibold">Cantidad / mes</th>
                 <th className="px-4 py-3 font-semibold">Proveedor</th>
-                <th className="px-4 py-3 text-right font-semibold">Costo base</th>
+                <th className="px-4 py-3 text-right font-semibold">COSTO TOTAL POR CANTIDAD</th>
               </tr>
             }
           >
