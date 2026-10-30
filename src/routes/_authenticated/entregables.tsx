@@ -102,6 +102,15 @@ function DeliverablesView() {
           <p className="text-xl font-bold text-foreground">
             {done} / {total} entregados ({percent.toFixed(0)}%)
           </p>
+          {(() => {
+            const b = rows.reduce((t, r) => t + r.budget, 0);
+            const s = rows.reduce((t, r) => t + r.spent, 0);
+            return b > 0 ? (
+              <p className={`text-xs font-semibold ${s > b ? "text-destructive" : "text-success"}`}>
+                Gasto en tareas: {money(s)} de {money(b)} presupuestado ({s > b ? `excedido +${money(s - b)}` : "en presupuesto"})
+              </p>
+            ) : null;
+          })()}
           <div className="mt-2">
             <ProgressBar percent={percent} />
           </div>
