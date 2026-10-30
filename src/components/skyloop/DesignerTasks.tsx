@@ -6,7 +6,7 @@ import { assignmentProviders, money, monthLabel, num, toDop, todayISO } from "@/
 import { saveInvoice } from "@/lib/invoice-actions";
 import { DEFAULT_NOTES } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
-import { useDeliverables } from "@/lib/agency";
+import { serviceSpend, useDeliverables } from "@/lib/agency";
 import { Panel, StatusBadge } from "@/components/skyloop/ui";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground";
@@ -30,6 +30,16 @@ export function DesignerTasks() {
   );
   const serviceName = (id: string | null) => data.services.find((s) => s.id === id)?.name ?? "Servicio";
   const selectedRow = deliverableRows.find((r) => r.assignment.id === serviceSel);
+  const [priceIn, setPriceIn] = useState("");
+  const [currencyIn, setCurrencyIn] = useState("DOP");
+  const [dueIn, setDueIn] = useState("");
+  const budgetAssignment = monthClientServices.find((a) => a.id === serviceSel);
+  const budgetMonth = dueIn ? dueIn.slice(0, 7) : (editing?.month ?? month);
+  const budget = budgetAssignment ? num(budgetAssignment.cost) : 0;
+  const budgetSpent = serviceSel
+    ? serviceSpend(data.designerTasks, serviceSel, budgetMonth, usdRate, editing?.id) + toDop(num(priceIn), currencyIn, usdRate)
+    : 0;
+  const budgetQty = budgetAssignment ? Math.max(1, Math.round(num(budgetAssignment.monthly_quantity))) : 1;
 
   function openCreate() {
     setEditing(null);
