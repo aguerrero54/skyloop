@@ -155,6 +155,13 @@
       "when": 1792728595069,
       "tag": "0021_backfill_sky_europa_sub_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793325928712,
+      "tag": "0022_piece_breakdown",
+      "breakpoints": true
     }
   ]
 }
