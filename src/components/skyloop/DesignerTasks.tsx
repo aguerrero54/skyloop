@@ -47,6 +47,9 @@ export function DesignerTasks() {
     setClientSel("");
     setBrandSel("");
     setServiceSel("");
+    setPriceIn("");
+    setCurrencyIn("DOP");
+    setDueIn("");
     setOpen(true);
   }
 
@@ -56,6 +59,9 @@ export function DesignerTasks() {
     setClientSel(t.client_id ?? "");
     setBrandSel(t.brand_label ?? "");
     setServiceSel(t.client_service_id ?? "");
+    setPriceIn(String(t.amount));
+    setCurrencyIn(t.currency);
+    setDueIn(t.due_date ?? "");
     setOpen(true);
   }
 
