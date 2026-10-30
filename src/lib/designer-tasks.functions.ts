@@ -60,7 +60,7 @@ export const markTaskDelivered = createServerFn({ method: "POST" })
     const { admin, providerId, userId } = link;
     const { data: task } = await admin
       .from("designer_tasks")
-      .select("status, client_service_id, month")
+      .select("status, client_service_id, month, piece_type")
       .eq("id", data.taskId)
       .eq("provider_id", providerId)
       .eq("user_id", userId)
@@ -83,17 +83,19 @@ export const markTaskDelivered = createServerFn({ method: "POST" })
         .select("delivered_count")
         .eq("client_service_id", task.client_service_id)
         .eq("month", task.month)
+        .eq("piece_type", task.piece_type ?? "")
         .maybeSingle();
       const count = Math.max(0, (rec?.delivered_count ?? 0) + (data.delivered ? 1 : -1));
       await admin.from("client_deliverables").upsert(
         {
           client_service_id: task.client_service_id,
           month: task.month,
+          piece_type: task.piece_type ?? "",
           user_id: userId,
           delivered_count: count,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "client_service_id,month" },
+        { onConflict: "client_service_id,month,piece_type" },
       );
     }
     return { ok: true };

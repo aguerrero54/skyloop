@@ -32,6 +32,7 @@ export function effectiveAssignments(
       cost: override.cost,
       monthly_quantity: override.monthly_quantity,
       provider_id: override.provider_id,
+      breakdown: override.breakdown,
       monthAdjusted: true,
     };
   });

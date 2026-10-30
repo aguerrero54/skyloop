@@ -10,6 +10,7 @@ import { Panel, ProgressBar } from "@/components/skyloop/ui";
 import { DesignerTasks } from "@/components/skyloop/DesignerTasks";
 import { Button } from "@/components/ui/button";
 import { taskMonths } from "@/lib/task-months";
+import { pieceLabel } from "@/lib/pieces";
 
 export const Route = createFileRoute("/_authenticated/entregables")({
   head: () => ({
@@ -83,12 +84,12 @@ function DeliverablesView() {
     .map((c) => ({ client: c, rows: rows.filter((r) => r.assignment.client_id === c.id) }))
     .filter((g) => g.rows.length);
 
-  async function setCount(assignmentId: string, count: number) {
+  async function setCount(assignmentId: string, piece: string, count: number) {
     const { error } = await supabase
       .from("client_deliverables")
       .upsert(
-        { client_service_id: assignmentId, month, delivered_count: count, updated_at: new Date().toISOString() },
-        { onConflict: "client_service_id,month" },
+        { client_service_id: assignmentId, month, piece_type: piece, delivered_count: count, updated_at: new Date().toISOString() },
+        { onConflict: "client_service_id,month,piece_type" },
       );
     if (error) return void toast.error("No se pudo guardar", { description: error.message });
     await refresh();
@@ -152,9 +153,9 @@ function DeliverablesView() {
                     </tr>
                   </thead>
                   <tbody>
-                    {clientRows.map(({ assignment, qty, done: d, budget, spent }) => (
-                      <tr key={assignment.id} className="border-t border-border">
-                        <td className="px-4 py-3 text-foreground">{serviceName(assignment.service_id)}</td>
+                    {clientRows.map(({ assignment, piece, qty, done: d, budget, spent }) => (
+                      <tr key={`${assignment.id}-${piece}`} className="border-t border-border">
+                        <td className="px-4 py-3 text-foreground">{serviceName(assignment.service_id)}{piece && <span className="ml-1 font-semibold text-primary-soft">· {pieceLabel(piece)}</span>}</td>
                         <td className="px-4 py-3 text-muted-foreground">{assignmentProviders(assignment).map(providerName).join(", ") || "—"}</td>
                         <td className="px-4 py-3 text-right">{qty}</td>
                         <td className="px-4 py-3">
@@ -165,7 +166,7 @@ function DeliverablesView() {
                                 type="checkbox"
                                 checked={i < d}
                                 aria-label={`Entrega ${i + 1}`}
-                                onChange={() => setCount(assignment.id, i < d ? i : i + 1)}
+                                onChange={() => setCount(assignment.id, piece, i < d ? i : i + 1)}
                                 className="size-5 cursor-pointer accent-primary"
                               />
                             ))}

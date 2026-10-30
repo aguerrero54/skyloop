@@ -128,6 +128,7 @@ export type Database = {
           id: string
           month: string
           notes: string | null
+          piece_type: string
           updated_at: string
           user_id: string
         }
@@ -137,6 +138,7 @@ export type Database = {
           id?: string
           month: string
           notes?: string | null
+          piece_type?: string
           updated_at?: string
           user_id?: string
         }
@@ -146,6 +148,7 @@ export type Database = {
           id?: string
           month?: string
           notes?: string | null
+          piece_type?: string
           updated_at?: string
           user_id?: string
         }
@@ -161,6 +164,7 @@ export type Database = {
       }
       client_service_months: {
         Row: {
+          breakdown: Json | null
           client_service_id: string
           cost: number
           created_at: string
@@ -171,6 +175,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          breakdown?: Json | null
           client_service_id: string
           cost?: number
           created_at?: string
@@ -181,6 +186,7 @@ export type Database = {
           user_id?: string
         }
         Update: {
+          breakdown?: Json | null
           client_service_id?: string
           cost?: number
           created_at?: string
@@ -210,6 +216,7 @@ export type Database = {
       client_services: {
         Row: {
           active: boolean
+          breakdown: Json | null
           client_id: string | null
           cost: number
           created_at: string
@@ -225,6 +232,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          breakdown?: Json | null
           client_id?: string | null
           cost?: number
           created_at?: string
@@ -240,6 +248,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          breakdown?: Json | null
           client_id?: string | null
           cost?: number
           created_at?: string
@@ -391,6 +400,7 @@ export type Database = {
           id: string
           invoice_id: string | null
           month: string
+          piece_type: string | null
           provider_id: string
           status: string
           user_id: string
@@ -410,6 +420,7 @@ export type Database = {
           id?: string
           invoice_id?: string | null
           month?: string
+          piece_type?: string | null
           provider_id: string
           status?: string
           user_id?: string
@@ -429,6 +440,7 @@ export type Database = {
           id?: string
           invoice_id?: string | null
           month?: string
+          piece_type?: string | null
           provider_id?: string
           status?: string
           user_id?: string

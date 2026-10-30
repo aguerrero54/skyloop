@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { PIECES, breakdownTotals, isDesignService, parseBreakdown, type Breakdown, type PieceKey } from "@/lib/pieces";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -399,6 +400,8 @@ export function RecordModal() {
     const extraProviders = [...new Set(form.getAll("extra_provider_ids").map(String))].filter(
       (id) => id && id !== get("provider_id"),
     );
+    const breakdownRaw = get("breakdown");
+    const breakdown = breakdownRaw ? (JSON.parse(breakdownRaw) as Breakdown) : null;
     setSaving(true);
 
     try {
@@ -534,6 +537,7 @@ export function RecordModal() {
               cost: num(get("cost")),
               monthly_quantity: num(get("monthly_quantity")),
               extra_provider_ids: extraProviders,
+              breakdown,
             })
             .eq("id", editingAssignment.id));
           if (!error) {
@@ -557,6 +561,7 @@ export function RecordModal() {
               cost: num(get("cost")),
               monthly_quantity: num(get("monthly_quantity")),
               provider_id: orNull("provider_id"),
+              breakdown,
             },
             { onConflict: "client_service_id,month" },
           ));
@@ -571,6 +576,7 @@ export function RecordModal() {
           active: true,
           start_month: month,
           extra_provider_ids: extraProviders,
+          breakdown,
         }));
       }
 
@@ -692,6 +698,14 @@ export function RecordModal() {
             </div>
           ))}
 
+          {kind === "assignment" && (
+            <PieceBreakdownFields
+              services={data.services}
+              initialServiceId={editingAssignment?.service_id ?? ""}
+              initial={parseBreakdown(editingAssignment?.breakdown)}
+            />
+          )}
+
           {editingAssignment && (
             <div className="rounded-xl border border-border bg-surface-raised px-4 py-3 sm:col-span-2">
               <p className="text-xs text-muted-foreground">
@@ -733,4 +747,106 @@ export function RecordModal() {
 
 function subBrands(value: string): string[] {
   return (value ?? "").split(",").map((b) => b.trim()).filter(Boolean);
+}
+
+type PieceState = Record<PieceKey, { on: boolean; qty: string; price: string }>;
+
+/** Desglose de Diseño gráfico: posts + stories + carruseles calculan cantidad y costo asignado. */
+function PieceBreakdownFields({
+  services,
+  initialServiceId,
+  initial,
+}: {
+  services: { id: string; name: string }[];
+  initialServiceId: string;
+  initial: Breakdown | null;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [serviceId, setServiceId] = useState(initialServiceId);
+  const [pieces, setPieces] = useState<PieceState>(() => {
+    const out = {} as PieceState;
+    for (const p of PIECES) {
+      const v = initial?.[p.key];
+      out[p.key] = { on: p.key === "posts" || Boolean(v), qty: v ? String(v.qty) : "", price: v ? String(v.price) : "" };
+    }
+    return out;
+  });
+  const active = isDesignService(services.find((s) => s.id === serviceId)?.name);
+  const breakdown: Breakdown = {};
+  for (const p of PIECES) {
+    const v = pieces[p.key];
+    if (v.on) breakdown[p.key] = { qty: Math.max(0, Math.round(Number(v.qty) || 0)), price: Number(v.price) || 0 };
+  }
+  const totals = breakdownTotals(breakdown);
+
+  useEffect(() => {
+    const form = ref.current?.closest("form");
+    if (!form) return;
+    const onChange = (e: Event) => {
+      const t = e.target as HTMLSelectElement;
+      if (t.name === "service_id") setServiceId(t.value);
+    };
+    form.addEventListener("change", onChange);
+    return () => form.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
+    const form = ref.current?.closest("form");
+    if (!form) return;
+    const qty = form.elements.namedItem("monthly_quantity") as HTMLInputElement | null;
+    const cost = form.elements.namedItem("cost") as HTMLInputElement | null;
+    for (const el of [qty, cost]) if (el) el.readOnly = active;
+    if (active) {
+      if (qty) qty.value = String(totals.qty);
+      if (cost) cost.value = String(totals.cost);
+    }
+  }, [active, totals.qty, totals.cost]);
+
+  const set = (key: PieceKey, patch: Partial<PieceState[PieceKey]>) =>
+    setPieces((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
+  const box = "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary";
+
+  return (
+    <div ref={ref} className={active ? "sm:col-span-2" : "hidden"}>
+      {active && (
+        <div className="grid gap-3 rounded-xl border border-primary/40 bg-primary/5 p-4">
+          <input type="hidden" name="breakdown" value={JSON.stringify(breakdown)} />
+          <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">DESGLOSE DE PIEZAS Y PRECIOS</p>
+          {PIECES.map((p) => {
+            const v = pieces[p.key];
+            const subtotal = (Number(v.qty) || 0) * (Number(v.price) || 0);
+            return (
+              <div key={p.key} className="grid gap-2">
+                {p.key === "posts" ? (
+                  <p className="text-xs font-semibold text-foreground">Posts</p>
+                ) : (
+                  <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-foreground">
+                    <input type="checkbox" checked={v.on} onChange={(e) => set(p.key, { on: e.target.checked })} className="size-4 accent-primary" />
+                    Incluir {p.label}
+                  </label>
+                )}
+                {v.on && (
+                  <div className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+                    <label className="grid gap-1 text-xs text-muted-foreground">
+                      Cantidad de {p.label.toLowerCase()}
+                      <input type="number" min="0" step="1" value={v.qty} onChange={(e) => set(p.key, { qty: e.target.value })} className={box} />
+                    </label>
+                    <label className="grid gap-1 text-xs text-muted-foreground">
+                      Precio c/u
+                      <input type="number" min="0" step="any" value={v.price} onChange={(e) => set(p.key, { price: e.target.value })} className={box} />
+                    </label>
+                    <p className="pb-2 text-xs font-semibold text-foreground">= RD${subtotal.toLocaleString("es-DO")}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          <div className="border-t border-border pt-2 text-xs text-foreground">
+            <p>Cantidad total: <b>{totals.qty}</b> piezas</p>
+            <p>Costo asignado total: <b>RD${totals.cost.toLocaleString("es-DO")}</b></p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
