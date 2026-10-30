@@ -285,20 +285,38 @@ export function DesignerTasks() {
             <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr]">
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Precio
-                <input name="amount" type="number" step="any" min="0" placeholder="0" defaultValue={editing ? String(editing.amount) : ""} className={inputClass} />
+                <input name="amount" type="number" step="any" min="0" placeholder="0" value={priceIn} onChange={(e) => setPriceIn(e.target.value)} className={inputClass} />
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Moneda
-                <select name="currency" defaultValue={editing?.currency ?? "DOP"} className={inputClass}>
+                <select name="currency" value={currencyIn} onChange={(e) => setCurrencyIn(e.target.value)} className={inputClass}>
                   <option value="DOP">DOP</option>
                   <option value="USD">USD</option>
                 </select>
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Fecha límite
-                <input name="due_date" type="date" defaultValue={editing?.due_date ?? ""} className={inputClass} />
+                <input name="due_date" type="date" value={dueIn} onChange={(e) => setDueIn(e.target.value)} className={inputClass} />
               </label>
             </div>
+            {serviceSel && budget > 0 && (
+              <div
+                className={`grid gap-1 rounded-lg border px-3 py-2 text-xs ${
+                  budgetSpent > budget ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-success/40 bg-success/10 text-success"
+                }`}
+              >
+                <p className="font-bold">
+                  {budgetSpent > budget ? "⚠️ Alerta: supera el presupuesto acordado" : "Control de presupuesto"} — {monthLabel(budgetMonth)}
+                </p>
+                <p>Presupuesto acordado: {money(budget)} ({budgetQty} · prom. {money(budget / budgetQty)} c/u)</p>
+                <p>Acumulado con esta tarea: {money(budgetSpent)} de {money(budget)} ({((budgetSpent / budget) * 100).toFixed(0)}%)</p>
+                <p className="font-semibold">
+                  {budgetSpent > budget
+                    ? `Te estás pasando por ${money(budgetSpent - budget)}`
+                    : `Te quedan ${money(budget - budgetSpent)} disponibles`}
+                </p>
+              </div>
+            )}
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-border px-4 py-2 text-sm font-bold text-foreground hover:bg-secondary">
                 Cancelar
