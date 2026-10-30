@@ -8,6 +8,7 @@ import { DEFAULT_NOTES } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { serviceSpend, useDeliverables } from "@/lib/agency";
 import { Panel, StatusBadge } from "@/components/skyloop/ui";
+import { PIECES, parseBreakdown, pieceLabel } from "@/lib/pieces";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground";
 
@@ -21,6 +22,7 @@ export function DesignerTasks() {
   const [clientSel, setClientSel] = useState("");
   const [serviceSel, setServiceSel] = useState("");
   const [brandSel, setBrandSel] = useState("");
+  const [pieceSel, setPieceSel] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
   const tasks = data.designerTasks.filter((t) => t.month === month);
@@ -29,17 +31,21 @@ export function DesignerTasks() {
     (a) => a.active && providerSel && clientSel && assignmentProviders(a).includes(providerSel) && a.client_id === clientSel,
   );
   const serviceName = (id: string | null) => data.services.find((s) => s.id === id)?.name ?? "Servicio";
-  const selectedRow = deliverableRows.find((r) => r.assignment.id === serviceSel);
+  const selectedBreakdown = parseBreakdown(monthClientServices.find((a) => a.id === serviceSel)?.breakdown);
+  const pieceOptions = selectedBreakdown ? PIECES.filter((p) => (selectedBreakdown[p.key]?.qty ?? 0) > 0) : [];
+  const piece = selectedBreakdown ? pieceSel : "";
+  const selectedRow = deliverableRows.find((r) => r.assignment.id === serviceSel && r.piece === piece);
   const [priceIn, setPriceIn] = useState("");
   const [currencyIn, setCurrencyIn] = useState("DOP");
   const [dueIn, setDueIn] = useState("");
   const budgetAssignment = monthClientServices.find((a) => a.id === serviceSel);
   const budgetMonth = dueIn ? dueIn.slice(0, 7) : (editing?.month ?? month);
-  const budget = budgetAssignment ? num(budgetAssignment.cost) : 0;
+  const pieceSpec = selectedBreakdown && piece ? selectedBreakdown[piece as keyof typeof selectedBreakdown] : undefined;
+  const budget = selectedBreakdown ? (pieceSpec ? pieceSpec.qty * pieceSpec.price : 0) : budgetAssignment ? num(budgetAssignment.cost) : 0;
   const budgetSpent = serviceSel
-    ? serviceSpend(data.designerTasks, serviceSel, budgetMonth, usdRate, editing?.id) + toDop(num(priceIn), currencyIn, usdRate)
+    ? serviceSpend(data.designerTasks, serviceSel, budgetMonth, usdRate, editing?.id, selectedBreakdown ? piece : undefined) + toDop(num(priceIn), currencyIn, usdRate)
     : 0;
-  const budgetQty = budgetAssignment ? Math.max(1, Math.round(num(budgetAssignment.monthly_quantity))) : 1;
+  const budgetQty = pieceSpec ? Math.max(1, pieceSpec.qty) : budgetAssignment ? Math.max(1, Math.round(num(budgetAssignment.monthly_quantity))) : 1;
 
   function openCreate() {
     setEditing(null);
@@ -47,6 +53,7 @@ export function DesignerTasks() {
     setClientSel("");
     setBrandSel("");
     setServiceSel("");
+    setPieceSel("");
     setPriceIn("");
     setCurrencyIn("DOP");
     setDueIn("");
@@ -59,6 +66,7 @@ export function DesignerTasks() {
     setClientSel(t.client_id ?? "");
     setBrandSel(t.brand_label ?? "");
     setServiceSel(t.client_service_id ?? "");
+    setPieceSel(t.piece_type ?? "");
     setPriceIn(String(t.amount));
     setCurrencyIn(t.currency);
     setDueIn(t.due_date ?? "");
@@ -72,6 +80,7 @@ export function DesignerTasks() {
     const provider_id = providerSel;
     const description = String(f.get("description") || "").trim();
     if (!provider_id || !description) return void toast.error("Elige diseñador y escribe la tarea");
+    if (selectedBreakdown && !piece) return void toast.error("Elige si es Post, Story o Carrusel");
     setSaving(true);
     const due_date = String(f.get("due_date") || "") || null;
     // El mes de la tarea sale de su fecha límite; sin fecha, se queda el mes actual/anterior.
@@ -82,6 +91,7 @@ export function DesignerTasks() {
       details: String(f.get("details") || "").trim() || null,
       client_id: clientSel || null,
       client_service_id: serviceSel || null,
+      piece_type: piece || null,
       brand_label: brandSel || null,
       amount: num(f.get("amount")),
       currency: String(f.get("currency")),
@@ -94,25 +104,29 @@ export function DesignerTasks() {
     setSaving(false);
     if (error) return void toast.error(editing ? "No se pudo guardar" : "No se pudo crear", { description: error.message });
     // Si una tarea entregada cambia de servicio, mueve la casilla en Entregables.
-    if (editing?.status === "Entregada" && editing.client_service_id !== (serviceSel || null)) {
+    if (
+      editing?.status === "Entregada" &&
+      (editing.client_service_id !== (serviceSel || null) || (editing.piece_type ?? "") !== piece)
+    ) {
       const { data: authData } = await supabase.auth.getUser();
       const userId = authData.user?.id;
       if (!userId) return void toast.error("No se pudo actualizar la casilla en Entregables");
-      const move = async (csId: string, delta: number) => {
+      const move = async (csId: string, pt: string, delta: number) => {
         const { data: rec } = await supabase
           .from("client_deliverables")
           .select("delivered_count")
           .eq("client_service_id", csId)
           .eq("month", editing!.month)
+          .eq("piece_type", pt)
           .maybeSingle();
         const count = Math.max(0, (rec?.delivered_count ?? 0) + delta);
         await supabase.from("client_deliverables").upsert(
-          { client_service_id: csId, month: editing!.month, user_id: userId, delivered_count: count, updated_at: new Date().toISOString() },
-          { onConflict: "client_service_id,month" },
+          { client_service_id: csId, month: editing!.month, piece_type: pt, user_id: userId, delivered_count: count, updated_at: new Date().toISOString() },
+          { onConflict: "client_service_id,month,piece_type" },
         );
       };
-      if (editing.client_service_id) await move(editing.client_service_id, -1);
-      if (serviceSel) await move(serviceSel, 1);
+      if (editing.client_service_id) await move(editing.client_service_id, editing.piece_type ?? "", -1);
+      if (serviceSel) await move(serviceSel, piece, 1);
     }
     toast.success(editing ? "Tarea actualizada" : "Tarea creada");
     form.reset();
@@ -268,7 +282,7 @@ export function DesignerTasks() {
             </div>
             <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
               Servicio
-              <select value={serviceSel} onChange={(e) => setServiceSel(e.target.value)} className={inputClass} disabled={!serviceOptions.length}>
+              <select value={serviceSel} onChange={(e) => { setServiceSel(e.target.value); setPieceSel(""); }} className={inputClass} disabled={!serviceOptions.length}>
                 <option value="">{serviceOptions.length ? "Elegir servicio…" : "Sin servicio asignado"}</option>
                 {serviceOptions.map((a) => (
                   <option key={a.id} value={a.id}>{serviceName(a.service_id)}</option>
@@ -276,9 +290,30 @@ export function DesignerTasks() {
               </select>
               <span className="font-normal">Solo aparecen los servicios asignados a este diseñador y marca.</span>
             </label>
+            {pieceOptions.length > 0 && (
+              <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
+                Tipo de pieza
+                <select
+                  value={pieceSel}
+                  onChange={(e) => {
+                    const key = e.target.value;
+                    setPieceSel(key);
+                    const spec = selectedBreakdown?.[key as keyof typeof selectedBreakdown];
+                    if (spec && !priceIn) setPriceIn(String(spec.price));
+                  }}
+                  className={inputClass}
+                >
+                  <option value="">Elegir Post, Story o Carrusel…</option>
+                  {pieceOptions.map((p) => (
+                    <option key={p.key} value={p.key}>{p.single} · {money(selectedBreakdown![p.key]!.price)} c/u</option>
+                  ))}
+                </select>
+              </label>
+            )}
             {serviceSel && (
               <div className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
                 Al entregarla se marcará 1 casilla en Entregables · {clientName(clientSel)}{brandSel && ` (el diseñador verá: ${brandSel})`} · {serviceName(serviceOptions.find((a) => a.id === serviceSel)?.service_id ?? null)}
+                {piece && ` · ${pieceLabel(piece)}`}
                 {selectedRow && ` · ${selectedRow.done} de ${selectedRow.qty}`}
               </div>
             )}
