@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { assignmentProviders, clientActiveInMonth, monthLabel } from "@/lib/finance";
+import { assignmentProviders, clientActiveInMonth, money, monthLabel } from "@/lib/finance";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { useDeliverables } from "@/lib/agency";
 import { Panel, ProgressBar } from "@/components/skyloop/ui";
@@ -102,6 +102,15 @@ function DeliverablesView() {
           <p className="text-xl font-bold text-foreground">
             {done} / {total} entregados ({percent.toFixed(0)}%)
           </p>
+          {(() => {
+            const b = rows.reduce((t, r) => t + r.budget, 0);
+            const s = rows.reduce((t, r) => t + r.spent, 0);
+            return b > 0 ? (
+              <p className={`text-xs font-semibold ${s > b ? "text-destructive" : "text-success"}`}>
+                Gasto en tareas: {money(s)} de {money(b)} presupuestado ({s > b ? `excedido +${money(s - b)}` : "en presupuesto"})
+              </p>
+            ) : null;
+          })()}
           <div className="mt-2">
             <ProgressBar percent={percent} />
           </div>
@@ -139,10 +148,11 @@ function DeliverablesView() {
                       <th className="px-4 py-2 text-right font-semibold">Acordado</th>
                       <th className="px-4 py-2 font-semibold">Entregado</th>
                       <th className="px-4 py-2 text-right font-semibold">Progreso</th>
+                      <th className="px-4 py-2 text-right font-semibold">Presupuesto vs. gasto</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {clientRows.map(({ assignment, qty, done: d }) => (
+                    {clientRows.map(({ assignment, qty, done: d, budget, spent }) => (
                       <tr key={assignment.id} className="border-t border-border">
                         <td className="px-4 py-3 text-foreground">{serviceName(assignment.service_id)}</td>
                         <td className="px-4 py-3 text-muted-foreground">{assignmentProviders(assignment).map(providerName).join(", ") || "—"}</td>
@@ -163,6 +173,18 @@ function DeliverablesView() {
                         </td>
                         <td className={`px-4 py-3 text-right font-bold ${d >= qty ? "text-success" : "text-foreground"}`}>
                           {d}/{qty}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {budget > 0 ? (
+                            <>
+                              <p className="font-semibold text-foreground">{money(spent)} / {money(budget)}</p>
+                              <p className={`text-xs font-bold ${spent > budget ? "text-destructive" : "text-success"}`}>
+                                {spent > budget ? `Excedido +${money(spent - budget)}` : `Restan ${money(budget - spent)}`}
+                              </p>
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
                         </td>
                       </tr>
                     ))}

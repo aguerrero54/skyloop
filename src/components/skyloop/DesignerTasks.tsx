@@ -6,7 +6,7 @@ import { assignmentProviders, money, monthLabel, num, toDop, todayISO } from "@/
 import { saveInvoice } from "@/lib/invoice-actions";
 import { DEFAULT_NOTES } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
-import { useDeliverables } from "@/lib/agency";
+import { serviceSpend, useDeliverables } from "@/lib/agency";
 import { Panel, StatusBadge } from "@/components/skyloop/ui";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground";
@@ -30,6 +30,16 @@ export function DesignerTasks() {
   );
   const serviceName = (id: string | null) => data.services.find((s) => s.id === id)?.name ?? "Servicio";
   const selectedRow = deliverableRows.find((r) => r.assignment.id === serviceSel);
+  const [priceIn, setPriceIn] = useState("");
+  const [currencyIn, setCurrencyIn] = useState("DOP");
+  const [dueIn, setDueIn] = useState("");
+  const budgetAssignment = monthClientServices.find((a) => a.id === serviceSel);
+  const budgetMonth = dueIn ? dueIn.slice(0, 7) : (editing?.month ?? month);
+  const budget = budgetAssignment ? num(budgetAssignment.cost) : 0;
+  const budgetSpent = serviceSel
+    ? serviceSpend(data.designerTasks, serviceSel, budgetMonth, usdRate, editing?.id) + toDop(num(priceIn), currencyIn, usdRate)
+    : 0;
+  const budgetQty = budgetAssignment ? Math.max(1, Math.round(num(budgetAssignment.monthly_quantity))) : 1;
 
   function openCreate() {
     setEditing(null);
@@ -37,6 +47,9 @@ export function DesignerTasks() {
     setClientSel("");
     setBrandSel("");
     setServiceSel("");
+    setPriceIn("");
+    setCurrencyIn("DOP");
+    setDueIn("");
     setOpen(true);
   }
 
@@ -46,6 +59,9 @@ export function DesignerTasks() {
     setClientSel(t.client_id ?? "");
     setBrandSel(t.brand_label ?? "");
     setServiceSel(t.client_service_id ?? "");
+    setPriceIn(String(t.amount));
+    setCurrencyIn(t.currency);
+    setDueIn(t.due_date ?? "");
     setOpen(true);
   }
 
@@ -269,20 +285,38 @@ export function DesignerTasks() {
             <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr]">
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Precio
-                <input name="amount" type="number" step="any" min="0" placeholder="0" defaultValue={editing ? String(editing.amount) : ""} className={inputClass} />
+                <input name="amount" type="number" step="any" min="0" placeholder="0" value={priceIn} onChange={(e) => setPriceIn(e.target.value)} className={inputClass} />
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Moneda
-                <select name="currency" defaultValue={editing?.currency ?? "DOP"} className={inputClass}>
+                <select name="currency" value={currencyIn} onChange={(e) => setCurrencyIn(e.target.value)} className={inputClass}>
                   <option value="DOP">DOP</option>
                   <option value="USD">USD</option>
                 </select>
               </label>
               <label className="grid gap-1 text-xs font-semibold text-muted-foreground">
                 Fecha límite
-                <input name="due_date" type="date" defaultValue={editing?.due_date ?? ""} className={inputClass} />
+                <input name="due_date" type="date" value={dueIn} onChange={(e) => setDueIn(e.target.value)} className={inputClass} />
               </label>
             </div>
+            {serviceSel && budget > 0 && (
+              <div
+                className={`grid gap-1 rounded-lg border px-3 py-2 text-xs ${
+                  budgetSpent > budget ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-success/40 bg-success/10 text-success"
+                }`}
+              >
+                <p className="font-bold">
+                  {budgetSpent > budget ? "⚠️ Alerta: supera el presupuesto acordado" : "Control de presupuesto"} — {monthLabel(budgetMonth)}
+                </p>
+                <p>Presupuesto acordado: {money(budget)} ({budgetQty} · prom. {money(budget / budgetQty)} c/u)</p>
+                <p>Acumulado con esta tarea: {money(budgetSpent)} de {money(budget)} ({((budgetSpent / budget) * 100).toFixed(0)}%)</p>
+                <p className="font-semibold">
+                  {budgetSpent > budget
+                    ? `Te estás pasando por ${money(budgetSpent - budget)}`
+                    : `Te quedan ${money(budget - budgetSpent)} disponibles`}
+                </p>
+              </div>
+            )}
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-border px-4 py-2 text-sm font-bold text-foreground hover:bg-secondary">
                 Cancelar
