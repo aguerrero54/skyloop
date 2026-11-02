@@ -56,7 +56,9 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
   const kind = invoiceKind(invoice);
   const copy = KIND_COPY[kind];
   const entityName =
-    kind === "vendor" ? (vendor?.name ?? "Proveedor sin asignar") : (client?.name ?? "Cliente sin asignar");
+    kind === "vendor"
+      ? (vendor?.name ?? "Proveedor sin asignar")
+      : (client?.name ?? "Cliente sin asignar");
   const entityLines =
     kind === "vendor"
       ? [vendor?.specialty, vendor?.email, vendor?.phone]
@@ -214,20 +216,26 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
   }
 
   // Tabla de artículos
-  const cols = { num: left + 8, desc: left + 32, qty: right - 210, rate: right - 120, amount: right - 8 };
+  const cols = {
+    num: left + 8,
+    desc: left + 32,
+    qty: right - 210,
+    rate: right - 120,
+    amount: right - 8,
+  };
   const tableHeader = () => {
-  ensureSpace(56);
-  doc.setFillColor(...DARK);
-  doc.rect(left, y, right - left, 26, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
-  doc.text("#", cols.num, y + 17);
-  doc.text("Artículo & Descripción", cols.desc, y + 17);
-  doc.text("Cant.", cols.qty, y + 17, { align: "right" });
-  doc.text("Tarifa", cols.rate, y + 17, { align: "right" });
-  doc.text("Cantidad", cols.amount, y + 17, { align: "right" });
-  y += 26;
+    ensureSpace(56);
+    doc.setFillColor(...DARK);
+    doc.rect(left, y, right - left, 26, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text("#", cols.num, y + 17);
+    doc.text("Artículo & Descripción", cols.desc, y + 17);
+    doc.text("Cant.", cols.qty, y + 17, { align: "right" });
+    doc.text("Tarifa", cols.rate, y + 17, { align: "right" });
+    doc.text("Cantidad", cols.amount, y + 17, { align: "right" });
+    y += 26;
   };
   tableHeader();
 
@@ -245,38 +253,39 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
     }
     let offset = 0;
     do {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.5);
-    const capacity = Math.max(1, Math.floor((pageBottom - y - 16) / 13));
-    const chunk = lines.slice(offset, offset + capacity);
-    doc.setTextColor(...GREY);
-    if (offset === 0) {
-    doc.text(String(index + 1), cols.num, y + 20);
-    doc.setTextColor(...DARK);
-    doc.text(plain(item.quantity), cols.qty, y + 20, { align: "right" });
-    doc.text(plain(item.rate), cols.rate, y + 20, { align: "right" });
-    doc.text(plain(itemAmount(item.quantity, item.rate)), cols.amount, y + 20, { align: "right" });
-    }
-    doc.setTextColor(...DARK);
-    doc.text(chunk, cols.desc, y + 20, { lineHeightFactor: 13 / 9.5 });
-    y += Math.max(30, chunk.length * 13 + 16);
-    offset += capacity;
-    doc.setDrawColor(...LIGHT);
-    doc.line(left, y, right, y);
-    if (offset < lines.length) {
-      nextPage();
-      tableHeader();
-    }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      const capacity = Math.max(1, Math.floor((pageBottom - y - 16) / 13));
+      const chunk = lines.slice(offset, offset + capacity);
+      doc.setTextColor(...GREY);
+      if (offset === 0) {
+        doc.text(String(index + 1), cols.num, y + 20);
+        doc.setTextColor(...DARK);
+        doc.text(plain(item.quantity), cols.qty, y + 20, { align: "right" });
+        doc.text(plain(item.rate), cols.rate, y + 20, { align: "right" });
+        doc.text(plain(itemAmount(item.quantity, item.rate)), cols.amount, y + 20, {
+          align: "right",
+        });
+      }
+      doc.setTextColor(...DARK);
+      doc.text(chunk, cols.desc, y + 20, { lineHeightFactor: 13 / 9.5 });
+      y += Math.max(30, chunk.length * 13 + 16);
+      offset += capacity;
+      doc.setDrawColor(...LIGHT);
+      doc.line(left, y, right, y);
+      if (offset < lines.length) {
+        nextPage();
+        tableHeader();
+      }
     } while (offset < lines.length);
   });
 
   // Totales
   y += 24;
   const labelX = right - 150;
-  const totalRows: [string, string, boolean][] = [
-    ["Subtotal", plain(totals.subtotal), false],
-  ];
-  if (totals.discountAmount) totalRows.push(["Descuento", `(-) ${plain(totals.discountAmount)}`, false]);
+  const totalRows: [string, string, boolean][] = [["Subtotal", plain(totals.subtotal), false]];
+  if (totals.discountAmount)
+    totalRows.push(["Descuento", `(-) ${plain(totals.discountAmount)}`, false]);
   if (totals.taxAmount) totalRows.push(["Impuestos", plain(totals.taxAmount), false]);
   if (totals.shipping) totalRows.push(["Cargos de envío", plain(totals.shipping), false]);
   if (totals.adjustment) totalRows.push(["Ajuste", plain(totals.adjustment), false]);
@@ -313,14 +322,14 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
     // Mantener el bloque completo cuando cabe en una página; dividir los más largos.
     ensureSpace(Math.min(height, pageBottom - 56));
     const heading = (continued = false) => {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9.5);
-    doc.setTextColor(...DARK);
-    doc.text(continued ? `${title} (continuación)` : title, left, y);
-    y += 16;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...GREY);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...DARK);
+      doc.text(continued ? `${title} (continuación)` : title, left, y);
+      y += 16;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(...GREY);
     };
     heading();
     lines.forEach((line) => {
