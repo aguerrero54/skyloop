@@ -217,10 +217,27 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
     data.incomes.forEach((row) => set.add(monthOf(row.invoice_date)));
     data.expenses.forEach((row) => set.add(monthOf(row.expense_date)));
     const now = new Date();
-    set.add(now.toISOString().slice(0, 7));
+    const current = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    set.add(next.toISOString().slice(0, 7));
-    return [...set].filter(Boolean).sort().reverse();
+    const nextMonth = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
+    set.add(current);
+    set.add(nextMonth);
+    const dates = [...set].filter((value) => /^\d{4}-(0[1-9]|1[0-2])$/.test(value)).sort();
+    if (dates.length === 0) return [];
+    // Secuencia continua: se rellenan los meses intermedios hasta el mes siguiente.
+    const last = dates[dates.length - 1]! > nextMonth ? dates[dates.length - 1]! : nextMonth;
+    const filled: string[] = [];
+    const [startYear, startMonth] = dates[0]!.split("-").map(Number) as [number, number];
+    let year = startYear;
+    let month = startMonth;
+    while (true) {
+      const value = `${year}-${String(month).padStart(2, "0")}`;
+      if (value > last) break;
+      filled.push(value);
+      month += 1;
+      if (month === 13) { month = 1; year += 1; }
+    }
+    return filled.reverse();
   }, [data.history, data.incomes, data.expenses]);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
