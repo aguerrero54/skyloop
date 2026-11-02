@@ -225,9 +225,11 @@ export function SkyloopProvider({ children }: { children: ReactNode }) {
     const dates = [...set].filter((value) => /^\d{4}-(0[1-9]|1[0-2])$/.test(value)).sort();
     if (dates.length === 0) return [];
     // Secuencia continua: se rellenan los meses intermedios hasta el mes siguiente.
-    const last = dates[dates.length - 1] > nextMonth ? dates[dates.length - 1] : nextMonth;
+    const last = dates[dates.length - 1]! > nextMonth ? dates[dates.length - 1]! : nextMonth;
     const filled: string[] = [];
-    let [year, month] = dates[0].split("-").map(Number) as [number, number];
+    const [startYear, startMonth] = dates[0]!.split("-").map(Number) as [number, number];
+    let year = startYear;
+    let month = startMonth;
     while (true) {
       const value = `${year}-${String(month).padStart(2, "0")}`;
       if (value > last) break;
