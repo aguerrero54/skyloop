@@ -672,7 +672,7 @@ export function InvoiceForm({
                     )}
                   </td>
                   <td className="px-3 py-2 text-right font-bold text-foreground">
-                    {money(itemAmount(item.quantity, item.rate), currency)}
+                    {money(itemAmount(item.quantity, item.rate), currency, 2)}
                   </td>
                   <td className="px-3 py-2 text-right">
                     <button
@@ -725,7 +725,7 @@ export function InvoiceForm({
           </div>
 
           <div className="grid content-start gap-3 rounded-xl border border-border bg-surface-raised p-4">
-            <Row label="Subtotal" value={money(totals.subtotal, currency)} />
+            <Row label="Subtotal" value={money(totals.subtotal, currency, 2)} />
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm text-muted-foreground">Descuento</span>
               <div className="flex items-center gap-2">
@@ -745,7 +745,7 @@ export function InvoiceForm({
                   <option value="amount">{currency}</option>
                 </select>
                 <span className="w-24 text-right text-sm font-semibold text-foreground">
-                  {money(totals.discountAmount, currency)}
+                  {money(totals.discountAmount, currency, 2)}
                 </span>
               </div>
             </div>
@@ -769,11 +769,11 @@ export function InvoiceForm({
                 className="w-32 rounded-lg border border-input bg-background px-2 py-1.5 text-right text-sm text-foreground outline-none focus:border-primary"
               />
             </div>
-            <Row label="Impuestos" value={money(totals.taxAmount, currency)} />
+            <Row label="Impuestos" value={money(totals.taxAmount, currency, 2)} />
             <div className="mt-1 flex items-center justify-between border-t border-border pt-3">
               <strong className="text-sm text-foreground">Total ({currency})</strong>
               <strong className="text-xl font-extrabold text-foreground">
-                {money(totals.total, currency)}
+                {money(totals.total, currency, 2)}
               </strong>
             </div>
           </div>

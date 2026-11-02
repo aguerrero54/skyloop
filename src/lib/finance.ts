@@ -68,11 +68,12 @@ export function num(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export function money(value: unknown, currency = "DOP"): string {
+export function money(value: unknown, currency = "DOP", maximumFractionDigits = 0): string {
   return new Intl.NumberFormat("es-DO", {
     style: "currency",
     currency: currency === "USD" ? "USD" : "DOP",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits,
   }).format(num(value));
 }
 
