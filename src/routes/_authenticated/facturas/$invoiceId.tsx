@@ -327,7 +327,7 @@ function InvoiceDetailPage() {
             items.map((item, index) => (
               <tr key={item.id} className="border-t border-border">
                 <td className="px-4 py-3 text-muted-foreground">{index + 1}</td>
-                <td className="px-4 py-3 font-semibold text-foreground">{item.description}</td>
+                <td className="whitespace-pre-line break-words px-4 py-3 font-semibold text-foreground">{item.description}</td>
                 <td className="px-4 py-3 text-right text-muted-foreground">{num(item.quantity)}</td>
                 <td className="px-4 py-3 text-right text-muted-foreground">
                   {money(item.rate, invoice.currency)}
