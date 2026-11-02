@@ -32,11 +32,10 @@ test("notas largas y términos se conservan dentro de las páginas", () => {
   const pdf = doc.output();
   assert.ok(pdf.includes("Nota 139"));
   assert.ok(pdf.includes("finales"));
-  for (let page = 1; page <= doc.getNumberOfPages(); page++) {
-    const stream = doc.internal.pages[page].join("\n");
-    for (const match of stream.matchAll(/([\d.-]+) ([\d.-]+) Td/g)) {
-      assert.ok(Number(match[2]) >= 56, `texto fuera del margen en página ${page}`);
-    }
+  const positions = [...pdf.matchAll(/([\d.-]+) ([\d.-]+) Td/g)];
+  assert.ok(positions.length > 140);
+  for (const match of positions) {
+    assert.ok(Number(match[2]) >= 56, "texto fuera del margen inferior");
   }
 });
 
