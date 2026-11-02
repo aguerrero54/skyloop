@@ -49,6 +49,7 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
   const pageWidth = doc.internal.pageSize.getWidth();
   const left = 56;
   const right = pageWidth - 56;
+  const pageBottom = doc.internal.pageSize.getHeight() - 56;
   const currency = invoice.currency || "DOP";
   const status = effectiveStatus(invoice);
   const balance = Math.max(num(invoice.total) - num(invoice.amount_paid), 0);
@@ -185,18 +186,37 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
 
   let y = Math.max(metaY, billY) + 22;
 
+  const nextPage = () => {
+    doc.addPage();
+    doc.setDrawColor(...LIGHT);
+    doc.setLineWidth(0.8);
+    doc.rect(28, 28, pageWidth - 56, doc.internal.pageSize.getHeight() - 56);
+    y = 56;
+  };
+  const ensureSpace = (height: number) => {
+    if (y + height > pageBottom) nextPage();
+  };
+
   if (invoice.subject) {
     doc.setTextColor(...GREY);
     doc.setFontSize(9);
     doc.text("Asunto :", left, y);
     doc.setTextColor(...DARK);
     doc.setFontSize(10);
-    doc.text(invoice.subject, left, y + 16);
-    y += 40;
+    const subjectLines = doc.splitTextToSize(invoice.subject, right - left) as string[];
+    y += 16;
+    subjectLines.forEach((line) => {
+      ensureSpace(13);
+      doc.text(line, left, y);
+      y += 13;
+    });
+    y += 24;
   }
 
   // Tabla de artículos
   const cols = { num: left + 8, desc: left + 32, qty: right - 210, rate: right - 120, amount: right - 8 };
+  const tableHeader = () => {
+  ensureSpace(56);
   doc.setFillColor(...DARK);
   doc.rect(left, y, right - left, 26, "F");
   doc.setTextColor(255, 255, 255);
@@ -208,23 +228,46 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
   doc.text("Tarifa", cols.rate, y + 17, { align: "right" });
   doc.text("Cantidad", cols.amount, y + 17, { align: "right" });
   y += 26;
+  };
+  tableHeader();
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9.5);
   const sorted = [...items].sort((a, b) => a.position - b.position);
   sorted.forEach((item, index) => {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
     const lines = doc.splitTextToSize(item.description, cols.qty - cols.desc - 24) as string[];
     const rowHeight = Math.max(30, lines.length * 13 + 16);
+    if (y + Math.min(rowHeight, pageBottom - 82) > pageBottom) {
+      nextPage();
+      tableHeader();
+    }
+    let offset = 0;
+    do {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    const capacity = Math.max(1, Math.floor((pageBottom - y - 16) / 13));
+    const chunk = lines.slice(offset, offset + capacity);
     doc.setTextColor(...GREY);
+    if (offset === 0) {
     doc.text(String(index + 1), cols.num, y + 20);
     doc.setTextColor(...DARK);
-    doc.text(lines, cols.desc, y + 20);
     doc.text(plain(item.quantity), cols.qty, y + 20, { align: "right" });
     doc.text(plain(item.rate), cols.rate, y + 20, { align: "right" });
     doc.text(plain(itemAmount(item.quantity, item.rate)), cols.amount, y + 20, { align: "right" });
-    y += rowHeight;
+    }
+    doc.setTextColor(...DARK);
+    doc.text(chunk, cols.desc, y + 20, { lineHeightFactor: 13 / 9.5 });
+    y += Math.max(30, chunk.length * 13 + 16);
+    offset += capacity;
     doc.setDrawColor(...LIGHT);
     doc.line(left, y, right, y);
+    if (offset < lines.length) {
+      nextPage();
+      tableHeader();
+    }
+    } while (offset < lines.length);
   });
 
   // Totales
@@ -241,6 +284,7 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
   if (num(invoice.amount_paid) > 0)
     totalRows.push(["Pago realizado", `(-) ${plain(invoice.amount_paid)}`, false]);
 
+  ensureSpace(totalRows.length * 20 + 56);
   doc.setFontSize(9.5);
   totalRows.forEach(([label, value, bold]) => {
     doc.setFont("helvetica", bold ? "bold" : "normal");
@@ -262,17 +306,32 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
 
   // Notas y términos
   const block = (title: string, body: string) => {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    const lines = doc.splitTextToSize(body, right - left) as string[];
+    const height = 16 + lines.length * 12 + 20;
+    // Mantener el bloque completo cuando cabe en una página; dividir los más largos.
+    ensureSpace(Math.min(height, pageBottom - 56));
+    const heading = (continued = false) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9.5);
     doc.setTextColor(...DARK);
-    doc.text(title, left, y);
+    doc.text(continued ? `${title} (continuación)` : title, left, y);
     y += 16;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(...GREY);
-    const lines = doc.splitTextToSize(body, right - left) as string[];
-    doc.text(lines, left, y);
-    y += lines.length * 12 + 20;
+    };
+    heading();
+    lines.forEach((line) => {
+      if (y + 12 > pageBottom) {
+        nextPage();
+        heading(true);
+      }
+      doc.text(line, left, y);
+      y += 12;
+    });
+    y += 20;
   };
 
   if (invoice.notes) block("Notas", invoice.notes);
