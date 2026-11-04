@@ -194,7 +194,7 @@ export function MovementTable({
           <tr key={`${row.kind}-${row.id}`} className="border-t border-border">
             <td className="px-4 py-3 text-muted-foreground">{row.date}</td>
             <td className="px-4 py-3">{row.kind}</td>
-            <td className="px-4 py-3 font-semibold text-foreground">{row.concept}</td>
+            <td className="whitespace-pre-line break-words px-4 py-3 font-semibold text-foreground">{row.concept}</td>
             <td className="px-4 py-3 text-muted-foreground">{clientName(row.clientId)}</td>
             <td className="px-4 py-3">
               {onStatusChange && !row.id.startsWith("invoice-") ? (
