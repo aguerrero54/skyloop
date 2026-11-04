@@ -132,7 +132,7 @@ export const DEFAULT_TERMS =
 export const AGENCY = {
   name: "Skyloop Agency",
   country: "Dominican Republic",
-  email: "anlet231@gmail.com",
+  email: "info@skyloopint.com",
 };
 
 export function addDays(date: string, days: number): string {

@@ -178,7 +178,9 @@ export function InvoiceForm({
   const [discountType, setDiscountType] = useState(invoice?.discount_type ?? "percent");
   const [shipping, setShipping] = useState(String(num(invoice?.shipping) || 0));
   const [adjustment, setAdjustment] = useState(String(num(invoice?.adjustment) || 0));
-  const [notes, setNotes] = useState(invoice?.notes ?? DEFAULT_NOTES);
+  const [notes, setNotes] = useState(
+    invoice?.notes ?? (kind === "vendor" ? "" : DEFAULT_NOTES),
+  );
   const [conditions, setConditions] = useState(invoice?.terms ?? DEFAULT_TERMS);
   const [items, setItems] = useState<DraftItem[]>(() =>
     existingItems?.length
