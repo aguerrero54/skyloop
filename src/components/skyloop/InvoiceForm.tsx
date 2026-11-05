@@ -181,7 +181,9 @@ export function InvoiceForm({
   const [notes, setNotes] = useState(
     invoice?.notes ?? (kind === "vendor" ? "" : DEFAULT_NOTES),
   );
-  const [conditions, setConditions] = useState(invoice?.terms ?? DEFAULT_TERMS);
+  const [conditions, setConditions] = useState(
+    kind === "vendor" ? "" : (invoice?.terms ?? DEFAULT_TERMS),
+  );
   const [items, setItems] = useState<DraftItem[]>(() =>
     existingItems?.length
       ? [...existingItems]
@@ -715,15 +717,17 @@ export function InvoiceForm({
               />
               <p className="mt-1 text-[11px] text-muted-foreground">Aparecerán en la factura.</p>
             </div>
-            <div>
-              <label className={labelClass}>Términos y condiciones</label>
-              <textarea
-                value={conditions}
-                onChange={(event) => setConditions(event.target.value)}
-                rows={4}
-                className={inputClass}
-              />
-            </div>
+            {kind !== "vendor" && (
+              <div>
+                <label className={labelClass}>Términos y condiciones</label>
+                <textarea
+                  value={conditions}
+                  onChange={(event) => setConditions(event.target.value)}
+                  rows={4}
+                  className={inputClass}
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid content-start gap-3 rounded-xl border border-border bg-surface-raised p-4">
