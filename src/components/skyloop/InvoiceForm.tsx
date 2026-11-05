@@ -752,16 +752,6 @@ export function InvoiceForm({
               </div>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm text-muted-foreground">Cargos de envío</span>
-              <input
-                type="number"
-                step="any"
-                value={shipping}
-                onChange={(event) => setShipping(event.target.value)}
-                className="w-32 rounded-lg border border-input bg-background px-2 py-1.5 text-right text-sm text-foreground outline-none focus:border-primary"
-              />
-            </div>
-            <div className="flex items-center justify-between gap-3">
               <span className="text-sm text-muted-foreground">Ajuste</span>
               <input
                 type="number"
