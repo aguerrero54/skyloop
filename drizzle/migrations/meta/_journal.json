@@ -162,6 +162,13 @@
       "when": 1793325928712,
       "tag": "0022_piece_breakdown",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793994555747,
+      "tag": "0023_notifications",
+      "breakpoints": true
     }
   ]
 }
