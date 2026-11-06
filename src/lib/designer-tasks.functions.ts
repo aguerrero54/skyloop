@@ -77,6 +77,18 @@ export const markTaskDelivered = createServerFn({ method: "POST" })
       )
       .eq("id", data.taskId);
     if (error) throw new Error(error.message);
+    if (data.delivered && !wasDelivered) {
+      const [{ data: prov }, { data: full }] = await Promise.all([
+        admin.from("providers").select("name").eq("id", providerId).maybeSingle(),
+        admin.from("designer_tasks").select("description").eq("id", data.taskId).maybeSingle(),
+      ]);
+      await admin.from("notifications").insert({
+        user_id: userId,
+        task_id: data.taskId,
+        title: `${prov?.name ?? "Un diseñador"} entregó una tarea`,
+        body: full?.description ?? null,
+      });
+    }
     if (task.client_service_id && wasDelivered !== data.delivered) {
       const { data: rec } = await admin
         .from("client_deliverables")
