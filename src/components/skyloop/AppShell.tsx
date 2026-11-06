@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { LogOut, Menu, Settings2, X } from "lucide-react";
+import { Bell, LogOut, Menu, Settings2, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -166,6 +166,7 @@ function TopBar({
           </select>
         )}
 
+        <NotificationBell />
         {isDashboard && (
           <button
             type="button"
@@ -178,6 +179,73 @@ function TopBar({
         )}
       </div>
     </header>
+  );
+}
+
+function NotificationBell() {
+  const [open, setOpen] = useState(false);
+  const qc = useQueryClient();
+  const list = useQuery({
+    queryKey: ["notifications"],
+    refetchInterval: 30000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("id, title, body, read, created_at")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      return data ?? [];
+    },
+  });
+  const items = list.data ?? [];
+  const unread = items.filter((n) => !n.read).length;
+  async function markAll() {
+    await supabase.from("notifications").update({ read: true }).eq("read", false);
+    qc.invalidateQueries({ queryKey: ["notifications"] });
+  }
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Notificaciones"
+        className="relative rounded-lg border border-border p-2 text-foreground transition-colors hover:bg-secondary"
+      >
+        <Bell className="size-4" />
+        {unread > 0 && (
+          <span className="absolute -right-1.5 -top-1.5 grid min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+            {unread}
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="absolute right-0 z-30 mt-2 w-80 rounded-xl border border-border bg-card p-2 shadow-lg">
+          <div className="flex items-center justify-between px-2 py-1.5">
+            <b className="text-sm text-foreground">Notificaciones</b>
+            {unread > 0 && (
+              <button type="button" onClick={markAll} className="text-xs text-primary-soft hover:underline">
+                Marcar todo como leído
+              </button>
+            )}
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {items.length === 0 ? (
+              <p className="px-2 py-6 text-center text-sm text-muted-foreground">Sin notificaciones</p>
+            ) : (
+              items.map((n) => (
+                <div key={n.id} className={cn("rounded-lg px-2 py-2", !n.read && "bg-secondary")}>
+                  <p className="text-sm font-semibold text-foreground">{n.title}</p>
+                  {n.body && <p className="line-clamp-2 text-xs text-muted-foreground">{n.body}</p>}
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    {new Date(n.created_at).toLocaleString("es-DO")}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
