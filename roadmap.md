@@ -1,8 +1,8 @@
 # Roadmap
 
-- [ ] Conservar costo y cantidad al editar asignaciones antiguas de diseño.
-- [ ] Evitar términos de cliente al cambiar a factura de proveedor.
-- [ ] Conservar entregas y gastos antiguos al añadir desglose de piezas.
+- [x] Conservar costo y cantidad al editar asignaciones antiguas de diseño.
+- [x] Evitar términos de cliente al cambiar a factura de proveedor.
+- [x] Conservar entregas y gastos antiguos al añadir desglose de piezas.
 
 - [x] Crear preferencias visuales protegidas por usuario.
 - [x] Añadir proveedor global y paletas claro, oscuro y sistema.
