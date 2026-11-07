@@ -37,3 +37,16 @@ export function breakdownTotals(b: Breakdown | null) {
   }
   return { qty, cost };
 }
+
+/** Existing untyped design quantities/prices represent posts, not new empty fields. */
+export function initialAssignmentBreakdown(value: unknown, quantity: unknown, cost: unknown): Breakdown | null {
+  const parsed = parseBreakdown(value);
+  if (parsed) return parsed;
+  const qty = Math.max(0, Math.round(Number(quantity) || 0));
+  return qty > 0 ? { posts: { qty, price: (Number(cost) || 0) / qty } } : null;
+}
+
+/** Untyped historical work was recorded before stories/carousels were introduced. */
+export function accountingPiece(piece: string | null | undefined): string {
+  return piece || "posts";
+}
