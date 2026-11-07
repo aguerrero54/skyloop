@@ -8,6 +8,8 @@ import { saveInvoice, type InvoiceAttachment } from "@/lib/invoice-actions";
 import {
   DEFAULT_NOTES,
   DEFAULT_TERMS,
+  invoiceTextDefaults,
+  invoiceConditions,
   KIND_COPY,
   PAYMENT_TERMS,
   clientInitials,
@@ -268,6 +270,9 @@ export function InvoiceForm({
       if (!window.confirm(message)) return;
     }
     setKind(next);
+    const defaults = invoiceTextDefaults(next);
+    setNotes(defaults.notes);
+    setConditions(defaults.terms);
     setClientId("");
     setVendorId("");
     setItems([emptyItem()]);
@@ -364,7 +369,7 @@ export function InvoiceForm({
         shipping: num(shipping),
         adjustment: num(adjustment),
         notes: notes.trim() || null,
-        terms: conditions.trim() || null,
+        terms: invoiceConditions(kind, conditions),
         status,
         items,
         attachments,

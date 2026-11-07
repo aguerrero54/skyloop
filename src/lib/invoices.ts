@@ -129,6 +129,14 @@ export const DEFAULT_NOTES =
 export const DEFAULT_TERMS =
   "Nota: Este monto cubre todos los recursos y materiales necesarios, como el equipo y herramientas que se utilizarían.\n(No incluye inversión en pautas publicitarias).";
 
+export function invoiceTextDefaults(kind: InvoiceKind) {
+  return kind === "vendor" ? { notes: "", terms: "" } : { notes: DEFAULT_NOTES, terms: DEFAULT_TERMS };
+}
+
+export function invoiceConditions(kind: InvoiceKind, conditions: string | null | undefined): string | null {
+  return kind === "vendor" ? null : conditions?.trim() || null;
+}
+
 export const AGENCY = {
   name: "Skyloop Agency",
   country: "Dominican Republic",

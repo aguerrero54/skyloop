@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Keep task-history month range logic in `src/lib/task-months.ts`, consumed by the Entregables page, so task dates do not change financial month options elsewhere.
+- Keep legacy piece accounting in shared pure helpers: untyped work contributes to posts when a breakdown exists, and retain its storage bucket so old task delivery updates remain visible without double-counting.
+- Normalize invoice conditions at save and PDF boundaries so supplier documents cannot inherit hidden client terms.

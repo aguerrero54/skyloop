@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { buildInvoicePdf } from "./invoice-pdf";
 import type { Invoice, InvoiceItem } from "./invoices";
 
-function fixture(notes: string, description = "Servicio") {
+function fixture(notes: string, description = "Servicio", kind: "client" | "vendor" = "client") {
   const invoice = {
     invoice_number: "TEST-001",
-    invoice_type: "client",
+    invoice_type: kind,
     currency: "DOP",
     status: "Pendiente",
     total: 6000,
@@ -37,6 +37,11 @@ test("notas largas y términos se conservan dentro de las páginas", () => {
   for (const match of positions) {
     assert.ok(Number(match[2]) >= 56, "texto fuera del margen inferior");
   }
+});
+
+test("el PDF de proveedor omite términos heredados, el del cliente los conserva", () => {
+  assert.equal(fixture("", "Servicio", "vendor").output().includes("finales"), false);
+  assert.equal(fixture("", "Servicio", "client").output().includes("finales"), true);
 });
 
 test("descripción extensa continúa sin perder la última línea", () => {

@@ -8,7 +8,7 @@ import { DEFAULT_NOTES } from "@/lib/invoices";
 import { useSkyloop } from "@/lib/skyloop-context";
 import { serviceSpend, useDeliverables } from "@/lib/agency";
 import { Panel, StatusBadge } from "@/components/skyloop/ui";
-import { PIECES, parseBreakdown, pieceLabel } from "@/lib/pieces";
+import { PIECES, parseBreakdown, pieceLabel, accountingPiece } from "@/lib/pieces";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground";
 
@@ -66,7 +66,8 @@ export function DesignerTasks() {
     setClientSel(t.client_id ?? "");
     setBrandSel(t.brand_label ?? "");
     setServiceSel(t.client_service_id ?? "");
-    setPieceSel(t.piece_type ?? "");
+    const assignment = monthClientServices.find((a) => a.id === t.client_service_id);
+    setPieceSel(parseBreakdown(assignment?.breakdown) ? accountingPiece(t.piece_type) : (t.piece_type ?? ""));
     setPriceIn(String(t.amount));
     setCurrencyIn(t.currency);
     setDueIn(t.due_date ?? "");
@@ -108,6 +109,7 @@ export function DesignerTasks() {
       editing?.status === "Entregada" &&
       (editing.client_service_id !== (serviceSel || null) || (editing.piece_type ?? "") !== piece)
     ) {
+      const originalTask = editing;
       const { data: authData } = await supabase.auth.getUser();
       const userId = authData.user?.id;
       if (!userId) return void toast.error("No se pudo actualizar la casilla en Entregables");
@@ -116,12 +118,12 @@ export function DesignerTasks() {
           .from("client_deliverables")
           .select("delivered_count")
           .eq("client_service_id", csId)
-          .eq("month", editing!.month)
+          .eq("month", originalTask.month)
           .eq("piece_type", pt)
           .maybeSingle();
         const count = Math.max(0, (rec?.delivered_count ?? 0) + delta);
         await supabase.from("client_deliverables").upsert(
-          { client_service_id: csId, month: editing!.month, piece_type: pt, user_id: userId, delivered_count: count, updated_at: new Date().toISOString() },
+          { client_service_id: csId, month: originalTask.month, piece_type: pt, user_id: userId, delivered_count: count, updated_at: new Date().toISOString() },
           { onConflict: "client_service_id,month,piece_type" },
         );
       };
@@ -305,7 +307,7 @@ export function DesignerTasks() {
                 >
                   <option value="">Elegir Post, Story o Carrusel…</option>
                   {pieceOptions.map((p) => (
-                    <option key={p.key} value={p.key}>{p.single} · {money(selectedBreakdown![p.key]!.price)} c/u</option>
+                    <option key={p.key} value={p.key}>{p.single} · {money(selectedBreakdown?.[p.key]?.price ?? 0)} c/u</option>
                   ))}
                 </select>
               </label>

@@ -401,11 +401,11 @@ function InvoiceDetailPage() {
             {invoice.notes ?? "Sin notas"}
           </p>
         </Panel>
-        <Panel title="Términos y condiciones">
+        {kind === "client" && <Panel title="Términos y condiciones">
           <p className="whitespace-pre-line text-sm text-muted-foreground">
             {invoice.terms ?? "Sin términos"}
           </p>
-        </Panel>
+        </Panel>}
       </div>
 
       {attachments.length > 0 && (

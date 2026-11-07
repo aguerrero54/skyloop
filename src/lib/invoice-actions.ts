@@ -4,6 +4,7 @@ import {
   KIND_COPY,
   computeTotals,
   invoiceKind,
+  invoiceConditions,
   itemAmount,
   nextInvoiceNumber,
   round2,
@@ -105,7 +106,7 @@ export async function saveInvoice(input: InvoiceInput): Promise<string> {
     amount_paid: paid,
     balance_due: round2(Math.max(totals.total - paid, 0)),
     notes: input.notes,
-    terms: input.terms,
+    terms: invoiceConditions(kind, input.terms),
     attachments: input.attachments,
   };
 

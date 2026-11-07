@@ -11,6 +11,7 @@ import { DesignerTasks } from "@/components/skyloop/DesignerTasks";
 import { Button } from "@/components/ui/button";
 import { taskMonths } from "@/lib/task-months";
 import { pieceLabel } from "@/lib/pieces";
+import { deliveryCountWrites } from "@/lib/deliverable-metrics";
 
 export const Route = createFileRoute("/_authenticated/entregables")({
   head: () => ({
@@ -88,7 +89,9 @@ function DeliverablesView() {
     const { error } = await supabase
       .from("client_deliverables")
       .upsert(
-        { client_service_id: assignmentId, month, piece_type: piece, delivered_count: count, updated_at: new Date().toISOString() },
+        deliveryCountWrites(data.deliverables, assignmentId, month, piece, count).map((record) => ({
+          ...record, client_service_id: assignmentId, month, updated_at: new Date().toISOString(),
+        })),
         { onConflict: "client_service_id,month,piece_type" },
       );
     if (error) return void toast.error("No se pudo guardar", { description: error.message });
