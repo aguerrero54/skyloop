@@ -7,6 +7,7 @@ import {
   effectiveStatus,
   formatLongDate,
   invoiceKind,
+  invoiceConditions,
   itemAmount,
   KIND_COPY,
   type Invoice,
@@ -344,7 +345,8 @@ export function buildInvoicePdf({ invoice, items, client, vendor, logo }: Invoic
   };
 
   if (invoice.notes) block("Notas", invoice.notes);
-  if (invoice.terms) block("Términos y condiciones", invoice.terms);
+  const conditions = invoiceConditions(kind, invoice.terms);
+  if (conditions) block("Términos y condiciones", conditions);
 
   return doc;
 }

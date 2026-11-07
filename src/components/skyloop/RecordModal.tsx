@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PIECES, breakdownTotals, isDesignService, parseBreakdown, type Breakdown, type PieceKey } from "@/lib/pieces";
+import { PIECES, breakdownTotals, isDesignService, initialAssignmentBreakdown, type Breakdown, type PieceKey } from "@/lib/pieces";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -702,7 +702,7 @@ export function RecordModal() {
             <PieceBreakdownFields
               services={data.services}
               initialServiceId={editingAssignment?.service_id ?? ""}
-              initial={parseBreakdown(editingAssignment?.breakdown)}
+              initial={initialAssignmentBreakdown(editingAssignment?.breakdown, editingAssignment?.monthly_quantity, editingAssignment?.cost)}
             />
           )}
 
