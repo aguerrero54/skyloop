@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { addTaskComment, getPublicTasks, getTaskComments, markTaskDelivered } from "@/lib/designer-tasks.functions";
 import { money, num } from "@/lib/finance";
 import { BrandMark } from "@/components/skyloop/AppShell";
+import { PublicTaskReferences } from "@/components/skyloop/TaskReferences";
 
 export const Route = createFileRoute("/tareas/$token")({
   head: () => ({
@@ -108,6 +109,7 @@ function InlineThread({ token, taskId, details }: { token: string; taskId: strin
           </p>
         </div>
       )}
+      <PublicTaskReferences token={token} taskId={taskId} />
       <div className="grid gap-2">
         <p className="flex items-center gap-2 text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">
           <MessageSquare className="size-3.5" />
@@ -445,7 +447,7 @@ function PublicTasksPage() {
                 {selected.due_date ? `Entrega: ${formatDue(selected.due_date)}` : "Sin fecha límite"}
               </p>
               <div className="grid gap-2">
-                <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">DESCRIPCIÓN</p>
+                <p className="text-[10px] font-extrabold tracking-[0.13em] text-primary-soft">DESCRIPCIÓN DE LA TAREA</p>
                 {selected.details ? (
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                     <Linkified text={selected.details} />
@@ -454,6 +456,7 @@ function PublicTasksPage() {
                   <p className="text-sm text-muted-foreground">Sin descripción detallada.</p>
                 )}
               </div>
+              <PublicTaskReferences token={token} taskId={selected.id} />
             </div>
 
             <div className="grid content-start gap-3 border-t border-border pt-4 md:border-l md:border-t-0 md:pl-5 md:pt-0">

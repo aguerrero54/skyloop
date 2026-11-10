@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { TASK_ATTACHMENT_TTL } from "@/lib/task-attachments";
 
 const tokenSchema = z.string().regex(/^[a-f0-9]{48}$/);
 
@@ -133,6 +134,35 @@ export const getTaskComments = createServerFn({ method: "GET" })
       .eq("task_id", data.taskId)
       .order("created_at", { ascending: true });
     return comments ?? [];
+  });
+
+export const getTaskAttachments = createServerFn({ method: "GET" })
+  .inputValidator((data) => z.object({ token: tokenSchema, taskId: z.string().uuid() }).parse(data))
+  .handler(async ({ data }) => {
+    const link = await resolveLink(data.token);
+    if (!link) throw new Error("Enlace no válido");
+    const { admin, providerId, userId } = link;
+    const { data: task, error: taskError } = await admin.from("designer_tasks").select("id")
+      .eq("id", data.taskId).eq("provider_id", providerId).eq("user_id", userId).maybeSingle();
+    if (taskError || !task) throw new Error("Tarea no encontrada");
+    const { data: files, error } = await admin.from("task_attachments")
+      .select("id, file_name, file_path, mime_type, size_bytes")
+      .eq("task_id", data.taskId).eq("user_id", userId).order("created_at");
+    if (error) throw new Error("No se pudieron cargar las referencias");
+    return Promise.all((files ?? []).map(async (file) => {
+      const [preview, download] = await Promise.all([
+        admin.storage.from("task-attachments").createSignedUrl(file.file_path, TASK_ATTACHMENT_TTL),
+        admin.storage.from("task-attachments").createSignedUrl(file.file_path, TASK_ATTACHMENT_TTL, { download: file.file_name }),
+      ]);
+      if (preview.error || download.error) throw new Error("No se pudo abrir una referencia");
+      const browserUrl = (url: string) => {
+        const serverBase = process.env["SUPABASE_URL"];
+        const browserBase = import.meta.env["VITE_SUPABASE_URL"];
+        return serverBase && browserBase && url.startsWith(`${serverBase}/`) ? browserBase + url.slice(serverBase.length) : url;
+      };
+      return { id: file.id, file_name: file.file_name, mime_type: file.mime_type, size_bytes: file.size_bytes,
+        url: browserUrl(preview.data.signedUrl), downloadUrl: browserUrl(download.data.signedUrl) };
+    }));
   });
 
 export const addTaskComment = createServerFn({ method: "POST" })

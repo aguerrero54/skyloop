@@ -1,5 +1,10 @@
 # Roadmap
 
+- [x] Adjuntos privados de tareas con permisos y límites.
+- [x] Subida y eliminación de referencias por el dueño.
+- [x] Referencias de solo lectura en tarjetas y detalle del diseñador.
+- [x] Verificar límites, permisos y flujo de archivos sin avisos.
+
 - [x] Conservar costo y cantidad al editar asignaciones antiguas de diseño.
 - [x] Evitar términos de cliente al cambiar a factura de proveedor.
 - [x] Conservar entregas y gastos antiguos al añadir desglose de piezas.
