@@ -9,6 +9,8 @@ import { useSkyloop } from "@/lib/skyloop-context";
 import { serviceSpend, useDeliverables } from "@/lib/agency";
 import { Panel, StatusBadge } from "@/components/skyloop/ui";
 import { PIECES, parseBreakdown, pieceLabel, accountingPiece } from "@/lib/pieces";
+import { OwnerTaskReferences } from "@/components/skyloop/TaskReferences";
+import { Button } from "@/components/ui/button";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground";
 
@@ -25,6 +27,7 @@ export function DesignerTasks() {
   const [pieceSel, setPieceSel] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
+  const [referenceTask, setReferenceTask] = useState<Task | null>(null);
   const tasks = data.designerTasks.filter((t) => t.month === month);
   const providers = data.providers.filter((p) => tasks.some((t) => t.provider_id === p.id));
   const serviceOptions = monthClientServices.filter(
@@ -224,7 +227,7 @@ export function DesignerTasks() {
 
       {open && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-background/70 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <form key={editing?.id ?? "new"} onSubmit={save} onClick={(e) => e.stopPropagation()} className="grid w-full max-w-xl gap-4 rounded-2xl border border-border bg-card p-6 shadow-2xl">
+          <form key={editing?.id ?? "new"} onSubmit={save} onClick={(e) => e.stopPropagation()} className="grid max-h-[90vh] w-full max-w-xl gap-4 overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-bold text-foreground">{editing ? "Editar tarea" : "Crear una tarea"}</h2>
@@ -354,6 +357,7 @@ export function DesignerTasks() {
                 </p>
               </div>
             )}
+            {editing && <OwnerTaskReferences taskId={editing.id} />}
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-border px-4 py-2 text-sm font-bold text-foreground hover:bg-secondary">
                 Cancelar
@@ -365,6 +369,17 @@ export function DesignerTasks() {
           </form>
         </div>
       )}
+
+      {referenceTask && <div className="fixed inset-0 z-50 grid place-items-center bg-background/70 p-4 backdrop-blur-sm" onClick={() => setReferenceTask(null)}>
+        <div className="grid max-h-[90vh] w-full max-w-xl gap-4 overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="break-words text-lg font-bold text-foreground">{referenceTask.description}</h2>
+            <Button type="button" variant="ghost" size="icon" aria-label="Cerrar referencias" onClick={() => setReferenceTask(null)}>✕</Button>
+          </div>
+          {referenceTask.details && <p className="whitespace-pre-wrap break-words text-sm text-foreground">{referenceTask.details}</p>}
+          <OwnerTaskReferences taskId={referenceTask.id} />
+        </div>
+      </div>}
 
       {providers.length === 0 && (
         <p className="py-6 text-center text-sm text-muted-foreground">No hay tareas en este mes.</p>
@@ -418,6 +433,7 @@ export function DesignerTasks() {
                       <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
                       <td className="px-4 py-3 text-right">{money(t.amount, t.currency)}</td>
                       <td className="px-4 py-3 text-right">
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setReferenceTask(t)}>Referencias</Button>
                         {t.status !== "Facturada" && (
                           <span className="flex justify-end gap-3">
                             <button onClick={() => openEdit(t)} className="text-xs font-bold text-primary">Editar</button>
