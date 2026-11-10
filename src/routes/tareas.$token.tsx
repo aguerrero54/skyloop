@@ -456,9 +456,7 @@ function PublicTasksPage() {
                   <p className="text-sm text-muted-foreground">Sin descripción detallada.</p>
                 )}
               </div>
-            </div>
-
-            <PublicTaskReferences token={token} taskId={selected.id} />
+              <PublicTaskReferences token={token} taskId={selected.id} />
             </div>
 
             <div className="grid content-start gap-3 border-t border-border pt-4 md:border-l md:border-t-0 md:pl-5 md:pt-0">
